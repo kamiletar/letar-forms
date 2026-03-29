@@ -13,23 +13,36 @@ export default defineConfig({
   treeshake: true,
   clean: true,
   outDir: 'dist',
+  // Все зависимости — external (потребитель устанавливает сам)
+  noExternal: [],
   external: [
+    // React
     'react',
     'react-dom',
     'react/jsx-runtime',
+    // UI
     '@chakra-ui/react',
-    '@tanstack/react-form',
     'framer-motion',
-    '@dnd-kit/core',
-    '@dnd-kit/sortable',
-    '@dnd-kit/utilities',
-    'use-mask-input',
+    'react-icons/lu',
+    // Формы
+    '@tanstack/react-form',
+    // Валидация
     'zod',
     'zod/v4',
     'zod/v4/core',
-    'react-icons/lu',
+    // DnD (optional)
+    '@dnd-kit/core',
+    '@dnd-kit/sortable',
+    '@dnd-kit/utilities',
+    // Маски (optional)
+    'use-mask-input',
+    // RichText (optional)
     /^@tiptap\//,
+    // Offline (optional)
+    'idb-keyval',
+    // i18n (optional)
     'next-intl',
+    // Next.js
     'next/navigation',
   ],
   jsx: 'automatic',

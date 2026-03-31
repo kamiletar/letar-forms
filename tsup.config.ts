@@ -38,6 +38,8 @@ export default defineConfig({
     'use-mask-input',
     // RichText (optional)
     /^@tiptap\//,
+    // JSON viewer (optional, for DebugValues)
+    /^@uiw\/react-json-view/,
     // Offline (optional)
     'idb-keyval',
     // i18n (optional)

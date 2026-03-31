@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useDebounce } from './use-debounce'
 
 /**
- * Результат async запроса (совместим с TanStack Query и ZenStack хуками)
+ * Async request result (compatible with TanStack Query and ZenStack hooks)
  */
 export interface AsyncQueryResult<TData = unknown> {
   data?: TData[]
@@ -13,72 +13,72 @@ export interface AsyncQueryResult<TData = unknown> {
 }
 
 /**
- * Функция async запроса для загрузки опций
- * @param search - Строка поиска (пустая если запрос не нужен)
+ * Async request function for loading options
+ * @param search - Search string (empty if request not started)
  */
 export type AsyncQueryFn<TData = unknown> = (search: string) => AsyncQueryResult<TData>
 
 /**
- * Опции для useAsyncSearch
+ * Options for useAsyncSearch
  */
 export interface UseAsyncSearchOptions<TData = unknown> {
   /**
-   * Async функция запроса (возвращает { data, isLoading, error })
+   * Async request function (returns { data, isLoading, error })
    */
   useQuery?: AsyncQueryFn<TData>
 
   /**
-   * Задержка debounce в миллисекундах
+   * Debounce delay in milliseconds
    * @default 300
    */
   debounce?: number
 
   /**
-   * Минимум символов для запуска поиска
+   * Minimum characters to start searching
    * @default 1
    */
   minChars?: number
 
   /**
-   * Начальное значение ввода
+   * Initial input value
    * @default ''
    */
   initialValue?: string
 }
 
 /**
- * Результат useAsyncSearch
+ * Result useAsyncSearch
  */
 export interface UseAsyncSearchResult<TData = unknown> {
-  /** Текущее значение ввода */
+  /** Current value input */
   inputValue: string
 
-  /** Функция для изменения значения ввода */
+  /** Function for changing input value */
   setInputValue: (value: string) => void
 
-  /** Debounced значение для запроса */
+  /** Debounced value for query */
   debouncedSearch: string
 
-  /** Нужно ли запускать запрос (достаточно символов) */
+  /** Whether the request should be triggered (enough characters) */
   shouldQuery: boolean
 
-  /** Идёт ли загрузка */
+  /** Whether loading is in progress */
   isLoading: boolean
 
-  /** Результат запроса (массив данных) */
+  /** Request result (data array) */
   data: TData[] | undefined
 
-  /** Ошибка запроса */
+  /** Error request */
   error: Error | null | undefined
 }
 
 /**
- * Хук для async поиска с debounce
+ * Hook for async search with debounce
  *
- * Объединяет общую логику управления вводом, debounce и async запросами
- * для компонентов Combobox и Autocomplete.
+ * Combines common input management, debounce and async request logic
+ * for Combobox and Autocomplete components.
  *
- * @example Использование с ZenStack хуком
+ * @example Usage with ZenStack hook
  * ```tsx
  * const {
  *   inputValue,
@@ -96,7 +96,7 @@ export interface UseAsyncSearchResult<TData = unknown> {
  * })
  * ```
  *
- * @example Использование для локальной фильтрации
+ * @example Usage for local filtering
  * ```tsx
  * const { inputValue, setInputValue, debouncedSearch } = useAsyncSearch({
  *   debounce: 200,
@@ -113,20 +113,20 @@ export function useAsyncSearch<TData = unknown>(
 ): UseAsyncSearchResult<TData> {
   const { useQuery, debounce = 300, minChars = 1, initialValue = '' } = options
 
-  // Состояние ввода
+  // State input
   const [inputValue, setInputValue] = useState(initialValue)
 
-  // Debounced значение для запроса
+  // Debounced value for query
   const debouncedSearch = useDebounce(inputValue, debounce)
 
-  // Нужно ли запускать запрос?
+  // Should the request be triggered?
   const shouldQuery = debouncedSearch.length >= minChars
 
-  // Вызов useQuery (если передан)
-  // Передаём пустую строку если не должны запрашивать, чтобы хук всегда вызывался
+  // Call useQuery (if provided)
+  // Pass empty string if we shouldn't query, so the hook is always called
   const queryResult = useQuery?.(shouldQuery ? debouncedSearch : '')
 
-  // Извлекаем результаты
+  // Extract results
   const { data, isLoading = false, error } = queryResult ?? {}
 
   return {

@@ -14,9 +14,9 @@ interface LinkPopoverProps {
 }
 
 /**
- * Компонент для добавления/удаления ссылок в RichText редакторе
+ * Component для добавления/удаления ссылок в RichText редакторе
  *
- * Использует Popover вместо window.prompt для лучшего UX и тестируемости.
+ * Использует Popover instead of window.prompt для лучшего UX и тестируемости.
  */
 export function LinkPopover({ editor, disabled }: LinkPopoverProps): ReactElement {
   const [url, setUrl] = useState('')
@@ -26,10 +26,10 @@ export function LinkPopover({ editor, disabled }: LinkPopoverProps): ReactElemen
 
   const handleOpen = useCallback(() => {
     if (isActive) {
-      // Если ссылка активна — удаляем её
+      // Если link активна — удаляем её
       editor.chain().focus().unsetLink().run()
     } else {
-      // Получаем текущий URL если есть
+      // Получаем текущий URL if present
       const currentUrl = editor.getAttributes('link').href ?? ''
       setUrl(currentUrl)
       setIsOpen(true)
@@ -69,7 +69,7 @@ export function LinkPopover({ editor, disabled }: LinkPopoverProps): ReactElemen
     <Popover.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
       <Popover.Trigger asChild>
         <IconButton
-          aria-label={isActive ? 'Удалить ссылку' : 'Добавить ссылку'}
+          aria-label={isActive ? 'Remove ссылку' : 'Add ссылку'}
           size="sm"
           variant={isActive ? 'solid' : 'ghost'}
           colorPalette={isActive ? 'brand' : undefined}
@@ -101,14 +101,14 @@ export function LinkPopover({ editor, disabled }: LinkPopoverProps): ReactElemen
                 <HStack gap={2} justify="flex-end">
                   {editor.isActive('link') && (
                     <Button size="sm" variant="ghost" colorPalette="red" onClick={handleRemove}>
-                      Удалить
+                      Remove
                     </Button>
                   )}
                   <Button size="sm" variant="ghost" onClick={handleClose}>
-                    Отмена
+                    Cancel
                   </Button>
                   <Button size="sm" colorPalette="brand" onClick={handleSubmit} disabled={!url.trim()}>
-                    Применить
+                    Apply
                   </Button>
                 </HStack>
               </VStack>

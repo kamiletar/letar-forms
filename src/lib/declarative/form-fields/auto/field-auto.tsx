@@ -16,36 +16,36 @@ import { FieldString } from '../text/field-string'
 import { FieldTextarea } from '../text/field-textarea'
 
 /**
- * Конфигурация автоопределения типа поля
+ * Auto-detection configuration for field type
  */
 export interface AutoFieldConfig {
   /**
-   * Предпочитать Switch вместо Checkbox для boolean
+   * Prefer Switch over Checkbox for boolean
    * @default false
    */
   booleanAsSwitch?: boolean
   /**
-   * Использовать Textarea для длинных строк (на основе maxLength в схеме)
+   * Use Textarea for long strings (based on maxLength in schema)
    * @default true
    */
   useTextareaForLongStrings?: boolean
   /**
-   * Порог длины для использования Textarea
+   * Length threshold for using Textarea
    * @default 200
    */
   textareaThreshold?: number
 }
 
 /**
- * Props для AutoField
+ * Props for AutoField
  */
 export interface AutoFieldProps extends BaseFieldProps {
-  /** Конфигурация автоопределения */
+  /** Auto-detection configuration */
   config?: AutoFieldConfig
 }
 
 /**
- * Извлечь Zod тип из схемы
+ * Extract Zod type from schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getZodType(schema: any): string | undefined {
@@ -55,7 +55,7 @@ function getZodType(schema: any): string | undefined {
 
   const type = schema._zod.def.type
 
-  // Развернуть wrapper-типы
+  // Unwrap wrapper types
   if (type === 'optional' || type === 'nullable' || type === 'default') {
     return getZodType(schema._zod.def.inner)
   }
@@ -64,7 +64,7 @@ function getZodType(schema: any): string | undefined {
 }
 
 /**
- * Получить enum значения из Zod схемы
+ * Get enum values from Zod schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getEnumValues(schema: any): string[] | undefined {
@@ -74,7 +74,7 @@ function getEnumValues(schema: any): string[] | undefined {
 
   const type = schema._zod.def.type
 
-  // Развернуть wrapper-типы
+  // Unwrap wrapper types
   if (type === 'optional' || type === 'nullable' || type === 'default') {
     return getEnumValues(schema._zod.def.inner)
   }
@@ -92,7 +92,7 @@ function getEnumValues(schema: any): string[] | undefined {
 }
 
 /**
- * Получить maxLength из Zod checks
+ * Get maxLength from Zod checks
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getMaxLength(schema: any): number | undefined {
@@ -106,7 +106,7 @@ function getMaxLength(schema: any): number | undefined {
 }
 
 /**
- * Получить UI meta из Zod схемы
+ * Get UI meta from Zod schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getUIMeta(schema: any): FieldUIMeta | undefined {
@@ -123,7 +123,7 @@ function getUIMeta(schema: any): FieldUIMeta | undefined {
 }
 
 /**
- * Навигировать к схеме по пути
+ * Navigate to schema by path
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSchemaAtPath(schema: any, path: string): any {
@@ -135,7 +135,7 @@ function getSchemaAtPath(schema: any, path: string): any {
   let current = schema
 
   for (const part of parts) {
-    // Развернуть wrapper-типы
+    // Unwrap wrapper types
     while (current?._zod?.def?.type && ['optional', 'nullable', 'default'].includes(current._zod.def.type)) {
       current = current._zod.def.inner
     }
@@ -144,7 +144,7 @@ function getSchemaAtPath(schema: any, path: string): any {
       return undefined
     }
 
-    // Пропустить числовые индексы
+    // Skip numeric indices
     if (/^\d+$/.test(part)) {
       if (current._zod?.def?.type === 'array') {
         current = current._zod.def.element
@@ -152,7 +152,7 @@ function getSchemaAtPath(schema: any, path: string): any {
       continue
     }
 
-    // Навигация в объект
+    // Navigate into object
     if (current._zod?.def?.type === 'object') {
       const shape = current._zod.def.shape
       if (shape && part in shape) {
@@ -169,30 +169,30 @@ function getSchemaAtPath(schema: any, path: string): any {
 }
 
 /**
- * Преобразовать camelCase в читаемый label
+ * Convert camelCase to readable label
  * @example "firstName" → "First Name"
  * @example "createdAt" → "Created At"
  */
 export function camelCaseToLabel(str: string): string {
   return str
-    .replace(/([A-Z])/g, ' $1') // Добавить пробел перед заглавными
-    .replace(/^./, (s) => s.toUpperCase()) // Первую букву заглавной
+    .replace(/([A-Z])/g, ' $1') // Add space before capitals
+    .replace(/^./, (s) => s.toUpperCase()) // Capitalize first letter
     .trim()
 }
 
 /**
- * Form.Field.Auto - Автоопределение типа поля из Zod схемы
+ * Form.Field.Auto - Auto-detection of field type from Zod schema
  *
- * Автоматически выбирает подходящий компонент поля на основе типа в Zod схеме:
- * - string → FieldString (или FieldTextarea для длинных строк)
+ * Automatically selects appropriate field component based on Zod schema type:
+ * - string → FieldString (or FieldTextarea for long strings)
  * - number/bigint/int/float → FieldNumber
- * - boolean → FieldCheckbox (или FieldSwitch)
+ * - boolean → FieldCheckbox (or FieldSwitch)
  * - date → FieldDate
  * - enum → FieldNativeSelect
  *
- * Если label не указан, генерируется из имени поля (camelCase → "Readable Label").
+ * If label is not specified, it is generated from field name (camelCase → "Readable Label").
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * const schema = z.object({
  *   firstName: z.string(),
@@ -206,12 +206,12 @@ export function camelCaseToLabel(str: string): string {
  *   <Form.Field.Auto name="firstName" />  // → FieldString, label="First Name"
  *   <Form.Field.Auto name="age" />        // → FieldNumber, label="Age"
  *   <Form.Field.Auto name="isActive" />   // → FieldCheckbox, label="Is Active"
- *   <Form.Field.Auto name="role" />       // → FieldNativeSelect с опциями
+ *   <Form.Field.Auto name="role" />       // → FieldNativeSelect with options
  *   <Form.Field.Auto name="createdAt" />  // → FieldDate
  * </Form>
  * ```
  *
- * @example С конфигурацией
+ * @example With configuration
  * ```tsx
  * <Form.Field.Auto
  *   name="isActive"
@@ -219,13 +219,13 @@ export function camelCaseToLabel(str: string): string {
  * />
  * ```
  *
- * @example С явным fieldType в meta
+ * @example With explicit fieldType in meta
  * ```tsx
  * const schema = z.object({
- *   bio: z.string().meta({ ui: { title: 'Биография', fieldType: 'richText' } }),
+ *   bio: z.string().meta({ ui: { title: 'Biography', fieldType: 'richText' } }),
  * })
  *
- * <Form.Field.Auto name="bio" />  // → FieldRichText (из meta.fieldType)
+ * <Form.Field.Auto name="bio" />  // → FieldRichText (from meta.fieldType)
  * ```
  */
 export function FieldAuto({ name, config, ...baseProps }: AutoFieldProps): ReactElement {
@@ -236,20 +236,20 @@ export function FieldAuto({ name, config, ...baseProps }: AutoFieldProps): React
     throw new Error('Form.Field.Auto requires a name prop')
   }
 
-  // Построить полный путь
+  // Build full path
   const fullPath = parentGroup ? `${parentGroup.name}.${name}` : name
 
-  // Получить схему поля
+  // Get field schema
   const fieldSchema = getSchemaAtPath(schema, fullPath)
   const zodType = getZodType(fieldSchema)
   const enumValues = getEnumValues(fieldSchema)
   const maxLength = getMaxLength(fieldSchema)
   const uiMeta = getUIMeta(fieldSchema)
 
-  // Авто-label если не указан
+  // Auto-label if not specified
   const label = baseProps.label ?? uiMeta?.title ?? camelCaseToLabel(name)
 
-  // Если указан явный fieldType в meta — используем renderFieldByType
+  // If explicit fieldType in meta — use renderFieldByType
   if (uiMeta?.fieldType) {
     const constraints = getZodConstraints(schema, fullPath)
     return renderFieldByType(uiMeta.fieldType, {
@@ -266,13 +266,13 @@ export function FieldAuto({ name, config, ...baseProps }: AutoFieldProps): React
     })
   }
 
-  // Конфигурация с дефолтами
+  // Configuration with defaults
   const { booleanAsSwitch = false, useTextareaForLongStrings = true, textareaThreshold = 200 } = config ?? {}
 
-  // Определить компонент по типу схемы (fallback)
+  // Determine component by schema type (fallback)
   switch (zodType) {
     case 'string':
-      // Проверить, нужен ли Textarea
+      // Check, Textarea is needed
       if (useTextareaForLongStrings && maxLength && maxLength > textareaThreshold) {
         return <FieldTextarea name={name} label={label} {...baseProps} />
       }
@@ -295,7 +295,7 @@ export function FieldAuto({ name, config, ...baseProps }: AutoFieldProps): React
 
     case 'enum':
       if (enumValues) {
-        // NativeSelectOption использует title вместо label
+        // NativeSelectOption uses title instead of label
         const options = enumValues.map((value) => ({
           title: camelCaseToLabel(value),
           value,
@@ -305,7 +305,7 @@ export function FieldAuto({ name, config, ...baseProps }: AutoFieldProps): React
       return <FieldString name={name} label={label} {...baseProps} />
 
     default:
-      // Fallback на String
+      // Fallback to String
       return <FieldString name={name} label={label} {...baseProps} />
   }
 }

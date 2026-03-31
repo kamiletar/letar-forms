@@ -21,7 +21,7 @@ import {
 } from 'react-icons/lu'
 
 /**
- * Доступные кнопки панели инструментов
+ * Доступные кнопки toolbar
  */
 export type ToolbarButton =
   | 'bold'
@@ -41,7 +41,7 @@ export type ToolbarButton =
   | 'redo'
 
 /**
- * Кнопки тулбара по умолчанию
+ * Buttons тулбара by default
  */
 export const DEFAULT_TOOLBAR_BUTTONS: ToolbarButton[] = [
   'bold',
@@ -61,7 +61,7 @@ export const DEFAULT_TOOLBAR_BUTTONS: ToolbarButton[] = [
 ]
 
 /**
- * Конфигурация кнопки панели инструментов
+ * Конфигурация кнопки toolbar
  */
 export interface ToolbarButtonConfig {
   icon: ReactNode
@@ -76,13 +76,13 @@ export interface ToolbarButtonConfig {
 export const TOOLBAR_CONFIG: Record<ToolbarButton, ToolbarButtonConfig> = {
   bold: {
     icon: <LuBold />,
-    label: 'Жирный',
+    label: 'Bold',
     action: (editor) => editor?.chain().focus().toggleBold().run(),
     isActive: (editor) => editor?.isActive('bold') ?? false,
   },
   italic: {
     icon: <LuItalic />,
-    label: 'Курсив',
+    label: 'Italic',
     action: (editor) => editor?.chain().focus().toggleItalic().run(),
     isActive: (editor) => editor?.isActive('italic') ?? false,
   },
@@ -94,7 +94,7 @@ export const TOOLBAR_CONFIG: Record<ToolbarButton, ToolbarButtonConfig> = {
   },
   strike: {
     icon: <LuStrikethrough />,
-    label: 'Зачёркнутый',
+    label: 'Strikethrough',
     action: (editor) => editor?.chain().focus().toggleStrike().run(),
     isActive: (editor) => editor?.isActive('strike') ?? false,
   },
@@ -124,19 +124,19 @@ export const TOOLBAR_CONFIG: Record<ToolbarButton, ToolbarButtonConfig> = {
   },
   bulletList: {
     icon: <LuList />,
-    label: 'Маркированный список',
+    label: 'Bullet list',
     action: (editor) => editor?.chain().focus().toggleBulletList().run(),
     isActive: (editor) => editor?.isActive('bulletList') ?? false,
   },
   orderedList: {
     icon: <LuListOrdered />,
-    label: 'Нумерованный список',
+    label: 'Ordered list',
     action: (editor) => editor?.chain().focus().toggleOrderedList().run(),
     isActive: (editor) => editor?.isActive('orderedList') ?? false,
   },
   blockquote: {
     icon: <LuQuote />,
-    label: 'Цитата',
+    label: 'Quote',
     action: (editor) => editor?.chain().focus().toggleBlockquote().run(),
     isActive: (editor) => editor?.isActive('blockquote') ?? false,
   },
@@ -157,20 +157,20 @@ export const TOOLBAR_CONFIG: Record<ToolbarButton, ToolbarButtonConfig> = {
   },
   undo: {
     icon: <LuUndo />,
-    label: 'Отменить',
+    label: 'Undo',
     action: (editor) => editor?.chain().focus().undo().run(),
   },
   redo: {
     icon: <LuRedo />,
-    label: 'Повторить',
+    label: 'Redo',
     action: (editor) => editor?.chain().focus().redo().run(),
   },
-  // Кнопка image обрабатывается отдельно через ImagePopover (аналогично link)
+  // Кнопка image processesся отдельно через ImagePopover (аналогично link)
   image: {
     icon: <LuImage />,
-    label: 'Вставить изображение',
+    label: 'Insert image',
     action: () => {
-      // Действие обрабатывается через ImagePopover
+      // Action handled via ImagePopover
     },
   },
 }

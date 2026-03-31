@@ -10,7 +10,7 @@ export interface ListButtonAddProps {
   /** Default value for new item (default: empty object or empty string) */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue?: any
-  /** Принудительно отключить кнопку (дополнительно к автоматическому maxItems) */
+  /** Принудительно отkeyить кнопку (дополнительно к автоматическому maxItems) */
   disabled?: boolean
 }
 
@@ -19,8 +19,8 @@ export interface ListButtonAddProps {
  *
  * Must be used inside Form.Group.List (typically in wrapper)
  *
- * Автоматически отключается при достижении maxItems из Zod схемы
- * (z.array().max(5) → кнопка отключится при 5 элементах)
+ * Automatically отkeyается при достижении maxItems from Zod schema
+ * (z.array().max(5) → button отkeyится при 5 elementах)
  *
  * @example
  * ```tsx
@@ -42,7 +42,7 @@ export interface ListButtonAddProps {
 export function ListButtonAdd({ children, defaultValue = {}, disabled }: ListButtonAddProps): ReactElement {
   const { pushValue, canAdd } = useFormGroupListContext()
 
-  // Кнопка отключена если canAdd = false (достигнут maxItems) или disabled prop
+  // Кнопка отkeyена if canAdd = false (достигнут maxItems) или disabled prop
   const isDisabled = disabled || !canAdd
 
   const handleAdd = () => {
@@ -76,7 +76,7 @@ export function ListButtonAdd({ children, defaultValue = {}, disabled }: ListBut
 export interface ListButtonRemoveProps {
   /** Button text (default: "x") */
   children?: ReactNode
-  /** Принудительно отключить кнопку (дополнительно к автоматическому minItems) */
+  /** Принудительно отkeyить кнопку (дополнительно к автоматическому minItems) */
   disabled?: boolean
 }
 
@@ -85,8 +85,8 @@ export interface ListButtonRemoveProps {
  *
  * Must be used inside Form.Group.List item (children)
  *
- * Автоматически отключается при достижении minItems из Zod схемы
- * (z.array().min(1) → кнопка отключится при 1 элементе)
+ * Automatically отkeyается при достижении minItems from Zod schema
+ * (z.array().min(1) → button отkeyится при 1 elementе)
  *
  * @example
  * ```tsx
@@ -102,7 +102,7 @@ export function ListButtonRemove({ children, disabled }: ListButtonRemoveProps):
   const { remove } = useFormGroupListItemContext()
   const { canRemove } = useFormGroupListContext()
 
-  // Кнопка отключена если canRemove = false (достигнут minItems) или disabled prop
+  // Кнопка отkeyена if canRemove = false (достигнут minItems) или disabled prop
   const isDisabled = disabled || !canRemove
 
   const handleRemove = () => {

@@ -1,29 +1,29 @@
 'use client'
 
 import { Box, Field, HStack, IconButton, Input, List, Progress, Text, VStack } from '@chakra-ui/react'
-import { useState, type ReactElement } from 'react'
+import { type ReactElement, useState } from 'react'
 import { LuCheck, LuEye, LuEyeOff, LuX } from 'react-icons/lu'
 import type { PasswordRequirement, PasswordStrengthFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Требования к паролю по умолчанию
+ * Default password requirements
  */
 const DEFAULT_REQUIREMENTS: PasswordRequirement[] = ['minLength:8', 'uppercase', 'lowercase', 'number', 'special']
 
 /**
- * Описания требований
+ * Requirement descriptions
  */
 const REQUIREMENT_LABELS: Record<PasswordRequirement, string> = {
-  'minLength:8': 'Минимум 8 символов',
-  uppercase: 'Минимум одна заглавная буква',
-  lowercase: 'Минимум одна строчная буква',
-  number: 'Минимум одна цифра',
-  special: 'Минимум один специальный символ (!@#$%^&*)',
+  'minLength:8': 'Minimum 8 characters',
+  uppercase: 'At least one uppercase letter',
+  lowercase: 'At least one lowercase letter',
+  number: 'At least one digit',
+  special: 'At least one special character (!@#$%^&*)',
 }
 
 /**
- * Проверяет соответствие пароля требованию
+ * Checks if password meets a requirement
  */
 function checkRequirement(password: string, requirement: PasswordRequirement): boolean {
   switch (requirement) {
@@ -43,7 +43,7 @@ function checkRequirement(password: string, requirement: PasswordRequirement): b
 }
 
 /**
- * Вычисляет силу пароля (0-100)
+ * Computes password strength (0-100)
  */
 function calculateStrength(password: string, requirements: PasswordRequirement[]): number {
   if (!password) {
@@ -55,42 +55,42 @@ function calculateStrength(password: string, requirements: PasswordRequirement[]
 }
 
 /**
- * Получает описание и цвет силы пароля
+ * Gets description and color for password strength
  */
 function getStrengthInfo(strength: number): { label: string; colorPalette: string } {
   if (strength < 25) {
-    return { label: 'Слабый', colorPalette: 'red' }
+    return { label: 'Weak', colorPalette: 'red' }
   }
   if (strength < 50) {
-    return { label: 'Средний', colorPalette: 'orange' }
+    return { label: 'Medium', colorPalette: 'orange' }
   }
   if (strength < 75) {
-    return { label: 'Хороший', colorPalette: 'yellow' }
+    return { label: 'Good', colorPalette: 'yellow' }
   }
-  return { label: 'Сильный', colorPalette: 'green' }
+  return { label: 'Strong', colorPalette: 'green' }
 }
 
 /**
- * Состояние для поля пароля с индикатором силы
+ * State for password field with strength indicator
  */
 interface PasswordStrengthFieldState {
-  /** Видимость пароля */
+  /** Password visibility */
   visible: boolean
-  /** Переключить видимость */
+  /** Toggle visibility */
   toggle: () => void
 }
 
 /**
- * Form.Field.PasswordStrength - Пароль с индикатором силы
+ * Form.Field.PasswordStrength - Password with strength indicator
  *
- * Рендерит поле пароля с визуальным индикатором силы и чеклистом требований.
+ * Renders a password field with a visual strength indicator and requirements checklist.
  *
- * @example С требованиями по умолчанию
+ * @example With default requirements
  * ```tsx
- * <Form.Field.PasswordStrength name="password" label="Пароль" showRequirements />
+ * <Form.Field.PasswordStrength name="password" label="Password" showRequirements />
  * ```
  *
- * @example С кастомными требованиями
+ * @example With custom requirements
  * ```tsx
  * <Form.Field.PasswordStrength
  *   name="password"
@@ -130,12 +130,12 @@ export const FieldPasswordStrength = createField<PasswordStrengthFieldProps, str
               value={value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
-              placeholder={resolved.placeholder ?? 'Введите пароль'}
+              placeholder={resolved.placeholder ?? 'Enter password'}
               data-field-name={fullPath}
               flex={1}
             />
             <IconButton
-              aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'}
+              aria-label={visible ? 'Hide password' : 'Show password'}
               onClick={toggle}
               variant="ghost"
               size="sm"
@@ -148,7 +148,7 @@ export const FieldPasswordStrength = createField<PasswordStrengthFieldProps, str
             <Box>
               <HStack justify="space-between" mb={1}>
                 <Text fontSize="xs" color="fg.muted">
-                  Сила
+                  Strength
                 </Text>
                 <Text fontSize="xs" fontWeight="medium" color={`${colorPalette}.600`}>
                   {strengthLabel}

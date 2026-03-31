@@ -1,27 +1,27 @@
 /**
- * Сервис оффлайн-функциональности
+ * Offline functionality service
  *
- * Бизнес-логика:
- * - Определение статуса онлайн/оффлайн
- * - Очередь синхронизации действий в IndexedDB
+ * Business logic:
+ * - Online/offline status detection
+ * - Sync action queue in IndexedDB
  */
 
 import type { ProcessQueueResult, SyncAction, SyncActionHandler, SyncQueueItem, SyncQueueStore } from './types'
 
 // ============================================
-// ЛЕНИВЫЙ ИМПОРТ IDB-KEYVAL
+// LAZY IMPORT IDB-KEYVAL
 // ============================================
 
 /**
- * Проверка, что мы в браузере с поддержкой IndexedDB
+ * Check that we are in a browser with IndexedDB support
  */
 function canUseIDB(): boolean {
   return typeof window !== 'undefined' && typeof indexedDB !== 'undefined'
 }
 
 /**
- * Ленивый импорт idb-keyval для избежания SSR проблем
- * Кэшируем промис для предотвращения повторных импортов
+ * Lazy import of idb-keyval to avoid SSR issues
+ * Cache the promise to prevent repeated imports
  */
 let idbModule: typeof import('idb-keyval') | null = null
 async function getIDB(): Promise<typeof import('idb-keyval') | null> {
@@ -35,18 +35,18 @@ async function getIDB(): Promise<typeof import('idb-keyval') | null> {
 }
 
 // ============================================
-// КОНСТАНТЫ
+// CONSTANTS
 // ============================================
 
 const DEFAULT_SYNC_QUEUE_STORAGE_KEY = 'lena-form-sync-queue'
 
 // ============================================
-// СТАТУС СОЕДИНЕНИЯ
+// CONNECTION STATUS
 // ============================================
 
 /**
- * Получить текущий статус оффлайн
- * @returns true если оффлайн, false если онлайн
+ * Get current offline status
+ * @returns true if offline, false if online
  */
 export function getOfflineStatus(): boolean {
   if (typeof navigator === 'undefined') {
@@ -56,9 +56,9 @@ export function getOfflineStatus(): boolean {
 }
 
 /**
- * Подписаться на изменения статуса соединения
- * @param callback - функция, вызываемая при изменении статуса
- * @returns функция отписки
+ * Subscribe to connection status changes
+ * @param callback - function called when status changes
+ * @returns unsubscribe function
  */
 export function subscribeToStatusChanges(callback: (isOffline: boolean) => void): () => void {
   if (typeof window === 'undefined') {
@@ -79,18 +79,18 @@ export function subscribeToStatusChanges(callback: (isOffline: boolean) => void)
 }
 
 // ============================================
-// ОЧЕРЕДЬ СИНХРОНИЗАЦИИ
+// SYNC QUEUE
 // ============================================
 
 /**
- * Генерация уникального ID
+ * Generate unique ID
  */
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
 /**
- * Получить очередь из IndexedDB
+ * Get queue from IndexedDB
  */
 export async function getQueueFromStorage(storageKey?: string): Promise<SyncQueueItem[]> {
   try {
@@ -102,13 +102,13 @@ export async function getQueueFromStorage(storageKey?: string): Promise<SyncQueu
     const stored = await idb.get<SyncQueueItem[]>(key)
     return stored ?? []
   } catch (error) {
-    console.error('[OfflineService] Ошибка загрузки очереди из IndexedDB:', error)
+    console.error('[OfflineService] Error loading queue from IndexedDB:', error)
     return []
   }
 }
 
 /**
- * Сохранить очередь в IndexedDB
+ * Save queue to IndexedDB
  */
 async function saveQueueToStorage(queue: SyncQueueItem[], storageKey?: string): Promise<void> {
   try {
@@ -119,12 +119,12 @@ async function saveQueueToStorage(queue: SyncQueueItem[], storageKey?: string): 
     const key = storageKey ?? DEFAULT_SYNC_QUEUE_STORAGE_KEY
     await idb.set(key, queue)
   } catch (error) {
-    console.error('[OfflineService] Ошибка сохранения очереди в IndexedDB:', error)
+    console.error('[OfflineService] Error saving queue to IndexedDB:', error)
   }
 }
 
 /**
- * Добавить действие в очередь
+ * Add action to queue
  */
 export async function addToQueue(action: SyncAction, storageKey?: string): Promise<SyncQueueItem> {
   const queue = await getQueueFromStorage(storageKey)
@@ -145,7 +145,7 @@ export async function addToQueue(action: SyncAction, storageKey?: string): Promi
 }
 
 /**
- * Удалить элемент из очереди
+ * Remove item from queue
  */
 export async function removeFromQueue(id: string, storageKey?: string): Promise<boolean> {
   const queue = await getQueueFromStorage(storageKey)
@@ -162,7 +162,7 @@ export async function removeFromQueue(id: string, storageKey?: string): Promise<
 }
 
 /**
- * Обработать один элемент очереди
+ * Process one queue item
  */
 export async function processQueueItem(item: SyncQueueItem, handler: SyncActionHandler): Promise<ProcessQueueResult> {
   try {
@@ -175,7 +175,7 @@ export async function processQueueItem(item: SyncQueueItem, handler: SyncActionH
       }
     }
 
-    // Неуспешный результат без исключения
+    // Unsuccessful result without exception
     const updatedItem: SyncQueueItem = {
       ...item,
       attempts: item.attempts + 1,
@@ -189,7 +189,7 @@ export async function processQueueItem(item: SyncQueueItem, handler: SyncActionH
       error: result.error,
     }
   } catch (error) {
-    // Исключение при выполнении
+    // Exception during execution
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const updatedItem: SyncQueueItem = {
       ...item,
@@ -207,7 +207,7 @@ export async function processQueueItem(item: SyncQueueItem, handler: SyncActionH
 }
 
 /**
- * Очистить очередь
+ * Clear queue
  */
 export async function clearQueue(storageKey?: string): Promise<void> {
   try {
@@ -218,12 +218,12 @@ export async function clearQueue(storageKey?: string): Promise<void> {
     const key = storageKey ?? DEFAULT_SYNC_QUEUE_STORAGE_KEY
     await idb.del(key)
   } catch (error) {
-    console.error('[OfflineService] Ошибка очистки очереди из IndexedDB:', error)
+    console.error('[OfflineService] Error clearing queue from IndexedDB:', error)
   }
 }
 
 /**
- * Создать store для очереди синхронизации
+ * Create sync queue store
  */
 export function createSyncQueueStore(storageKey?: string): SyncQueueStore {
   let queue: SyncQueueItem[] = []
@@ -275,12 +275,12 @@ export function createSyncQueueStore(storageKey?: string): SyncQueueStore {
           const result = await processQueueItem(item, handler)
           results.push(result)
 
-          // Обновляем очередь после обработки
+          // Update queue after processing
           if (result.success && result.item) {
             await removeFromQueue(item.id, key)
             queue = queue.filter((q) => q.id !== item.id)
           } else if (result.item) {
-            // Обновляем элемент в очереди
+            // Update item in queue
             const index = queue.findIndex((q) => q.id === item.id)
             if (index !== -1) {
               queue[index] = result.item

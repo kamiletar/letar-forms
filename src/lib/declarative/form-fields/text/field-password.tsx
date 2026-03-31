@@ -1,34 +1,34 @@
 'use client'
 
 import { IconButton, Input, InputGroup } from '@chakra-ui/react'
-import { useState, type ReactElement } from 'react'
+import { type ReactElement, useState } from 'react'
 import { LuEye, LuEyeOff } from 'react-icons/lu'
 import type { PasswordFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Состояние для переключения видимости пароля
+ * State for toggling password visibility
  */
 interface PasswordFieldState {
-  /** Видим ли пароль */
+  /** Whether password is visible */
   visible: boolean
-  /** Переключить видимость */
+  /** Toggle visibility */
   toggle: () => void
 }
 
 /**
- * Form.Field.Password - Поле ввода пароля с переключением видимости
+ * Form.Field.Password - Password input field with visibility toggle
  *
- * Рендерит поле ввода пароля с кнопкой показа/скрытия.
+ * Renders a password input field with a show/hide button.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.Password name="password" label="Пароль" />
+ * <Form.Field.Password name="password" label="Password" />
  * ```
  *
- * @example С видимым паролем по умолчанию
+ * @example With visible password by default
  * ```tsx
- * <Form.Field.Password name="password" label="Пароль" defaultVisible />
+ * <Form.Field.Password name="password" label="Password" defaultVisible />
  * ```
  */
 export const FieldPassword = createField<PasswordFieldProps, string, PasswordFieldState>({
@@ -53,7 +53,7 @@ export const FieldPassword = createField<PasswordFieldProps, string, PasswordFie
             size="sm"
             variant="ghost"
             height="calc(100% - {spacing.2})"
-            aria-label="Переключить видимость пароля"
+            aria-label="Toggle password visibility"
             disabled={resolved.disabled}
             onPointerDown={(e) => {
               if (resolved.disabled) {

@@ -4,9 +4,9 @@ import { useCallback, useSyncExternalStore } from 'react'
 import { useFormGroup } from '../form-group'
 import { useDeclarativeForm } from './form-context'
 
-// Стабильный fallback для fieldMeta — предотвращает бесконечный цикл в useSyncExternalStore.
-// Если создавать новый объект в getSnapshot каждый раз, Object.is сравнение даст false,
-// и React будет бесконечно ре-рендерить компонент.
+// Stable fallback for fieldMeta — prevents infinite loop in useSyncExternalStore.
+// If creating a new object in getSnapshot each time, Object.is comparison returns false,
+// and React will infinitely re-render the component.
 const EMPTY_FIELD_META = Object.freeze({ errors: [], isTouched: false })
 
 /**
@@ -112,8 +112,18 @@ export function useFieldActions<TValue = unknown>(fieldName: string): FieldActio
   )
 
   // Подписка на store — выносим useCallback ДО useSyncExternalStore
-  // (React 19 запрещает вызов хуков внутри аргументов других хуков)
-  const subscribe = useCallback((callback: () => void) => form.store.subscribe(callback), [form])
+  // (React 19 запрещает вызов хуков inside аргументов других хуков)
+  // TanStack Store v0.9+ returns { unsubscribe }, а не функцию
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const subscription = form.store.subscribe(callback)
+      if (typeof subscription === 'function') {
+        return subscription
+      }
+      return () => subscription.unsubscribe()
+    },
+    [form]
+  )
 
   const getValueSnapshot = useCallback(
     () => getNestedValue(form.state.values as Record<string, unknown>),

@@ -5,37 +5,37 @@ import { useCallback, useEffect, useRef } from 'react'
 const STORAGE_PREFIX = 'form-steps:'
 
 /**
- * Конфигурация персистенции шага формы
+ * Form step persistence configuration
  */
 export interface StepPersistenceConfig {
   /**
-   * Уникальный ключ для localStorage
-   * Должен быть уникален для каждой формы
+   * Unique key for localStorage
+   * Must be unique per form
    */
   key: string
 
   /**
-   * Задержка debounce для сохранения в миллисекундах
+   * Debounce delay for saving in milliseconds
    * @default 300
    */
   debounceMs?: number
 }
 
 /**
- * Результат хука useStepPersistence
+ * Result of useStepPersistence hook
  */
 export interface UseStepPersistenceResult {
-  /** Получить сохранённый шаг из localStorage */
+  /** Get persisted step from localStorage */
   getPersistedStep: () => number | null
-  /** Очистить сохранённый шаг */
+  /** Clear persisted step */
   clearPersistence: () => void
 }
 
 /**
- * Хук для персистенции текущего шага в localStorage
+ * Hook for persisting current step in localStorage
  *
- * Сохраняет и восстанавливает индекс текущего шага автоматически.
- * Использует debounce для оптимизации записи.
+ * Saves and restores the current step index automatically.
+ * Uses debounce to optimize writes.
  *
  * @example
  * ```tsx
@@ -47,12 +47,12 @@ export interface UseStepPersistenceResult {
  */
 export function useStepPersistence(currentStep: number, config?: StepPersistenceConfig): UseStepPersistenceResult {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // Используем ref для config — предотвращает перезапуск useEffect
-  // при каждом рендере из-за смены ссылки на объект
+  // Use ref for config — prevents useEffect restart
+  // on every render due to object reference change
   const configRef = useRef(config)
   configRef.current = config
 
-  // Получить сохранённый шаг при монтировании
+  // Get persisted step on mount
   const getPersistedStep = useCallback((): number | null => {
     const cfg = configRef.current
     if (!cfg || typeof window === 'undefined') {
@@ -67,12 +67,12 @@ export function useStepPersistence(currentStep: number, config?: StepPersistence
         }
       }
     } catch {
-      // Invalid или ошибка localStorage — игнорируем
+      // Invalid or localStorage error — ignore
     }
     return null
   }, [])
 
-  // Сохранение шага с debounce — зависит только от currentStep
+  // Save step with debounce — depends only on currentStep
   useEffect(() => {
     const cfg = configRef.current
     if (!cfg || typeof window === 'undefined') {
@@ -81,17 +81,17 @@ export function useStepPersistence(currentStep: number, config?: StepPersistence
 
     const debounceMs = cfg.debounceMs ?? 300
 
-    // Отменяем предыдущий таймер
+    // Cancel previous timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
 
-    // Debounced сохранение
+    // Debounced save
     debounceTimerRef.current = setTimeout(() => {
       try {
         localStorage.setItem(`${STORAGE_PREFIX}${cfg.key}`, String(currentStep))
       } catch {
-        // localStorage может быть переполнен или отключён
+        // localStorage may be full or disabled
       }
     }, debounceMs)
 
@@ -102,7 +102,7 @@ export function useStepPersistence(currentStep: number, config?: StepPersistence
     }
   }, [currentStep])
 
-  // Очистить персистенцию (вызывать после успешной отправки формы)
+  // Clear persistence (call after successful form submission)
   const clearPersistence = useCallback(() => {
     const cfg = configRef.current
     if (!cfg || typeof window === 'undefined') {
@@ -114,7 +114,7 @@ export function useStepPersistence(currentStep: number, config?: StepPersistence
     try {
       localStorage.removeItem(`${STORAGE_PREFIX}${cfg.key}`)
     } catch {
-      // Игнорируем ошибки
+      // Ignore errors
     }
   }, [])
 

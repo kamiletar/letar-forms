@@ -7,7 +7,7 @@ import type { PhoneCountry, PhoneFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Маски телефонов по странам
+ * Phone masks by country
  */
 const PHONE_MASKS: Record<PhoneCountry, string | string[]> = {
   RU: '+7 (999) 999-99-99',
@@ -26,7 +26,7 @@ const PHONE_MASKS: Record<PhoneCountry, string | string[]> = {
 }
 
 /**
- * Флаги стран
+ * Country flags
  */
 const COUNTRY_FLAGS: Record<PhoneCountry, string> = {
   RU: '🇷🇺',
@@ -45,29 +45,29 @@ const COUNTRY_FLAGS: Record<PhoneCountry, string> = {
 }
 
 /**
- * Состояние для телефонного поля
+ * State for phone field
  */
 interface PhoneFieldState {
-  /** Ref callback для применения маски */
+  /** Ref callback for applying mask */
   maskRef: (element: HTMLInputElement | null) => void
 }
 
 /**
- * Form.Field.Phone - Телефонный ввод с маской по стране
+ * Form.Field.Phone - Phone input with country mask
  *
- * Рендерит поле телефона с автоматической маской на основе страны.
+ * Renders phone field with automatic mask based on country.
  *
- * @example Русский телефон (по умолчанию)
+ * @example Russian phone (by default)
  * ```tsx
- * <Form.Field.Phone name="phone" label="Телефон" />
+ * <Form.Field.Phone name="phone" label="Phone" />
  * ```
  *
- * @example Телефон США с флагом
+ * @example US phone with flag
  * ```tsx
  * <Form.Field.Phone name="phone" country="US" showFlag />
  * ```
  *
- * @example Вернуть значение без маски
+ * @example Return value without mask
  * ```tsx
  * <Form.Field.Phone name="phone" autoUnmask />
  * ```
@@ -79,7 +79,7 @@ export const FieldPhone = createField<PhoneFieldProps, string, PhoneFieldState>(
     const { country = 'RU', autoUnmask = false } = props
     const mask = PHONE_MASKS[country]
 
-    // Создаём ref callback для применения маски
+    // Create ref callback for applying mask
     const maskRef = useCallback(
       (element: HTMLInputElement | null) => {
         if (element && mask) {

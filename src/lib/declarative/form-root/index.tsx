@@ -6,7 +6,7 @@ import type { FormComponent } from './form-compound-types'
 import { FormSimple } from './form-simple'
 import { FormWithApi } from './form-with-api'
 
-// Реэкспорт типов для внешнего использования
+// Re-export types for external use
 export type {
   FormButtonComponents,
   FormComponent,
@@ -17,7 +17,7 @@ export type {
   ListButtonComponents,
 } from './form-compound-types'
 
-// Реэкспорт подкомпонентов
+// Re-export subcomponents
 export { FormLoadingState } from './form-loading-state'
 export { FormSimple, type FormSimpleProps } from './form-simple'
 export { buildValidators } from './form-validators'
@@ -25,30 +25,30 @@ export { FormWithApi, type FormWithApiProps } from './form-with-api'
 export { useFormFeatures, type UseFormFeaturesConfig, type UseFormFeaturesResult } from './use-form-features'
 
 /**
- * Корневой компонент декларативной формы.
+ * Root component for declarative forms.
  *
- * Поддерживает два режима:
- * 1. **Простой режим** — укажите initialValue и onSubmit
- * 2. **API режим** — укажите api для автоматической интеграции с ZenStack
+ * Supports two modes:
+ * 1. **Simple mode** — provide initialValue and onSubmit
+ * 2. **API mode** — provide api for automatic ZenStack integration
  *
- * @example Простой режим
+ * @example Simple mode
  * ```tsx
  * <Form initialValue={{ title: '', count: 0 }} onSubmit={handleSubmit}>
- *   <Form.Field.String name="title" label="Заголовок" />
- *   <Form.Button.Submit>Сохранить</Form.Button.Submit>
+ *   <Form.Field.String name="title" label="Title" />
+ *   <Form.Button.Submit>Save</Form.Button.Submit>
  * </Form>
  * ```
  *
- * @example API режим (ZenStack)
+ * @example API mode (ZenStack)
  * ```tsx
  * <Form
  *   api={{
- *     id: 'abc123', // пустой = создание, заполненный = редактирование
+ *     id: 'abc123', // empty = create, filled = edit
  *     query: { hook: useFindUniqueRecipe, include: { components: true } },
  *     mutations: { create: useCreateRecipe, update: useUpdateRecipe },
  *   }}
  *   schema={RecipeSchema}
- *   onSubmit={(data) => console.log('Сохранено:', data)}
+ *   onSubmit={(data) => console.log('Saved:', data)}
  * >
  *   <Form.Field.String name="title" />
  *   <Form.Button.Submit />
@@ -65,9 +65,10 @@ function FormRoot<TData extends object>({
   validateOn,
   disabled,
   readOnly,
+  debug,
   children,
 }: FormPropsWithApi<TData>): ReactElement {
-  // Если указан api — используем FormWithApi, иначе — простую форму
+  // If api is provided — use FormWithApi, otherwise — simple form
   if (api) {
     return (
       <FormWithApi
@@ -80,13 +81,14 @@ function FormRoot<TData extends object>({
         validateOn={validateOn}
         disabled={disabled}
         readOnly={readOnly}
+        debug={debug}
       >
         {children}
       </FormWithApi>
     )
   }
 
-  // Простой режим — initialValue обязателен
+  // Simple mode — initialValue is required
   if (!initialValue) {
     throw new Error('Form requires either api prop or initialValue prop')
   }
@@ -104,6 +106,7 @@ function FormRoot<TData extends object>({
       validateOn={validateOn}
       disabled={disabled}
       readOnly={readOnly}
+      debug={debug}
     >
       {children}
     </FormSimple>
@@ -111,7 +114,7 @@ function FormRoot<TData extends object>({
 }
 
 /**
- * Form как compound component.
- * Подкомпоненты (Field, Group, Button, Steps и т.д.) добавляются в declarative/index.ts
+ * Form as compound component.
+ * Subcomponents (Field, Group, Button, Steps, etc.) are added in declarative/index.ts
  */
 export const Form = FormRoot as unknown as FormComponent

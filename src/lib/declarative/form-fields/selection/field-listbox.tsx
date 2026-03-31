@@ -13,44 +13,44 @@ import {
 } from '../base'
 
 /**
- * Props для Listbox поля
+ * Props for Listbox field
  */
 export interface ListboxFieldProps<T = string> extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Опции для listbox */
+  /** Options for listbox */
   options: GroupableOption<T>[]
   /**
-   * Режим выбора
-   * - `single`: Выбор одного элемента (по умолчанию)
-   * - `multiple`: Выбор нескольких элементов
+   * Selection mode
+   * - `single`: Single selection (by default)
+   * - `multiple`: Multiple selection
    */
   selectionMode?: 'single' | 'multiple'
-  /** Размер */
+  /** Size */
   size?: FieldSizeWithoutXs
-  /** Визуальный вариант */
+  /** Visual variant */
   variant?: 'subtle' | 'solid' | 'plain'
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
-  /** Ориентация элементов (по умолчанию: vertical) */
+  /** Element orientation (by default: vertical) */
   orientation?: 'horizontal' | 'vertical'
-  /** Максимальная высота для скролла */
+  /** Maximum height for scrolling */
   maxHeight?: string | number
 }
 
-/** Тип состояния для useFieldState */
+/** State type for useFieldState */
 type ListboxFieldState = GroupedOptionsResult
 
 /**
- * Form.Field.Listbox - Список выбора с видимыми опциями
+ * Form.Field.Listbox - Selection list with visible options
  *
- * В отличие от Select/Combobox которые используют dropdown, Listbox показывает
- * все опции прямо в форме. Хорошо подходит для коротких списков (2-8 элементов)
- * где все опции должны быть видны.
+ * Unlike Select/Combobox which use dropdown, Listbox shows
+ * all options directly in the form. Well suited for short lists (2-8 elements)
+ * where all options should be visible.
  *
- * @example Единичный выбор
+ * @example Single selection
  * ```tsx
  * <Form.Field.Listbox
  *   name="framework"
- *   label="Фреймворк"
+ *   label="Framework"
  *   options={[
  *     { label: 'React', value: 'react' },
  *     { label: 'Vue', value: 'vue' },
@@ -59,21 +59,21 @@ type ListboxFieldState = GroupedOptionsResult
  * />
  * ```
  *
- * @example Множественный выбор
+ * @example Multiple selection
  * ```tsx
  * <Form.Field.Listbox
  *   name="features"
- *   label="Функции"
+ *   label="Features"
  *   selectionMode="multiple"
  *   options={[
  *     { label: 'TypeScript', value: 'ts' },
- *     { label: 'Тестирование', value: 'test' },
- *     { label: 'Линтинг', value: 'lint' },
+ *     { label: 'Testing', value: 'test' },
+ *     { label: 'Linting', value: 'lint' },
  *   ]}
  * />
  * ```
  *
- * @example С группами
+ * @example With groups
  * ```tsx
  * <Form.Field.Listbox
  *   name="language"
@@ -87,11 +87,11 @@ type ListboxFieldState = GroupedOptionsResult
 export const FieldListbox = createField<ListboxFieldProps, string | string[], ListboxFieldState>({
   displayName: 'FieldListbox',
   useFieldState: (componentProps): ListboxFieldState => {
-    // Используем общий хук для группировки опций
+    // Use shared hook for grouping options
     return useGroupedOptions(componentProps.options)
   },
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps, fieldState }): ReactElement => {
-    // Обработка single vs multiple значений
+    // Handle single vs multiple values
     const currentValue = field.state.value as string | string[] | undefined
     const valueArray: string[] = Array.isArray(currentValue) ? currentValue : currentValue ? [currentValue] : []
     const selectionMode = componentProps.selectionMode ?? 'single'
@@ -112,11 +112,11 @@ export const FieldListbox = createField<ListboxFieldProps, string | string[], Li
           value={valueArray}
           onValueChange={(details) => {
             if (selectionMode === 'single') {
-              // Single mode: сохраняем одно значение или пустую строку
+              // Single mode: save single value or empty string
               const newValue = details.value[0] as string | undefined
               field.handleChange(newValue ?? '')
             } else {
-              // Multiple mode: сохраняем массив
+              // Multiple mode: save array
               field.handleChange(details.value)
             }
           }}
@@ -131,7 +131,7 @@ export const FieldListbox = createField<ListboxFieldProps, string | string[], Li
 
           <Listbox.Content maxH={componentProps.maxHeight}>
             {fieldState.groups
-              ? /* Сгруппированные опции */
+              ? /* Grouped options */
                 Array.from(fieldState.groups.entries()).map(([groupName, groupOptions]) => (
                   <Listbox.ItemGroup key={groupName}>
                     {groupName && <Listbox.ItemGroupLabel>{groupName}</Listbox.ItemGroupLabel>}
@@ -143,7 +143,7 @@ export const FieldListbox = createField<ListboxFieldProps, string | string[], Li
                     ))}
                   </Listbox.ItemGroup>
                 ))
-              : /* Плоские опции */
+              : /* Flat options */
                 componentProps.options.map((opt) => (
                   <Listbox.Item item={opt} key={opt.value}>
                     <Listbox.ItemText>{getOptionLabel(opt)}</Listbox.ItemText>

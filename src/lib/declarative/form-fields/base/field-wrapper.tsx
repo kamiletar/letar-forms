@@ -7,28 +7,28 @@ import { FieldError } from './create-field'
 import { FieldLabel } from './field-label'
 
 export interface FieldWrapperProps {
-  /** Resolved props из createField */
+  /** Resolved props from createField */
   resolved: ResolvedFieldProps
-  /** Есть ли ошибки валидации */
+  /** Whether there are validation errors */
   hasError: boolean
-  /** Отформатированное сообщение об ошибке */
+  /** Formatted error message */
   errorMessage: string
-  /** Полный путь для data-field-name атрибута */
+  /** Full path for data-field-name attribute */
   fullPath: string
-  /** Содержимое поля (Input, Textarea, etc.) */
+  /** Field content (Input, Textarea, etc.) */
   children: ReactNode
 }
 
 /**
- * Стандартная обёртка для простых полей
+ * Standard wrapper for simple fields
  *
- * Предоставляет:
- * - Field.Root с invalid/required/disabled/readOnly props
- * - FieldLabel с поддержкой tooltip
- * - FieldError с fallback на helperText
+ * Provides:
+ * - Field.Root with invalid/required/disabled/readOnly props
+ * - FieldLabel with support for tooltip
+ * - FieldError with fallback to helperText
  *
- * Используй внутри createField render функции для простых Input-подобных полей
- * со стандартным layout: Label → Control → Error/Helper
+ * Use inside createField render functions for simple Input-like fields
+ * with standard layout: Label → Control → Error/Helper
  *
  * @example
  * ```tsx

@@ -6,30 +6,30 @@ import type { BaseFieldProps, FieldSizeWithoutXs, FieldTooltipMeta, RichOption }
 import { createField, FieldError, SelectionFieldLabel } from '../base'
 
 /**
- * Props для RadioCard поля
+ * Props for RadioCard field
  */
 export interface RadioCardFieldProps<T = string> extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
-  /** Опции для карточек */
+  /** Options for cards */
   options: RichOption<T>[]
-  /** Размер (по умолчанию: md) */
+  /** Size (by default: md) */
   size?: FieldSizeWithoutXs
-  /** Визуальный вариант (по умолчанию: outline) */
+  /** Visual variant (by default: outline) */
   variant?: 'surface' | 'subtle' | 'outline' | 'solid'
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
-  /** Выравнивание контента (по умолчанию: start) */
+  /** Content alignment (by default: start) */
   align?: 'start' | 'end' | 'center'
-  /** Ориентация (по умолчанию: horizontal) */
+  /** Orientation (by default: horizontal) */
   orientation?: 'horizontal' | 'vertical'
-  /** Отступ между карточками (по умолчанию: 2) */
+  /** Gap between cards (by default: 2) */
   gap?: number | string
-  /** Включить улучшенную навигацию клавиатурой с циклом (по умолчанию: false) */
+  /** Enable enhanced keyboard navigation with cycling (by default: false) */
   keyboardNavigation?: boolean
 }
 
-/** Тип состояния для useFieldState */
+/** State type for useFieldState */
 interface RadioCardFieldState {
   enabledOptions: RichOption[]
   handleKeyDown: (
@@ -40,31 +40,31 @@ interface RadioCardFieldState {
 }
 
 /**
- * Form.Field.RadioCard - Выбор одного варианта в виде карточек
+ * Form.Field.RadioCard - Single selection as cards
  *
- * Рендерит группу radio карточек для выбора одной опции.
- * Каждая карточка может иметь label, описание и иконку.
+ * Renders a group of radio cards for selecting one option.
+ * Each card can have a label, description and icon.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.RadioCard
  *   name="plan"
- *   label="Выберите план"
+ *   label="Select plan"
  *   options={[
- *     { label: 'Бесплатный', value: 'free', description: 'Базовые функции' },
- *     { label: 'Про', value: 'pro', description: 'Все функции' },
- *     { label: 'Корпоративный', value: 'enterprise', description: 'Кастомизация' },
+ *     { label: 'Free', value: 'free', description: 'Basic features' },
+ *     { label: 'Pro', value: 'pro', description: 'All features' },
+ *     { label: 'Enterprise', value: 'enterprise', description: 'Customization' },
  *   ]}
  * />
  * ```
  *
- * @example С иконками
+ * @example With icons
  * ```tsx
  * <Form.Field.RadioCard
  *   name="role"
  *   options={[
- *     { label: 'Админ', value: 'admin', icon: <ShieldIcon /> },
- *     { label: 'Пользователь', value: 'user', icon: <UserIcon /> },
+ *     { label: 'Admin', value: 'admin', icon: <ShieldIcon /> },
+ *     { label: 'User', value: 'user', icon: <UserIcon /> },
  *   ]}
  *   align="center"
  * />
@@ -73,10 +73,10 @@ interface RadioCardFieldState {
 export const FieldRadioCard = createField<RadioCardFieldProps, string, RadioCardFieldState>({
   displayName: 'FieldRadioCard',
   useFieldState: (componentProps): RadioCardFieldState => {
-    // Получаем только включённые опции для навигации клавиатурой
+    // Get only enabled options for keyboard navigation
     const enabledOptions = componentProps.options.filter((opt) => !opt.disabled)
 
-    // Обработка навигации клавиатурой с циклом
+    // Handle keyboard navigation with cycling
     const handleKeyDown = useCallback(
       (
         e: KeyboardEvent<HTMLDivElement>,
@@ -102,10 +102,10 @@ export const FieldRadioCard = createField<RadioCardFieldProps, string, RadioCard
         let newIndex: number
 
         if (e.key === nextKey) {
-          // Вперёд (цикл к первому если в конце)
+          // Forward (cycle to first if at end)
           newIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % enabledOptions.length
         } else {
-          // Назад (цикл к последнему если в начале)
+          // Back (cycle to last if at beginning)
           newIndex =
             currentIndex === -1
               ? enabledOptions.length - 1

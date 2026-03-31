@@ -1,31 +1,31 @@
 /**
- * Утилиты для работы с Zod v4 схемами
+ * Utilities for working with Zod v4 schemaми
  *
- * Общие функции для разворачивания обёрток схемы
+ * Общие features для разворачивания обёрток схемы
  * (optional, nullable, default) и получения базовой схемы.
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Результат разворачивания схемы с информацией об обязательности
+ * Result разворачивания схемы с инformцией об обязательности
  */
 export interface UnwrapResult {
-  /** Развёрнутая схема (без optional/nullable/default обёрток) */
+  /** Развёрнутая schema (без optional/nullable/default обёрток) */
   schema: any
-  /** Является ли поле обязательным (false если было optional/nullable) */
+  /** Является the field обязательным (false if было optional/nullable) */
   required: boolean
 }
 
 /**
- * Разворачивает обёртки optional/nullable/default и возвращает базовую схему
+ * Разворачивает обёртки optional/nullable/default и returns базовую схему
  *
- * Поддерживает как Zod v4 (inner), так и возможные различия в API.
+ * Supports как Zod v4 (inner), так и возможные различия в API.
  *
  * @example
  * ```ts
  * const innerSchema = unwrapSchema(z.string().optional())
- * // innerSchema будет z.string()
+ * // innerSchema will z.string()
  * ```
  */
 export function unwrapSchema(schema: any): any {
@@ -35,8 +35,8 @@ export function unwrapSchema(schema: any): any {
 
   const type = schema._zod.def.type
 
-  // Разворачиваем wrapper-типы
-  // Zod v4 использует inner или innerType в зависимости от версии
+  // Разворачиваем wrapper-typeы
+  // Zod v4 uses inner или innerType depending on версии
   if (type === 'optional' || type === 'nullable' || type === 'default') {
     const inner = schema._zod.def.inner ?? schema._zod.def.innerType
     if (inner) {
@@ -48,9 +48,9 @@ export function unwrapSchema(schema: any): any {
 }
 
 /**
- * Разворачивает схему и возвращает информацию об обязательности поля
+ * Разворачивает схему и returns инformцию об обязательности поля
  *
- * В отличие от `unwrapSchema`, также отслеживает была ли схема optional/nullable.
+ * В отличие от `unwrapSchema`, also отслеживает была ли schema optional/nullable.
  *
  * @example
  * ```ts
@@ -76,7 +76,7 @@ export function unwrapSchemaWithRequired(schema: any): UnwrapResult {
   }
 
   if (type === 'default') {
-    // default() делает поле необязательным для HTML формы — значение подставится автоматически
+    // default() делает field необязательным для HTML form — value подставится automatically
     const inner = schema._zod.def.inner ?? schema._zod.def.innerType
     if (inner) {
       const result = unwrapSchemaWithRequired(inner)
@@ -88,14 +88,14 @@ export function unwrapSchemaWithRequired(schema: any): UnwrapResult {
 }
 
 /**
- * Получает тип Zod схемы
+ * Получает type Zod схемы
  */
 export function getZodType(schema: any): string | undefined {
   return schema?._zod?.def?.type
 }
 
 /**
- * Проверяет, является ли схема optional
+ * Checks, is ли schema optional
  */
 export function isOptionalSchema(schema: any): boolean {
   const type = getZodType(schema)
@@ -103,7 +103,7 @@ export function isOptionalSchema(schema: any): boolean {
 }
 
 /**
- * Проверяет, имеет ли схема default значение
+ * Checks, имеет ли schema default value
  */
 export function hasDefaultValue(schema: any): boolean {
   return getZodType(schema) === 'default'

@@ -6,17 +6,17 @@ import type { BaseFieldProps, FieldSize } from '../../types'
 import { createField, FieldError, SelectionFieldLabel, useAsyncSearch, type AsyncQueryFn } from '../base'
 
 /**
- * Props для Form.Field.Autocomplete
+ * Props for Form.Field.Autocomplete
  */
 export interface AutocompleteFieldProps<TData = unknown> extends BaseFieldProps {
   /**
-   * Статические подсказки для автодополнения
+   * Static suggestions for autocomplete
    */
   suggestions?: string[]
 
   /**
-   * Async функция запроса для загрузки подсказок
-   * Должна возвращать { data, isLoading, error } аналогично TanStack Query
+   * Async function for loading suggestions
+   * Should return { data, isLoading, error } similar to TanStack Query
    *
    * @example
    * ```tsx
@@ -29,57 +29,57 @@ export interface AutocompleteFieldProps<TData = unknown> extends BaseFieldProps 
   useQuery?: AsyncQueryFn<TData>
 
   /**
-   * Получить label из элемента данных запроса
-   * Обязательно при использовании useQuery
+   * Get label from data element
+   * Required when using useQuery
    */
   getLabel?: (item: TData) => string
 
   /**
-   * Задержка debounce в миллисекундах
+   * Debounce delay in milliseconds
    * @default 300
    */
   debounce?: number
 
   /**
-   * Минимум символов для показа подсказок
+   * Minimum characters to trigger suggestions
    * @default 1
    */
   minChars?: number
 
   /**
-   * Размер компонента
+   * Component size
    * @default 'md'
    */
   size?: FieldSize
 
   /**
-   * Визуальный вариант
+   * Visual variant
    * @default 'outline'
    */
   variant?: 'outline' | 'subtle' | 'flushed'
 
   /**
-   * Сообщение при пустом результате
-   * @default "Нет подсказок"
+   * Message for empty result
+   * @default "No suggestions"
    */
   emptyMessage?: string
 
   /**
-   * Сообщение при загрузке
-   * @default "Загрузка..."
+   * Message on loading
+   * @default "Loading..."
    */
   loadingMessage?: string
 }
 
 /**
- * Элемент подсказки
+ * Suggestion element
  */
 interface AutocompleteItem {
   label: string
   value: string
 }
 
-/** Тип состояния для useFieldState */
+/** State type for useFieldState */
 interface AutocompleteFieldState {
   inputValue: string
   setInputValue: (value: string) => void
@@ -89,25 +89,25 @@ interface AutocompleteFieldState {
 }
 
 /**
- * Form.Field.Autocomplete - Текстовый ввод с подсказками
+ * Form.Field.Autocomplete - Text input with suggestions
  *
- * Упрощённая версия Combobox, всегда допускающая кастомные значения.
- * Идеально для названий городов, продуктов или любого свободного ввода с подсказками.
+ * Simplified version of Combobox that always allows custom values.
+ * Ideal for city names, products or any free text input with suggestions.
  *
- * @example Статические подсказки
+ * @example Static suggestions
  * ```tsx
  * <Form.Field.Autocomplete
  *   name="city"
- *   label="Город"
- *   suggestions={['Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск']}
+ *   label="City"
+ *   suggestions={['Moscow', 'Saint Petersburg', 'Kazan', 'Novosibirsk']}
  * />
  * ```
  *
- * @example Async подсказки с ZenStack
+ * @example Async suggestions with ZenStack
  * ```tsx
  * <Form.Field.Autocomplete
  *   name="product"
- *   label="Продукт"
+ *   label="Product"
  *   useQuery={(search) => useFindManyProduct({
  *     where: { name: { contains: search, mode: 'insensitive' } },
  *     take: 10,
@@ -121,7 +121,7 @@ interface AutocompleteFieldState {
 export const FieldAutocomplete = createField<AutocompleteFieldProps, string, AutocompleteFieldState>({
   displayName: 'FieldAutocomplete',
   useFieldState: (componentProps: Omit<AutocompleteFieldProps, keyof BaseFieldProps>): AutocompleteFieldState => {
-    // Async поиск с debounce через общий хук
+    // Async search with debounce via shared hook
     const {
       inputValue,
       setInputValue,
@@ -133,16 +133,16 @@ export const FieldAutocomplete = createField<AutocompleteFieldProps, string, Aut
       minChars: componentProps.minChars ?? 1,
     })
 
-    // Фильтр для статических подсказок
+    // Filter for static suggestions
     const { contains } = useFilter({ sensitivity: 'base' })
 
-    // Формирование списка подсказок
+    // Build suggestions list
     const suggestions = useMemo((): AutocompleteItem[] => {
       if (componentProps.suggestions) {
-        // Фильтрация статических подсказок по значению ввода
+        // Filtering static suggestions by input value
         const filtered = inputValue
           ? componentProps.suggestions.filter((s) => contains(s, inputValue))
-          : componentProps.suggestions.slice(0, 10) // Первые 10 при пустом вводе
+          : componentProps.suggestions.slice(0, 10) // First 10 when input is empty
         return filtered.map((s) => ({ label: s, value: s }))
       }
 
@@ -157,7 +157,7 @@ export const FieldAutocomplete = createField<AutocompleteFieldProps, string, Aut
       return []
     }, [componentProps.suggestions, queryData, componentProps.getLabel, inputValue, contains])
 
-    // Создание коллекции
+    // Create collection
     const collection = useMemo(() => {
       return createListCollection({
         items: suggestions,
@@ -193,7 +193,7 @@ export const FieldAutocomplete = createField<AutocompleteFieldProps, string, Aut
           inputValue={fieldState.inputValue}
           onInputValueChange={(details) => {
             fieldState.setInputValue(details.inputValue)
-            // Всегда обновляем значение поля (поведение allowCustomValue)
+            // Always update field value (allowCustomValue behavior)
             field.handleChange(details.inputValue)
           }}
           onValueChange={(details) => {
@@ -214,7 +214,7 @@ export const FieldAutocomplete = createField<AutocompleteFieldProps, string, Aut
           )}
 
           <Combobox.Control>
-            <Combobox.Input placeholder={resolved.placeholder ?? 'Начните ввод...'} />
+            <Combobox.Input placeholder={resolved.placeholder ?? 'Start typing...'} />
             <Combobox.IndicatorGroup>
               {fieldState.isLoading && <Spinner size="xs" />}
               <Combobox.Trigger />
@@ -224,27 +224,27 @@ export const FieldAutocomplete = createField<AutocompleteFieldProps, string, Aut
           <Portal>
             <Combobox.Positioner>
               <Combobox.Content>
-                {/* Состояние загрузки */}
+                {/* Loading state */}
                 {fieldState.isLoading && fieldState.suggestions.length === 0 && (
-                  <Combobox.Empty>{componentProps.loadingMessage ?? 'Загрузка...'}</Combobox.Empty>
+                  <Combobox.Empty>{componentProps.loadingMessage ?? 'Loading...'}</Combobox.Empty>
                 )}
 
-                {/* Пустой результат */}
+                {/* Empty result */}
                 {!fieldState.isLoading &&
                   fieldState.suggestions.length === 0 &&
                   fieldState.inputValue.length >= minChars && (
-                    <Combobox.Empty>{componentProps.emptyMessage ?? 'Нет подсказок'}</Combobox.Empty>
+                    <Combobox.Empty>{componentProps.emptyMessage ?? 'No suggestions'}</Combobox.Empty>
                   )}
 
-                {/* Подсказка о минимуме символов */}
+                {/* Hint about minimum characters */}
                 {!fieldState.isLoading &&
                   fieldState.suggestions.length === 0 &&
                   fieldState.inputValue.length < minChars &&
                   fieldState.inputValue.length > 0 && (
-                    <Combobox.Empty>Введите минимум {minChars} символов</Combobox.Empty>
+                    <Combobox.Empty>Enter at least {minChars} characters</Combobox.Empty>
                   )}
 
-                {/* Подсказки */}
+                {/* Suggestions */}
                 {fieldState.suggestions.map((item) => (
                   <Combobox.Item item={item} key={item.value}>
                     <Combobox.ItemText>{item.label}</Combobox.ItemText>

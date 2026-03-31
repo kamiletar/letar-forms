@@ -7,32 +7,32 @@ import type { DeclarativeFormContextValue, OTPInputFieldProps } from '../../type
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Состояние для OTP поля с таймером
+ * State for OTP field with timer
  */
 interface OTPFieldState {
-  /** Счётчик секунд до возможности повторной отправки */
+  /** Seconds counter until retry is available */
   countdown: number
-  /** Идёт ли процесс повторной отправки */
+  /** Whether resend is in progress */
   isResending: boolean
-  /** Обработчик повторной отправки */
+  /** Resend handler */
   handleResend: () => Promise<void>
-  /** Форматированный countdown (MM:SS) */
+  /** Formatted countdown (MM:SS) */
   formatCountdown: (seconds: number) => string
-  /** Контекст декларативной формы для авто-submit */
+  /** Context declarative form for auto-submit */
   formContext: DeclarativeFormContextValue
 }
 
 /**
- * Form.Field.OTPInput - Поле ввода OTP с таймером повторной отправки
+ * Form.Field.OTPInput - OTP input field with resend timer
  *
- * Рендерит PIN input для OTP верификации с опциональной функцией повторной отправки.
+ * Renders a PIN input for OTP verification with optional resend functionality.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.OTPInput name="code" label="Код подтверждения" />
+ * <Form.Field.OTPInput name="code" label="Confirmation Code" />
  * ```
  *
- * @example С повторной отправкой
+ * @example With resend
  * ```tsx
  * <Form.Field.OTPInput
  *   name="code"
@@ -43,7 +43,7 @@ interface OTPFieldState {
  * />
  * ```
  *
- * @example Буквенно-цифровой ввод
+ * @example Alphanumeric input
  * ```tsx
  * <Form.Field.OTPInput name="code" type="alphanumeric" />
  * ```
@@ -55,7 +55,7 @@ export const FieldOTPInput = createField<OTPInputFieldProps, string, OTPFieldSta
     const [countdown, setCountdown] = useState(0)
     const [isResending, setIsResending] = useState(false)
 
-    // Эффект таймера countdown
+    // Countdown timer effect
     useEffect(() => {
       if (countdown <= 0) {
         return
@@ -82,14 +82,14 @@ export const FieldOTPInput = createField<OTPInputFieldProps, string, OTPFieldSta
       }
     }, [props.onResend, countdown, props.resendTimeout])
 
-    // Форматирование countdown как MM:SS
+    // Format countdown as MM:SS
     const formatCountdown = (seconds: number): string => {
       const mins = Math.floor(seconds / 60)
       const secs = seconds % 60
       return `${mins}:${secs.toString().padStart(2, '0')}`
     }
 
-    // Контекст формы для авто-submit (хук вызывается на верхнем уровне)
+    // Form context for auto-submit (hook called at top level)
     const formContext = useDeclarativeForm()
 
     return { countdown, isResending, handleResend, formatCountdown, formContext }
@@ -104,7 +104,7 @@ export const FieldOTPInput = createField<OTPInputFieldProps, string, OTPFieldSta
     const handleValueComplete = (details: { value: string[]; valueAsString: string }) => {
       field.handleChange(details.valueAsString)
 
-      // Авто-submit когда заполнено
+      // Auto-submit when filled
       if (autoSubmit && details.valueAsString.length === length) {
         formContext.form.handleSubmit()
       }
@@ -136,11 +136,11 @@ export const FieldOTPInput = createField<OTPInputFieldProps, string, OTPFieldSta
             <HStack mt={3} justify="center">
               {countdown > 0 ? (
                 <Text fontSize="sm" color="fg.muted">
-                  Повторить через {formatCountdown(countdown)}
+                  Redo in {formatCountdown(countdown)}
                 </Text>
               ) : (
                 <Button variant="ghost" size="sm" onClick={handleResend} disabled={isResending} loading={isResending}>
-                  Отправить повторно
+                  Submit again
                 </Button>
               )}
             </HStack>

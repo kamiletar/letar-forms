@@ -2,79 +2,79 @@
 
 import { Box, Field, Input, List, Spinner, Text } from '@chakra-ui/react'
 import { type ReactElement, useCallback, useEffect, useRef, useState } from 'react'
-import type { AddressFieldProps, AddressValue, DaDataSuggestion } from '../../types'
+import { useDeclarativeFormOptional } from '../../form-context'
+import type { AddressFieldProps, AddressValue } from '../../types'
 import { createField, FieldError, FieldLabel, useDebounce } from '../base'
+import { createDaDataProvider } from './providers'
+import type { AddressProvider, AddressSuggestion } from './providers'
 
 /**
- * Состояние для поля адреса
+ * Resolve address provider from props, context, or token fallback.
+ */
+function useAddressProvider(
+  propProvider?: AddressProvider,
+  token?: string,
+): AddressProvider | null {
+  const formContext = useDeclarativeFormOptional()
+
+  // Priority: prop > createForm context > token fallback
+  if (propProvider) return propProvider
+  if (formContext?.addressProvider) return formContext.addressProvider
+  if (token) return createDaDataProvider({ token })
+  return null
+}
+
+/**
+ * State for address field
  */
 interface AddressFieldState {
-  /** Текущее значение ввода */
   inputValue: string
-  /** Установить значение ввода */
   setInputValue: (value: string) => void
-  /** Список подсказок */
-  suggestions: DaDataSuggestion[]
-  /** Установить подсказки */
-  setSuggestions: (suggestions: DaDataSuggestion[]) => void
-  /** Индикатор загрузки */
+  suggestions: AddressSuggestion[]
+  setSuggestions: (suggestions: AddressSuggestion[]) => void
   isLoading: boolean
-  /** Установить индикатор загрузки */
   setIsLoading: (loading: boolean) => void
-  /** Открыт ли выпадающий список */
   isOpen: boolean
-  /** Установить состояние открытия */
   setIsOpen: (open: boolean) => void
-  /** Индекс выделенного элемента */
   highlightedIndex: number
-  /** Установить индекс выделенного элемента */
   setHighlightedIndex: (index: number) => void
-  /** Ref контейнера */
   containerRef: React.RefObject<HTMLDivElement | null>
-  /** Debounced значение запроса */
   debouncedQuery: string
-  /** Функция загрузки подсказок */
   fetchSuggestions: (query: string) => Promise<void>
-  /** Ref для отслеживания инициализации из field значения */
   initializedRef: React.RefObject<boolean>
 }
 
 /**
- * Form.Field.Address - Ввод адреса с подсказками DaData
+ * Form.Field.Address — address input with autocomplete suggestions.
  *
- * Рендерит поле адреса с автодополнением из DaData API.
+ * Supports pluggable address providers. DaData (Russia) is built-in;
+ * pass any `AddressProvider` for other geocoding services.
  *
- * @example Базовое использование
+ * @example With provider (recommended)
  * ```tsx
- * <Form.Field.Address
- *   name="address"
- *   label="Адрес"
- *   token={process.env.NEXT_PUBLIC_DADATA_TOKEN}
- * />
+ * const dadata = createDaDataProvider({ token: '...' })
+ * <Form.Field.Address name="address" provider={dadata} />
  * ```
  *
- * @example С ограничением по локации
+ * @example With token (backward compatible, auto-creates DaData provider)
  * ```tsx
- * <Form.Field.Address
- *   name="address"
- *   token={token}
- *   locations={[{ city: 'Москва' }]}
- * />
+ * <Form.Field.Address name="address" token="dadata-token" />
  * ```
  *
- * @example Вернуть только строковое значение
+ * @example Return only string value
  * ```tsx
- * <Form.Field.Address name="address" token={token} valueOnly />
+ * <Form.Field.Address name="address" provider={dadata} valueOnly />
  * ```
  */
 export const FieldAddress = createField<AddressFieldProps, AddressValue | string, AddressFieldState>({
   displayName: 'FieldAddress',
 
   useFieldState: (props) => {
-    const { token, minChars = 3, debounceMs = 300, locations } = props
+    const { provider: propProvider, token, minChars = 3, debounceMs = 300, locations } = props
+    const provider = useAddressProvider(propProvider, token)
 
     const [inputValue, setInputValue] = useState('')
-    const [suggestions, setSuggestions] = useState<DaDataSuggestion[]>([])
+    const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -83,46 +83,33 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
 
     const debouncedQuery = useDebounce(inputValue, debounceMs)
 
-    // Функция загрузки подсказок из DaData
+    // Fetch suggestions from provider
     const fetchSuggestions = useCallback(
       async (query: string) => {
-        if (query.length < minChars) {
+        if (query.length < minChars || !provider) {
           setSuggestions([])
           return
         }
 
         setIsLoading(true)
         try {
-          const response = await fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify({
-              query,
-              count: 10,
-              locations: locations,
-            }),
+          const results = await provider.getSuggestions(query, {
+            count: 10,
+            filters: locations ? Object.assign({}, ...locations) : undefined,
           })
-
-          if (response.ok) {
-            const data = await response.json()
-            setSuggestions(data.suggestions || [])
-            setIsOpen(true)
-          }
+          setSuggestions(results)
+          setIsOpen(true)
         } catch (error) {
-          console.error('Ошибка загрузки DaData:', error)
+          console.error('Error loading address suggestions:', error)
           setSuggestions([])
         } finally {
           setIsLoading(false)
         }
       },
-      [token, minChars, locations]
+      [provider, minChars, locations],
     )
 
-    // Загрузка при изменении debounced запроса
+    // Load on debounced query change
     useEffect(() => {
       if (debouncedQuery) {
         fetchSuggestions(debouncedQuery)
@@ -132,7 +119,7 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
       }
     }, [debouncedQuery, fetchSuggestions])
 
-    // Закрытие при клике вне
+    // Close on click outside
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -180,7 +167,7 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
 
     const fieldValue = field.state.value as AddressValue | string | undefined
 
-    // Инициализация значения ввода из field (только при первом рендере)
+    // Initialize input value from field (only on first render)
     if (!initializedRef.current && fieldValue) {
       const displayValue = typeof fieldValue === 'string' ? fieldValue : fieldValue.value
       if (displayValue && displayValue !== inputValue) {
@@ -189,8 +176,8 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
       initializedRef.current = true
     }
 
-    // Обработчик выбора подсказки
-    const handleSelect = (suggestion: DaDataSuggestion) => {
+    // Handler for suggestion selection
+    const handleSelect = (suggestion: AddressSuggestion) => {
       setInputValue(suggestion.value)
       setIsOpen(false)
       setSuggestions([])
@@ -206,7 +193,7 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
       }
     }
 
-    // Обработчик клавиатурной навигации
+    // Keyboard navigation handler
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (!isOpen || suggestions.length === 0) {
         return
@@ -255,7 +242,7 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
             }}
             onBlur={field.handleBlur}
             onKeyDown={handleKeyDown}
-            placeholder={resolved.placeholder ?? 'Начните вводить адрес...'}
+            placeholder={resolved.placeholder ?? 'Start typing address...'}
             data-field-name={fullPath}
           />
           {isLoading && (
@@ -287,7 +274,7 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
                   onClick={() => handleSelect(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  <Text fontSize="sm">{suggestion.value}</Text>
+                  <Text fontSize="sm">{suggestion.label}</Text>
                 </List.Item>
               ))}
             </List.Root>

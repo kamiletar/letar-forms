@@ -6,11 +6,11 @@ import { createSyncQueueStore } from './offline-service'
 import type { ProcessQueueResult, SyncAction, SyncActionHandler, SyncQueueItem, UseSyncQueueResult } from './types'
 import { useOfflineStatus } from './use-offline-status'
 
-// Глобальный store для очереди синхронизации (по умолчанию)
+// Global sync queue store (default)
 const defaultSyncQueueStore = createSyncQueueStore()
 const EMPTY_QUEUE: SyncQueueItem[] = []
 
-// Флаг инициализации
+// Initialization flag
 let initialized = false
 
 const initialize = async () => {
@@ -21,10 +21,10 @@ const initialize = async () => {
 }
 
 /**
- * Хук для работы с очередью синхронизации
+ * Hook for working with the sync queue
  *
- * Позволяет добавлять действия в очередь при оффлайн режиме
- * и синхронизировать их при восстановлении соединения.
+ * Allows adding actions to the queue in offline mode
+ * and synchronizing them when connection is restored.
  *
  * @example
  * ```tsx
@@ -33,24 +33,24 @@ const initialize = async () => {
  * function MyComponent() {
  *   const { queue, queueLength, addAction, processQueue, isProcessing } = useSyncQueue()
  *
- *   // Добавление действия в очередь (работает и оффлайн)
+ *   // Add action to queue (works offline too)
  *   const handleBookLesson = async (slotId: string) => {
  *     if (isOffline) {
  *       await addAction({ type: 'BOOK_LESSON', payload: { slotId } })
- *       toast({ title: 'Действие добавлено в очередь синхронизации' })
+ *       toast({ title: 'Action added to sync queue' })
  *     } else {
  *       await api.bookLesson(slotId)
  *     }
  *   }
  *
- *   // Обработка очереди при восстановлении соединения
+ *   // Process queue when connection is restored
  *   useEffect(() => {
  *     if (!isOffline && queueLength > 0) {
  *       processQueue(async (action) => {
  *         switch (action.type) {
  *           case 'BOOK_LESSON':
  *             return api.bookLesson(action.payload.slotId)
- *           // ... другие типы действий
+ *           // ... other action types
  *         }
  *       })
  *     }
@@ -63,35 +63,35 @@ export function useSyncQueue(): UseSyncQueueResult {
   const [isProcessing, setIsProcessing] = useState(false)
   const isOffline = useOfflineStatus()
 
-  // Подписка на изменения очереди
+  // Subscribe to queue changes
   const queue = useSyncExternalStore(
     (callback) => defaultSyncQueueStore.subscribe(callback),
     () => defaultSyncQueueStore.getQueue(),
-    () => EMPTY_QUEUE // SSR fallback
+    () => EMPTY_QUEUE, // SSR fallback
   )
 
-  // Инициализация при монтировании
+  // Initialize on mount
   useEffect(() => {
     initialize().then(() => {
       setIsLoading(false)
     })
   }, [])
 
-  // Добавление действия в очередь
+  // Add action to queue
   const addAction = useCallback(async (action: SyncAction): Promise<SyncQueueItem> => {
     return defaultSyncQueueStore.add(action)
   }, [])
 
-  // Удаление действия из очереди
+  // Remove action from queue
   const removeAction = useCallback(async (id: string): Promise<boolean> => {
     return defaultSyncQueueStore.remove(id)
   }, [])
 
-  // Обработка всей очереди
+  // Process entire queue
   const processQueue = useCallback(
     async (handler: SyncActionHandler): Promise<ProcessQueueResult[]> => {
       if (isOffline) {
-        console.warn('[SyncQueue] Невозможно обработать очередь в оффлайн режиме')
+        console.warn('[SyncQueue] Cannot process queue in offline mode')
         return []
       }
 
@@ -102,7 +102,7 @@ export function useSyncQueue(): UseSyncQueueResult {
         setIsProcessing(false)
       }
     },
-    [isOffline]
+    [isOffline],
   )
 
   return {

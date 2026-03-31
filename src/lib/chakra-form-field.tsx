@@ -5,34 +5,34 @@ import { forwardRef, type ReactNode } from 'react'
 import { useTanStackFormField } from './tanstack-form-field'
 
 export interface ChakraFormFieldProps extends Omit<ChakraField.RootProps, 'label' | 'invalid'> {
-  /** Текст лейбла поля */
+  /** Field label text */
   label?: ReactNode
-  /** Вспомогательный текст под полем */
+  /** Helper text below the field */
   helperText?: ReactNode
-  /** Переопределение текста ошибки (по умолчанию использует ошибки TanStack Form) */
+  /** Override error text (by default uses TanStack Form errors) */
   errorText?: ReactNode
-  /** Текст для необязательного поля */
+  /** Text for optional field */
   optionalText?: ReactNode
-  /** Показывать индикатор обязательного поля */
+  /** Show required field indicator */
   required?: boolean
-  /** Переопределение состояния невалидности (по умолчанию использует ошибки TanStack Form) */
+  /** Override invalid state (by default uses TanStack Form errors) */
   invalid?: boolean
-  /** Дочерние элементы — сам элемент ввода формы */
+  /** Children elements — the form input element itself */
   children: ReactNode
 }
 
 /**
- * ChakraFormField - поле Chakra UI v3 с интеграцией TanStack Form
+ * ChakraFormField - Chakra UI v3 field with TanStack Form integration
  *
- * Автоматически отображает ошибки валидации из API поля TanStack Form.
- * Должен использоваться внутри компонента TanStackFormField.
+ * Automatically displays validation errors from TanStack Form field API.
+ * Must be used inside a TanStackFormField component.
  *
  * @example
  * ```tsx
  * <form.Field name="email">
  *   {(field) => (
  *     <TanStackFormField name="email" field={field}>
- *       <ChakraFormField label="Email" helperText="Ваш рабочий email" required>
+ *       <ChakraFormField label="Email" helperText="Your work email" required>
  *         <Input
  *           value={field.state.value}
  *           onChange={(e) => field.handleChange(e.target.value)}
@@ -49,21 +49,20 @@ export const ChakraFormField = forwardRef<HTMLDivElement, ChakraFormFieldProps>(
 
   const fieldContext = useTanStackFormField()
 
-  // Получаем ошибки из поля TanStack Form
+  // Get errors from TanStack Form field
   const fieldErrors = fieldContext?.field.state.meta.errors
   const hasErrors = fieldErrors && fieldErrors.length > 0
   const isInvalid = invalid ?? hasErrors
 
-  // Форматируем сообщения об ошибках
-  const errorMessages =
-    errorText ??
-    (hasErrors
+  // Format error messages
+  const errorMessages = errorText
+    ?? (hasErrors
       ? fieldErrors
-          .map((e: unknown) => (typeof e === 'string' ? e : ((e as { message?: string }).message ?? String(e))))
-          .join(', ')
+        .map((e: unknown) => (typeof e === 'string' ? e : ((e as { message?: string }).message ?? String(e))))
+        .join(', ')
       : undefined)
 
-  // Workaround: Chakra UI Field типы не включают children в Next.js 16 production build
+  // Workaround: Chakra UI Field types do not include children in Next.js 16 production build
   const FieldLabel = ChakraField.Label as React.FC<{ children: ReactNode }>
   const FieldHelperText = ChakraField.HelperText as React.FC<{ children: ReactNode }>
   const FieldErrorText = ChakraField.ErrorText as React.FC<{ children: ReactNode }>

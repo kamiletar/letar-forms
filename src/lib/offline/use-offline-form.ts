@@ -7,11 +7,11 @@ import { useOfflineStatus } from './use-offline-status'
 import { useSyncQueue } from './use-sync-queue'
 
 /**
- * Хук для оффлайн-поддержки форм с TanStack Form
+ * Hook for offline form support with TanStack Form
  *
- * Автоматически определяет статус соединения и:
- * - Онлайн: отправляет данные напрямую
- * - Оффлайн: сохраняет в очередь IndexedDB для синхронизации
+ * Automatically detects connection status and:
+ * - Online: sends data directly
+ * - Offline: saves to IndexedDB queue for synchronization
  *
  * @example
  * ```tsx
@@ -24,9 +24,9 @@ import { useSyncQueue } from './use-sync-queue'
  *       const result = await updateProfileAction(value)
  *       return { success: result.success, error: result.error?.formErrors?.[0] }
  *     },
- *     onSuccess: () => toaster.success({ title: 'Сохранено' }),
- *     onQueued: () => toaster.info({ title: 'Сохранено локально' }),
- *     onError: (error) => toaster.error({ title: 'Ошибка', description: error }),
+ *     onSuccess: () => toaster.success({ title: 'Saved' }),
+ *     onQueued: () => toaster.info({ title: 'Saved locally' }),
+ *     onError: (error) => toaster.error({ title: 'Error', description: error }),
  *   })
  *
  *   const form = useAppForm({
@@ -38,14 +38,14 @@ import { useSyncQueue } from './use-sync-queue'
  *
  *   return (
  *     <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit() }}>
- *       {isOffline && <Badge colorPalette="orange">Оффлайн режим</Badge>}
+ *       {isOffline && <Badge colorPalette="orange">Offline mode</Badge>}
  *       {pendingCount > 0 && (
  *         <Badge colorPalette="blue">
- *           {isProcessing ? 'Синхронизация...' : `Ожидает: ${pendingCount}`}
+ *           {isProcessing ? 'Syncing...' : `Pending: ${pendingCount}`}
  *         </Badge>
  *       )}
- *       <form.AppField name="name" children={(field) => <field.TextField label="Имя" />} />
- *       <Button type="submit">{isOffline ? 'Сохранить локально' : 'Сохранить'}</Button>
+ *       <form.AppField name="name" children={(field) => <field.TextField label="Name" />} />
+ *       <Button type="submit">{isOffline ? 'Save locally' : 'Save'}</Button>
  *     </form>
  *   )
  * }
@@ -62,15 +62,15 @@ export function useOfflineForm<T extends object>({
   const { addAction, processQueue, pendingCount, isProcessing, queueLength } = useSyncQueue()
   const [lastSyncAttempt, setLastSyncAttempt] = useState<number | null>(null)
 
-  // Ref для предотвращения повторной обработки очереди
+  // Ref to prevent repeated queue processing
   const processingRef = useRef(false)
 
   /**
-   * Отправка формы с поддержкой оффлайн
+   * Form submission with offline support
    */
   const submit = useCallback(
     async (value: T): Promise<OfflineSubmitResult> => {
-      // Оффлайн — добавляем в очередь
+      // Offline — add to queue
       if (isOffline) {
         try {
           const queueItem = await addAction({
@@ -86,7 +86,7 @@ export function useOfflineForm<T extends object>({
             queueItemId: queueItem.id,
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Ошибка сохранения в очередь'
+          const errorMessage = error instanceof Error ? error.message : 'Error saving to queue'
           onError?.(errorMessage)
           return {
             success: false,
@@ -95,7 +95,7 @@ export function useOfflineForm<T extends object>({
         }
       }
 
-      // Онлайн — отправляем напрямую
+      // Online — send directly
       try {
         const result = await onlineSubmit(value)
 
@@ -111,7 +111,7 @@ export function useOfflineForm<T extends object>({
           queued: false,
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Ошибка отправки'
+        const errorMessage = error instanceof Error ? error.message : 'Submission error'
         onError?.(errorMessage)
         return {
           success: false,
@@ -120,28 +120,28 @@ export function useOfflineForm<T extends object>({
         }
       }
     },
-    [isOffline, actionType, addAction, onlineSubmit, onSuccess, onQueued, onError]
+    [isOffline, actionType, addAction, onlineSubmit, onSuccess, onQueued, onError],
   )
 
   /**
-   * Обработчик действий из очереди
-   * Вызывается при восстановлении соединения
+   * Handler for queued actions
+   * Called when connection is restored
    */
   const handleQueuedAction = useCallback(
     async (action: SyncAction): Promise<{ success: boolean; error?: string }> => {
-      // Обрабатываем только наш тип действия
+      // Process only our action type
       if (action.type !== actionType) {
-        return { success: true } // Пропускаем чужие действия
+        return { success: true } // Skip other action types
       }
 
       return onlineSubmit(action.payload as T)
     },
-    [actionType, onlineSubmit]
+    [actionType, onlineSubmit],
   )
 
-  // Автоматическая синхронизация при восстановлении соединения
+  // Automatic sync when connection is restored
   useEffect(() => {
-    // Если онлайн и есть элементы в очереди — пробуем синхронизировать
+    // If online and there are items in queue — try to sync
     if (!isOffline && pendingCount > 0 && !processingRef.current) {
       processingRef.current = true
       setLastSyncAttempt(Date.now())
@@ -150,7 +150,7 @@ export function useOfflineForm<T extends object>({
         .then((results) => {
           const failed = results.filter((r) => !r.success)
           if (failed.length > 0) {
-            console.warn(`[OfflineForm] ${failed.length} действий не удалось синхронизировать`)
+            console.warn(`[OfflineForm] ${failed.length} actions failed to sync`)
           }
         })
         .finally(() => {

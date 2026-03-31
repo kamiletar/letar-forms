@@ -17,6 +17,7 @@
 | `Form.When`                         | Условный рендеринг полей                        |
 | `Form.DirtyGuard`                   | Предупреждение при уходе с несохранённой формой |
 | `Form.Errors`                       | Сводка всех ошибок валидации                    |
+| `Form.DebugValues`                  | Интерактивный JSON-инспектор значений формы     |
 | `Form.Steps`                        | Контейнер для мультистеп форм                   |
 
 ---
@@ -197,6 +198,50 @@ function CustomNavigation() {
 | `title` | `ReactNode` | `"Please fix the following errors:"` | Заголовок блока ошибок |
 
 Компонент скрывается когда ошибок нет.
+
+---
+
+## Form.DebugValues — JSON-инспектор значений (v0.55.0+)
+
+Интерактивное дерево текущих значений формы. По умолчанию скрыт в production.
+
+```tsx
+<Form initialValue={data} onSubmit={handleSubmit}>
+  <Form.Field.String name="title" />
+  <Form.Field.Number name="price" />
+  <Form.Button.Submit />
+
+  <Form.DebugValues />
+</Form>
+```
+
+**Props:**
+
+| Prop               | Тип       | Default       | Описание                              |
+| ------------------ | --------- | ------------- | ------------------------------------- |
+| `title`            | `string`  | `Form Values` | Заголовок блока                       |
+| `collapsed`        | `number`  | `2`           | Глубина раскрытия дерева              |
+| `showInProduction` | `boolean` | `false`       | Показывать в production (для отладки) |
+
+Использует `@uiw/react-json-view` для рендеринга. Обновляется в реальном времени при вводе.
+Автоматически переключается между тёмной и светлой темой вместе с color mode приложения.
+
+### Проп `debug` на Form (v0.56.0+)
+
+Вместо ручного добавления `<Form.DebugValues />` можно использовать проп `debug`:
+
+```tsx
+// Dev only (скрыт в production)
+<Form debug initialValue={data} onSubmit={save}>
+  <Form.Field.String name="title" />
+  <Form.Button.Submit />
+</Form>
+
+// Принудительно и на production
+<Form debug="force" initialValue={data} onSubmit={save}>...</Form>
+```
+
+Работает с `Form`, `Form.FromSchema` и `createForm()`.
 
 ---
 

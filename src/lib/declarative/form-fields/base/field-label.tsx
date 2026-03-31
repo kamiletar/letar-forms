@@ -6,29 +6,29 @@ import type { FieldTooltipMeta } from '../../types'
 import { FieldTooltip } from './field-tooltip'
 
 export interface FieldLabelProps {
-  /** Текст label (может быть ReactNode для сложных labels с ссылками) */
+  /** Label text (can be ReactNode for complex labels with links) */
   label?: ReactNode
-  /** Tooltip для подсказки рядом с label */
+  /** Tooltip for hint next to label */
   tooltip?: FieldTooltipMeta
-  /** Показать индикатор обязательного поля */
+  /** Show required field indicator */
   required?: boolean
 }
 
 /**
- * Компонент label для полей формы с поддержкой tooltip.
+ * Label component for form fields with tooltip support.
  *
- * Если tooltip передан, рендерит HStack с label и иконкой подсказки.
- * Иначе рендерит простой Field.Label.
+ * If tooltip is provided, renders HStack with label and hint icon.
+ * Otherwise renders a simple Field.Label.
  *
  * @example
  * ```tsx
- * // Простой label
- * <FieldLabel label="Название" required />
+ * // Simple label
+ * <FieldLabel label="Title" required />
  *
- * // Label с tooltip
+ * // Label with tooltip
  * <FieldLabel
- *   label="Марка автомобиля"
- *   tooltip={{ description: 'Укажите марку', example: 'Hyundai' }}
+ *   label="Car Brand"
+ *   tooltip={{ description: 'Specify the brand', example: 'Hyundai' }}
  *   required
  * />
  * ```

@@ -4,6 +4,40 @@
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [0.58.0] - 2026-03-31
+
+### Added
+
+- Pluggable `AddressProvider` interface for `Form.Field.Address` and `Form.Field.City`
+- `createDaDataProvider()` — built-in DaData provider (Russia)
+- `createForm({ addressProvider })` — set address provider once for all fields
+- Provider resolution: field prop → createForm context → token fallback → env
+- `addressProvider` prop on `Form` root component
+- `CityFieldProps` exported from types
+- `README.en.md`: Address Provider + createForm sections
+
+### Changed
+
+- All JSDoc, comments, runtime errors translated to English (118 files, ~3000 lines)
+- Default UI strings: "Save", "Reset", "Unsaved changes", "Leave", "Stay", etc.
+- `AddressValue.data` generalized to `Record<string, unknown>` (was DaData-specific)
+- `AddressFieldProps.token` is now optional (use `provider` instead)
+- `DaDataSuggestion` marked as deprecated
+- `build:npm` copies `README.en.md` as `README.md` + `README.ru.md` for npm
+
+## [0.56.0] - 2026-03-23
+
+### Added
+
+- `Form.DebugValues` — интерактивный JSON-инспектор значений формы (скрыт в production)
+- `debug` prop на `Form` для автоматического отображения DebugValues
+- Инфраструктура публикации `@letar/forms` на npm
+
+### Fixed
+
+- Совместимость с `@tanstack/store` 0.9+ (Subscription API)
+- Исправлен баг `destroy` в `form-steps`
+
 ## [0.54.1] - 2026-01-05
 
 ### Fixed

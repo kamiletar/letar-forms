@@ -3,94 +3,94 @@
 import type { ReactNode } from 'react'
 
 /**
- * Базовая опция для selection компонентов
+ * Base option for selection components
  *
- * Используется в: Select, RadioGroup, SegmentedGroup, NativeSelect
+ * Used in: Select, RadioGroup, SegmentedGroup, NativeSelect
  *
- * @template T - Тип значения (по умолчанию string)
+ * @template T - Value type (default string)
  */
 export interface BaseOption<T = string> {
-  /** Отображаемый текст опции */
+  /** Display text of the option */
   label: ReactNode
-  /** Значение опции */
+  /** Option value */
   value: T
-  /** Опция отключена */
+  /** Option is disabled */
   disabled?: boolean
 }
 
 /**
- * Опция с поддержкой группировки
+ * Option with grouping support
  *
- * Используется в: Listbox, Combobox
+ * Used in: Listbox, Combobox
  *
- * @template T - Тип значения (по умолчанию string)
+ * @template T - Value type (default string)
  */
 export interface GroupableOption<T = string> extends BaseOption<T> {
-  /** Ключ группы для группировки опций */
+  /** Group key for option grouping */
   group?: string
 }
 
 /**
- * Расширенная опция с описанием и иконкой
+ * Extended option with description and icon
  *
- * Используется в: RadioCard, CheckboxCard
+ * Used in: RadioCard, CheckboxCard
  *
- * @template T - Тип значения (по умолчанию string)
+ * @template T - Value type (default string)
  */
 export interface RichOption<T = string> extends BaseOption<T> {
-  /** Описание опции */
+  /** Option description */
   description?: ReactNode
-  /** Иконка опции */
+  /** Option icon */
   icon?: ReactNode
 }
 
 // =============================================================================
-// Type aliases для совместимости (deprecated, используй базовые типы)
+// Type aliases for compatibility (deprecated, use base types)
 // =============================================================================
 
 /**
- * @deprecated Используй BaseOption
+ * @deprecated Use BaseOption
  */
 export type SelectOption<T = string> = BaseOption<T>
 
 /**
- * @deprecated Используй BaseOption
+ * @deprecated Use BaseOption
  */
 export type RadioOption<T = string> = BaseOption<T>
 
 /**
- * @deprecated Используй BaseOption
+ * @deprecated Use BaseOption
  */
 export type SegmentedGroupOption<T = string> = BaseOption<T>
 
 /**
- * @deprecated Используй GroupableOption
+ * @deprecated Use GroupableOption
  */
 export type ListboxOption<T = string> = GroupableOption<T>
 
 /**
- * @deprecated Используй GroupableOption
+ * @deprecated Use GroupableOption
  */
 export type ComboboxOption<T = string> = GroupableOption<T>
 
 /**
- * @deprecated Используй RichOption
+ * @deprecated Use RichOption
  */
 export type RadioCardOption<T = string> = RichOption<T>
 
 /**
- * @deprecated Используй RichOption
+ * @deprecated Use RichOption
  */
 export type CheckboxCardOption<T = string> = RichOption<T>
 
 /**
- * Опция для NativeSelect (использует title вместо label)
+ * Option for NativeSelect (uses title instead of label)
  *
- * @template T - Тип значения (по умолчанию string)
+ * @template T - Value type (default string)
  */
 export interface NativeSelectOption<T = string> {
-  /** Отображаемый текст опции */
+  /** Display text of the option */
   title: ReactNode
-  /** Значение опции */
+  /** Option value */
   value: T
 }

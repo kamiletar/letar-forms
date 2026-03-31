@@ -1,20 +1,20 @@
 /**
- * Типы для оффлайн-функциональности форм
+ * Types for form offline functionality
  */
 
 // ============================================
-// РАСШИРЯЕМЫЕ ТИПЫ ДЕЙСТВИЙ
+// EXTENSIBLE ACTION TYPES
 // ============================================
 
 /**
- * Базовые типы действий синхронизации
+ * Base sync action types
  */
 export type BaseSyncActionType = 'FORM_SUBMIT' | 'FORM_UPDATE' | 'FORM_DELETE'
 
 /**
- * Реестр для расширения типов действий в приложениях
+ * Registry for extending action types in applications
  *
- * @example В приложении:
+ * @example In an application:
  * ```ts
  * declare module '@lena/form-components/offline' {
  *   interface SyncActionTypeRegistry {
@@ -28,16 +28,16 @@ export type BaseSyncActionType = 'FORM_SUBMIT' | 'FORM_UPDATE' | 'FORM_DELETE'
 export interface SyncActionTypeRegistry {}
 
 /**
- * Все доступные типы действий (базовые + расширенные)
+ * All available action types (base + extended)
  */
 export type SyncActionType = BaseSyncActionType | keyof SyncActionTypeRegistry | (string & {})
 
 // ============================================
-// ДЕЙСТВИЯ И ОЧЕРЕДЬ
+// ACTIONS AND QUEUE
 // ============================================
 
 /**
- * Действие для синхронизации
+ * Action for synchronization
  */
 export interface SyncAction {
   type: SyncActionType
@@ -45,12 +45,12 @@ export interface SyncAction {
 }
 
 /**
- * Статус элемента очереди
+ * Queue item status
  */
 export type SyncItemStatus = 'PENDING' | 'SYNCED' | 'FAILED'
 
 /**
- * Элемент очереди синхронизации
+ * Sync queue item
  */
 export interface SyncQueueItem {
   id: string
@@ -63,7 +63,7 @@ export interface SyncQueueItem {
 }
 
 /**
- * Результат обработки элемента очереди
+ * Queue item processing result
  */
 export interface ProcessQueueResult {
   success: boolean
@@ -72,16 +72,16 @@ export interface ProcessQueueResult {
 }
 
 /**
- * Обработчик действия синхронизации
+ * Sync action handler
  */
 export type SyncActionHandler = (action: SyncAction) => Promise<{ success: boolean; error?: string }>
 
 // ============================================
-// STORE ТИПЫ
+// STORE TYPES
 // ============================================
 
 /**
- * Store очереди синхронизации
+ * Sync queue store
  */
 export interface SyncQueueStore {
   getQueue: () => SyncQueueItem[]
@@ -94,128 +94,128 @@ export interface SyncQueueStore {
 }
 
 // ============================================
-// ХУКИ ТИПЫ
+// HOOK TYPES
 // ============================================
 
 /**
- * Результат оффлайн отправки формы
+ * Offline form submission result
  */
 export interface OfflineSubmitResult {
-  /** Успешно ли выполнено действие */
+  /** Whether the action was successful */
   success: boolean
-  /** Сообщение об ошибке */
+  /** Error message */
   error?: string
-  /** Было ли действие добавлено в очередь (оффлайн) */
+  /** Whether the action was added to queue (offline) */
   queued?: boolean
-  /** ID элемента в очереди */
+  /** Queue item ID */
   queueItemId?: string
 }
 
 /**
- * Обработчик отправки формы
+ * Form submit handler
  */
 export type FormSubmitHandler<T> = (value: T) => Promise<{ success: boolean; error?: string }>
 
 /**
- * Опции хука useOfflineForm
+ * useOfflineForm hook options
  */
 export interface UseOfflineFormOptions<T> {
-  /** Тип действия для очереди синхронизации */
+  /** Action type for the sync queue */
   actionType: SyncActionType
-  /** Обработчик онлайн отправки */
+  /** Online submit handler */
   onlineSubmit: FormSubmitHandler<T>
-  /** Callback при успешной отправке */
+  /** Callback on successful submit */
   onSuccess?: () => void
-  /** Callback при добавлении в очередь */
+  /** Callback when added to queue */
   onQueued?: () => void
-  /** Callback при ошибке */
+  /** Callback on error */
   onError?: (error: string) => void
 }
 
 /**
- * Результат хука useOfflineForm
+ * useOfflineForm hook result
  */
 export interface UseOfflineFormResult<T> {
-  /** Функция отправки формы */
+  /** Form submit function */
   submit: (value: T) => Promise<OfflineSubmitResult>
-  /** Текущий статус оффлайн */
+  /** Current offline status */
   isOffline: boolean
-  /** Количество ожидающих синхронизации действий */
+  /** Number of actions pending synchronization */
   pendingCount: number
-  /** Общее количество элементов в очереди */
+  /** Total number of items in queue */
   queueLength: number
-  /** Идёт ли обработка очереди */
+  /** Whether queue is being processed */
   isProcessing: boolean
-  /** Время последней попытки синхронизации */
+  /** Time of last sync attempt */
   lastSyncAttempt: number | null
 }
 
 /**
- * Результат хука useSyncQueue
+ * useSyncQueue hook result
  */
 export interface UseSyncQueueResult {
-  /** Элементы очереди */
+  /** Queue items */
   queue: SyncQueueItem[]
-  /** Количество элементов в очереди */
+  /** Number of items in queue */
   queueLength: number
-  /** Только pending элементы */
+  /** Only pending items */
   pendingCount: number
-  /** Загружается ли очередь из IndexedDB */
+  /** Whether queue is loading from IndexedDB */
   isLoading: boolean
-  /** Обрабатывается ли очередь */
+  /** Whether queue is being processed */
   isProcessing: boolean
-  /** Добавить действие в очередь */
+  /** Add action to queue */
   addAction: (action: SyncAction) => Promise<SyncQueueItem>
-  /** Удалить действие из очереди */
+  /** Remove action from queue */
   removeAction: (id: string) => Promise<boolean>
-  /** Обработать всю очередь */
+  /** Process entire queue */
   processQueue: (handler: SyncActionHandler) => Promise<ProcessQueueResult[]>
 }
 
 // ============================================
-// КОМПОНЕНТЫ ТИПЫ
+// COMPONENT TYPES
 // ============================================
 
 /**
- * Конфигурация оффлайн режима для Form
+ * Offline mode configuration for Form
  */
 export interface FormOfflineConfig {
-  /** Тип действия для очереди синхронизации */
+  /** Action type for the sync queue */
   actionType: SyncActionType
-  /** Ключ для хранения очереди (опционально) */
+  /** Key for queue storage (optional) */
   storageKey?: string
-  /** Callback при добавлении в очередь */
+  /** Callback when added to queue */
   onQueued?: () => void
-  /** Callback при успешной синхронизации */
+  /** Callback on successful sync */
   onSynced?: () => void
-  /** Callback при ошибке синхронизации */
+  /** Callback on sync error */
   onSyncError?: (error: string) => void
 }
 
 /**
- * Props для Form.OfflineIndicator
+ * Props for Form.OfflineIndicator
  */
 export interface OfflineIndicatorProps {
-  /** Текст индикатора */
+  /** Indicator text */
   label?: string
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
-  /** Вариант отображения */
+  /** Display variant */
   variant?: 'subtle' | 'solid' | 'outline'
 }
 
 /**
- * Props для Form.SyncStatus
+ * Props for Form.SyncStatus
  */
 export interface SyncStatusProps {
-  /** Показывать когда очередь пуста */
+  /** Show when queue is empty */
   showWhenEmpty?: boolean
-  /** Текст при синхронизации */
+  /** Text during synchronization */
   syncingLabel?: string
-  /** Текст ожидающих элементов */
+  /** Text for pending items */
   pendingLabel?: string | ((count: number) => string)
-  /** Текст когда синхронизировано */
+  /** Text when synced */
   syncedLabel?: string
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
 }

@@ -4,25 +4,25 @@ import type { FieldUIMeta } from './types'
 import { unwrapSchemaWithRequired } from './zod-utils'
 
 /**
- * Результат анализа схемы поля
+ * Result анализа схемы поля
  */
 export interface FieldSchemaInfo {
-  /** UI метаданные из .meta({ ui: {...} }) */
+  /** UI metadata из .meta({ ui: {...} }) */
   ui?: FieldUIMeta
-  /** Обязательно ли поле (не optional/nullable) */
+  /** Обязательно the field (не optional/nullable) */
   required: boolean
 }
 
 /**
- * Извлекает UI метаданные и статус обязательности из Zod схемы по пути поля
+ * Extracts UI metadata и статус обязательности from Zod schema по пути поля
  *
- * Поддерживает вложенные пути вроде "info.base.rating" и пути массивов вроде "components.0.title"
+ * Supports вложенные пути вроде "info.base.rating" и пути arrayов вроде "components.0.title"
  *
  * @example
  * ```tsx
  * const schema = z.object({
  *   title: z.string().meta({ ui: { title: 'Название' } }),  // обязательно
- *   subtitle: z.string().optional(),                         // необязательно
+ *   subtitle: z.string().optional(),                         // optional
  * })
  *
  * getFieldMeta(schema, 'title')    // { ui: { title: 'Название' }, required: true }
@@ -40,7 +40,7 @@ export function getFieldMeta(schema: any, path: string): FieldSchemaInfo {
     return { required: false }
   }
 
-  // Zod v4: мета хранится в globalRegistry, доступ через метод .meta()
+  // Zod v4: meta is stored in globalRegistry, accessed via .meta() method
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fieldSchema = result.schema as any
   const meta = typeof fieldSchema?.meta === 'function' ? fieldSchema.meta() : undefined
@@ -54,12 +54,12 @@ export function getFieldMeta(schema: any, path: string): FieldSchemaInfo {
 interface SchemaPathResult {
   /** Схема поля ДО финального unwrap (для извлечения мета) */
   schema: unknown
-  /** Обязательность поля после анализа всей цепочки */
+  /** Обязательность поля after анализа всей цепочки */
   required: boolean
 }
 
 /**
- * Разворачивает wrapper-типы схемы (effects, pipeline, transform) до базовой схемы
+ * Разворачивает wrapper-typeы схемы (effects, pipeline, transform) до базовой схемы
  * Сохраняет optional/nullable обёртки для корректного определения required
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,8 +91,8 @@ function unwrapToBaseSchema(schema: any): any {
 
 /**
  * Навигация к схеме по заданному пути
- * Обрабатывает объекты, массивы и обёртки optional/nullable/effects/pipeline
- * Возвращает и схему, и статус обязательности
+ * Обрабатывает objectы, arrayы и обёртки optional/nullable/effects/pipeline
+ * Returns и схему, и статус обязательности
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSchemaAtPath(schema: any, path: string): SchemaPathResult {
@@ -119,19 +119,19 @@ function getSchemaAtPath(schema: any, path: string): SchemaPathResult {
       return { schema: undefined, required: false }
     }
 
-    // Снова разворачиваем после unwrap (effects могут быть внутри optional)
+    // Снова разворачиваем after unwrap (effects могут быть inside optional)
     current = unwrapToBaseSchema(current)
 
-    // Пропускаем числовые индексы (элементы массива используют схему элемента)
+    // Пропускаем numberвые индексы (elementы arrayа используют схему elementа)
     if (/^\d+$/.test(part)) {
-      // Для массивов получаем схему элемента
+      // For arrays get element schema
       if (current._zod?.def?.type === 'array') {
         current = current._zod.def.element
       }
       continue
     }
 
-    // Переходим в shape объекта
+    // Transitionим в shape objectа
     if (current._zod?.def?.type === 'object') {
       const shape = current._zod.def.shape
       if (shape && part in shape) {
@@ -144,15 +144,15 @@ function getSchemaAtPath(schema: any, path: string): SchemaPathResult {
     }
   }
 
-  // Разворачиваем только effects/pipeline, сохраняя default/optional для мета
+  // Разворачиваем only effects/pipeline, сохраняя default/optional для мета
   current = unwrapToBaseSchema(current)
 
-  // Определяем required на основе типа обёртки, но возвращаем схему ДО unwrap
-  // чтобы можно было получить мета из .meta()
+  // Определяем required based on typeа обёртки, но возвращаем схему ДО unwrap
+  // чтобы can было получить мета из .meta()
   const finalUnwrap = unwrapSchemaWithRequired(current)
 
   return {
-    // Возвращаем схему ДО unwrap — на ней может быть мета (.default().meta())
+    // Возвращаем схему ДО unwrap — на ней can быть мета (.default().meta())
     schema: current,
     required: isRequired && finalUnwrap.required,
   }

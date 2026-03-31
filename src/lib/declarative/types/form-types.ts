@@ -6,35 +6,35 @@ import type { FormOfflineConfig } from '../../offline'
 import type { FormPersistenceConfig } from '../form-persistence'
 
 /**
- * Тип API формы, возвращаемый useAppForm
- * Содержит Field, Subscribe и другие компоненты
+ * Form API type returned by useAppForm
+ * Contains Field, Subscribe and other components
  *
- * Примечание: Используется any из-за того, что createFormHook добавляет
- * дополнительные методы (Field, Subscribe, etc.) которые не являются частью
- * базового FormApi типа из @tanstack/react-form
+ * Note: Uses any because createFormHook adds
+ * additional methods (Field, Subscribe, etc.) that are not part of
+ * the base FormApi type from @tanstack/react-form
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AppFormApi = any
 
 /**
- * Базовый тип Zod схемы (Zod v4)
+ * Base Zod schema type (Zod v4)
  */
 export type ZodSchema = $ZodType
 
 /**
- * Режимы валидации формы
+ * Form validation modes
  */
 export type ValidateOn = 'change' | 'blur' | 'submit' | 'mount'
 
 /**
- * Middleware для обработки событий формы
+ * Middleware for processing form events
  *
  * @example
  * ```tsx
  * <Form
  *   middleware={{
  *     beforeSubmit: (data) => ({ ...data, timestamp: Date.now() }),
- *     afterSuccess: (data) => toaster.success({ title: 'Сохранено!' }),
+ *     afterSuccess: (data) => toaster.success({ title: 'Saved!' }),
  *     onError: (error) => toaster.error({ title: error.message }),
  *   }}
  * >
@@ -42,149 +42,162 @@ export type ValidateOn = 'change' | 'blur' | 'submit' | 'mount'
  */
 export interface FormMiddleware<TData = unknown> {
   /**
-   * Вызывается перед отправкой формы.
-   * Можно трансформировать данные или вернуть undefined для отмены submit.
+   * Called before form submission.
+   * Can transform data or return undefined to cancel submit.
    */
   beforeSubmit?: (data: TData) => TData | undefined | Promise<TData | undefined>
   /**
-   * Вызывается после успешной отправки.
+   * Called after successful submission.
    */
   afterSuccess?: (data: TData) => void | Promise<void>
   /**
-   * Вызывается при ошибке отправки.
+   * Called on submission error.
    */
   onError?: (error: Error) => void | Promise<void>
 }
 
 /**
- * Состояние API, доступное в контексте формы
+ * API state available in form context
  */
 export interface FormApiState {
-  /** Форма в режиме редактирования (есть id) */
+  /** Form is in edit mode (has id) */
   isEditMode: boolean
-  /** Данные загружаются */
+  /** Data is loading */
   isLoading: boolean
-  /** Мутация выполняется */
+  /** Mutation is in progress */
   isMutating: boolean
-  /** Ошибка запроса (TanStack Query error) */
+  /** Query error (TanStack Query error) */
   error: Error | null
-  /** Ошибка мутации (create/update) */
+  /** Mutation error (create/update) */
   mutationError: Error | null
 }
 
 /**
- * Оффлайн состояние, доступное в контексте формы
+ * Offline state available in form context
  */
 export interface FormOfflineState {
-  /** Форма в оффлайн режиме */
+  /** Form is in offline mode */
   isOffline: boolean
-  /** Количество ожидающих действий в очереди синхронизации */
+  /** Number of pending actions in sync queue */
   pendingCount: number
-  /** Очередь синхронизации обрабатывается */
+  /** Sync queue is being processed */
   isProcessing: boolean
-  /** Очистить данные персистенции (вызывается после успешной синхронизации) */
+  /** Clear persistence data (called after successful sync) */
   clearPersistence?: () => void
 }
 
 /**
- * Значение контекста декларативной формы
+ * Declarative form context value
  */
 export interface DeclarativeFormContextValue {
   form: AppFormApi
-  /** Zod схема для извлечения метаданных полей */
+  /** Zod schema for extracting field metadata */
   schema?: ZodSchema
-  /** Индекс для примитивных массивов (tags: string[]) */
+  /** Index for primitive arrays (tags: string[]) */
   primitiveArrayIndex?: number
-  /** Состояние API (только при использовании пропа api) */
+  /** API state (only when using api prop) */
   apiState?: FormApiState
-  /** Оффлайн состояние (только при использовании пропа offline) */
+  /** Offline state (only when using offline prop) */
   offlineState?: FormOfflineState
-  /** Глобальное отключение всех полей формы */
+  /** Globally disable all form fields */
   disabled?: boolean
-  /** Глобальный режим только для чтения всех полей */
+  /** Global read-only mode for all fields */
   readOnly?: boolean
+  /** Address suggestion provider (set via createForm or Form props) */
+  addressProvider?: import('../form-fields/specialized/providers').AddressProvider
 }
 
 /**
- * Пропсы для корневого компонента Form
+ * Props for root Form component
  */
 export interface FormProps<TData extends object> {
-  /** Начальные значения формы */
+  /** Initial form values */
   initialValue: TData
-  /** Колбэк при отправке формы */
+  /** Callback on form submission */
   onSubmit: (data: TData) => void | Promise<void>
-  /** Опциональная Zod схема для валидации */
+  /** Optional Zod schema for validation */
   schema?: ZodSchema
-  /** Содержимое формы (Field, Group компоненты) */
+  /** Form content (Field, Group components) */
   children: ReactNode
 }
 
 /**
- * Расширенные FormProps с опциональной интеграцией API
+ * Extended FormProps with optional API integration
  */
 export interface FormPropsWithApi<TData extends object> {
-  /** Конфигурация API для автоматической загрузки данных и мутаций */
+  /** API configuration for automatic data loading and mutations */
   api?: FormApiConfig<TData>
-  /** Начальные значения формы (обязательно без api, опционально с api) */
+  /** Initial form values (required without api, optional with api) */
   initialValue?: TData
-  /** Колбэк при отправке формы (вызывается после мутации если api передан) */
+  /** Callback on form submission (called after mutation if api is provided) */
   onSubmit?: (data: TData) => void | Promise<void>
-  /** Опциональная Zod схема для валидации */
+  /** Optional Zod schema for validation */
   schema?: ZodSchema
   /**
-   * Включить localStorage персистенцию данных формы.
-   * Показывает диалог восстановления сохранённых данных при загрузке формы.
+   * Enable localStorage persistence for form data.
+   * Shows a restore dialog for saved data on form load.
    */
   persistence?: FormPersistenceConfig
   /**
-   * Включить оффлайн поддержку с автоматической очередью синхронизации.
-   * В оффлайн режиме данные формы сохраняются в IndexedDB и синхронизируются при восстановлении соединения.
+   * Enable offline support with automatic sync queue.
+   * In offline mode, form data is saved to IndexedDB and synced when connection is restored.
    */
   offline?: FormOfflineConfig
   /**
-   * Режим валидации формы.
-   * - 'change' — валидация при каждом изменении (по умолчанию)
-   * - 'blur' — валидация при потере фокуса
-   * - 'submit' — валидация только при отправке
-   * - 'mount' — валидация при монтировании
-   * Можно передать массив для комбинации режимов: ['blur', 'submit']
+   * Form validation mode.
+   * - 'change' -- validate on every change (default)
+   * - 'blur' -- validate on blur
+   * - 'submit' -- validate only on submit
+   * - 'mount' -- validate on mount
+   * Can pass an array to combine modes: ['blur', 'submit']
    */
   validateOn?: ValidateOn | ValidateOn[]
   /**
-   * Глобальное отключение всех полей формы.
-   * Полезно для состояния загрузки или когда редактирование запрещено.
+   * Globally disable all form fields.
+   * Useful for loading state or when editing is not allowed.
    */
   disabled?: boolean
   /**
-   * Глобальный режим только для чтения.
-   * Все поля будут в режиме просмотра без возможности редактирования.
+   * Global read-only mode.
+   * All fields will be in view mode without ability to edit.
    */
   readOnly?: boolean
   /**
-   * Middleware для обработки событий формы.
-   * Позволяет трансформировать данные перед отправкой и реагировать на успех/ошибку.
+   * Middleware for processing form events.
+   * Allows transforming data before submission and reacting to success/error.
    */
   middleware?: FormMiddleware<TData>
-  /** Содержимое формы */
+  /**
+   * Show JSON value inspector (Form.DebugValues).
+   * - `true` -- dev only (hidden in production)
+   * - `'force'` -- visible in production too
+   */
+  debug?: boolean | 'force'
+  /**
+   * Address suggestion provider for Form.Field.Address and Form.Field.City.
+   * Can also be set globally via createForm({ addressProvider }).
+   */
+  addressProvider?: import('../form-fields/specialized/providers').AddressProvider
+  /** Form content */
   children: ReactNode
 }
 
 // ============================================================================
-// API типы (интеграция ZenStack)
+// API types (ZenStack integration)
 // ============================================================================
 
 /**
- * Обобщённый тип для ZenStack query хука (useFindUnique*)
- * Возвращает UseQueryResult с данными типа TData
+ * Generic type for ZenStack query hook (useFindUnique*)
+ * Returns UseQueryResult with data of type TData
  *
- * Примечание: args типизирован как any для совместимости с разными ORM
- * (Prisma, ZenStack), которые генерируют разные типы для include
+ * Note: args is typed as any for compatibility with different ORMs
+ * (Prisma, ZenStack), which generate different types for include
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UseQueryHook<TData = any, TInclude = any> = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: { where: { id: string }; include?: TInclude } | any,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   data: TData | undefined
   isLoading: boolean
@@ -196,8 +209,8 @@ export type UseQueryHook<TData = any, TInclude = any> = (
 }
 
 /**
- * Обобщённый тип для ZenStack create мутации хука (useCreate*)
- * Используется any для совместимости с разными ORM (Prisma, ZenStack)
+ * Generic type for ZenStack create mutation hook (useCreate*)
+ * Uses any for compatibility with different ORMs (Prisma, ZenStack)
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UseCreateHook<TData = any> = () => {
@@ -210,8 +223,8 @@ export type UseCreateHook<TData = any> = () => {
 }
 
 /**
- * Обобщённый тип для ZenStack update мутации хука (useUpdate*)
- * Используется any для совместимости с разными ORM (Prisma, ZenStack)
+ * Generic type for ZenStack update mutation hook (useUpdate*)
+ * Uses any for compatibility with different ORMs (Prisma, ZenStack)
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UseUpdateHook<TData = any> = () => {
@@ -224,50 +237,50 @@ export type UseUpdateHook<TData = any> = () => {
 }
 
 /**
- * Конфигурация API для компонента Form
- * Включает автоматическую загрузку данных и мутации через ZenStack хуки
+ * API configuration for Form component
+ * Includes automatic data loading and mutations via ZenStack hooks
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface FormApiConfig<TData = any, TInclude = any, TMutationData = any> {
-  /** ID записи. Пустой/undefined = режим создания, заполненный = режим редактирования */
+  /** Record ID. Empty/undefined = create mode, filled = edit mode */
   id?: string
-  /** Конфигурация запроса для загрузки существующих данных */
+  /** Query configuration for loading existing data */
   query: {
-    /** ZenStack useFindUnique* хук */
+    /** ZenStack useFindUnique* hook */
     hook: UseQueryHook<TData, TInclude>
-    /** Prisma include объект для связей */
+    /** Prisma include object for relations */
     include?: TInclude
   }
-  /** Хуки мутаций для создания/обновления */
+  /** Mutation hooks for creating/updating */
   mutations: {
-    /** ZenStack useCreate* хук */
+    /** ZenStack useCreate* hook */
     create: UseCreateHook<TData>
-    /** ZenStack useUpdate* хук */
+    /** ZenStack useUpdate* hook */
     update: UseUpdateHook<TData>
   }
   /**
-   * Трансформация данных формы перед отправкой в API.
-   * Используйте для преобразования плоских данных формы в Prisma-совместимый формат.
+   * Transform form data before sending to API.
+   * Use for converting flat form data to Prisma-compatible format.
    */
   transformData?: (values: TData, mode: 'create' | 'update') => TMutationData
 }
 
 /**
- * Результат хука useFormApi
+ * Result of useFormApi hook
  */
 export interface FormApiResult<TData> {
-  /** Форма в режиме редактирования (есть id) */
+  /** Form is in edit mode (has id) */
   isEditMode: boolean
-  /** Данные загружаются */
+  /** Data is loading */
   isLoading: boolean
-  /** Мутация выполняется */
+  /** Mutation is in progress */
   isMutating: boolean
-  /** Загруженные данные (undefined в режиме создания или во время загрузки) */
+  /** Loaded data (undefined in create mode or while loading) */
   data: TData | undefined
-  /** Ошибка запроса */
+  /** Query error */
   error: Error | null
-  /** Ошибка мутации (create/update) */
+  /** Mutation error (create/update) */
   mutationError: Error | null
-  /** Обработчик отправки, вызывающий соответствующую мутацию */
+  /** Submit handler that calls the appropriate mutation */
   submit: (values: TData) => Promise<void>
 }

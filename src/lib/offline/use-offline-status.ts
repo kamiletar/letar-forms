@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react'
 
 import { getOfflineStatus, subscribeToStatusChanges } from './offline-service'
 
-// Глобальное состояние для синхронизации между вкладками
+// Global state for synchronization across tabs
 let isOffline = false
 
 const listeners = new Set<() => void>()
@@ -13,7 +13,7 @@ const notifyListeners = () => {
   listeners.forEach((listener) => listener())
 }
 
-// Инициализация при первой загрузке
+// Initialize on first load
 if (typeof window !== 'undefined') {
   isOffline = getOfflineStatus()
 
@@ -24,9 +24,9 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Хук для определения статуса оффлайн
+ * Hook for detecting offline status
  *
- * @returns true если браузер оффлайн
+ * @returns true if the browser is offline
  *
  * @example
  * ```tsx
@@ -52,6 +52,6 @@ export function useOfflineStatus(): boolean {
       }
     },
     () => isOffline,
-    () => false // SSR fallback — считаем что онлайн
+    () => false, // SSR fallback — assume online
   )
 }

@@ -7,78 +7,78 @@ import { createField, FieldError } from '../base'
 import { FieldTooltip } from '../base/field-tooltip'
 
 /**
- * Определение метки для слайдера
+ * Slider mark definition
  */
 export interface SliderMark {
-  /** Значение на шкале */
+  /** Value on the scale */
   value: number
-  /** Текст метки */
+  /** Mark text */
   label?: ReactNode
 }
 
 /**
- * Props для Slider поля
+ * Props for Slider field
  */
 export interface SliderFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
-  /** Минимальное значение (по умолчанию: 0) */
+  /** Minimum value (by default: 0) */
   min?: number
-  /** Максимальное значение (по умолчанию: 100) */
+  /** Maximum value (by default: 100) */
   max?: number
-  /** Шаг (по умолчанию: 1) */
+  /** Step (by default: 1) */
   step?: number
-  /** Показывать текущее значение рядом с label */
+  /** Show current value next to label */
   showValue?: boolean
-  /** Ориентация (по умолчанию: horizontal) */
+  /** Orientation (by default: horizontal) */
   orientation?: 'horizontal' | 'vertical'
-  /** Размер (по умолчанию: md) */
+  /** Size (by default: md) */
   size?: 'sm' | 'md' | 'lg'
-  /** Вариант (по умолчанию: outline) */
+  /** Variant (by default: outline) */
   variant?: 'outline' | 'solid'
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'teal' | 'blue' | 'cyan' | 'purple' | 'pink'
-  /** Метки на треке слайдера */
+  /** Marks on slider track */
   marks?: (number | SliderMark)[]
-  /** Начальная точка заливки (по умолчанию: start) */
+  /** Fill origin point (by default: start) */
   origin?: 'start' | 'center' | 'end'
-  /** Callback при изменении значения */
+  /** Callback on value change */
   onValueChange?: (value: number) => void
-  /** Callback при окончании перетаскивания */
+  /** Callback when drag ends */
   onValueChangeEnd?: (value: number) => void
 }
 
 /**
- * Form.Field.Slider - Поле слайдера
+ * Form.Field.Slider - Slider field
  *
- * Рендерит Chakra Slider с автоматической интеграцией с формой.
- * Значение формы хранится как число.
+ * Renders Chakra Slider with automatic form integration.
+ * Form value is stored as number.
  *
- * Автоматически извлекает из Zod схемы:
- * - `min` из `z.number().min(1)` → min={1}
- * - `max` из `z.number().max(100)` → max={100}
- * - `step` из `z.number().int()` → step={1}, или `z.number().multipleOf(0.5)` → step={0.5}
- * - `helperText` автоматически генерируется из constraints ("От 1 до 100")
+ * Automatically extracts from Zod schema:
+ * - `min` from `z.number().min(1)` → min={1}
+ * - `max` from `z.number().max(100)` → max={100}
+ * - `step` from `z.number().int()` → step={1}, or `z.number().multipleOf(0.5)` → step={0.5}
+ * - `helperText` automatically is generated from constraints ("From 1 to 100")
  *
- * Props всегда имеют приоритет над автоматическими значениями из схемы.
+ * Props always take priority over automatic values from schema.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.Slider name="volume" label="Громкость" />
+ * <Form.Field.Slider name="volume" label="Volume" />
  * ```
  *
- * @example С автоматическими constraints из Zod
+ * @example With automatic constraints from Zod
  * ```tsx
- * // В схеме: z.object({ rating: z.number().min(1).max(10) })
- * <Form.Field.Slider name="rating" label="Рейтинг" showValue />
- * // Автоматически: min={1} max={10} helperText="От 1 до 10"
+ * // In schema: z.object({ rating: z.number().min(1).max(10) })
+ * <Form.Field.Slider name="rating" label="Rating" showValue />
+ * // Automatically: min={1} max={10} helperText="From 1 to 10"
  * ```
  *
- * @example С метками
+ * @example With marks
  * ```tsx
  * <Form.Field.Slider
  *   name="rating"
- *   label="Рейтинг"
+ *   label="Rating"
  *   min={0}
  *   max={100}
  *   marks={[0, 25, 50, 75, 100]}
@@ -91,7 +91,7 @@ export const FieldSlider = createField<SliderFieldProps, number>({
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
     const { constraints } = resolved
 
-    // Props имеют приоритет над constraints, потом дефолты
+    // Props take priority over constraints, then defaults
     const min = componentProps.min ?? constraints.number?.min ?? 0
     const max = componentProps.max ?? constraints.number?.max ?? 100
     const step = componentProps.step ?? constraints.number?.step ?? 1
@@ -108,10 +108,10 @@ export const FieldSlider = createField<SliderFieldProps, number>({
       onValueChangeEnd,
     } = componentProps
 
-    // Нормализация меток в массив объектов
+    // Normalize marks to array of objects
     const normalizedMarks = marks?.map((mark) => (typeof mark === 'number' ? { value: mark, label: undefined } : mark))
 
-    // Конвертация числа в массив для Slider
+    // Convert number to array for Slider
     const numValue = (field.state.value as number) ?? min
     const arrayValue = [numValue]
 

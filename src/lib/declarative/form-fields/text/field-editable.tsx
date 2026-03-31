@@ -6,54 +6,54 @@ import type { BaseFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Props для Editable поля
+ * Props for Editable field
  */
 export interface EditableFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Placeholder при пустом значении */
+  /** Placeholder when empty */
   placeholder?: string
-  /** Использовать textarea для многострочного редактирования (по умолчанию: false) */
+  /** Use textarea for multiline editing (by default: false) */
   multiline?: boolean
-  /** Режим активации (по умолчанию: click) */
+  /** Activation mode (by default: click) */
   activationMode?: 'click' | 'dblclick' | 'focus' | 'none'
-  /** Показывать кнопки управления (редактировать, отменить, сохранить) (по умолчанию: false) */
+  /** Show control buttons (edit, cancel, save) (by default: false) */
   showControls?: boolean
-  /** Автоматически менять размер textarea (только для multiline=true) (по умолчанию: true) */
+  /** Automatically resize textarea (only for multiline=true) (by default: true) */
   autoResize?: boolean
-  /** Кастомная иконка редактирования */
+  /** Custom edit icon */
   editIcon?: ReactNode
-  /** Кастомная иконка отмены */
+  /** Custom cancel icon */
   cancelIcon?: ReactNode
-  /** Кастомная иконка сохранения */
+  /** Custom submit icon */
   submitIcon?: ReactNode
-  /** Сохранять при blur (по умолчанию: true) */
+  /** Save on blur (by default: true) */
   submitOnBlur?: boolean
 }
 
 /**
- * Form.Field.Editable - Редактируемый текст inline
+ * Form.Field.Editable - Inline editable text
  *
- * Рендерит текст, который можно кликнуть для inline редактирования.
- * Поддерживает однострочный input и многострочный textarea.
+ * Renders text that can be clicked for inline editing.
+ * Supports single-line input and multiline textarea.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.Editable
  *   name="title"
- *   label="Заголовок"
- *   placeholder="Кликните для добавления заголовка"
+ *   label="Title"
+ *   placeholder="Click to add title"
  * />
  * ```
  *
- * @example Многострочный
+ * @example Multiline
  * ```tsx
  * <Form.Field.Editable
  *   name="description"
  *   multiline
- *   placeholder="Кликните для добавления описания..."
+ *   placeholder="Click to add description..."
  * />
  * ```
  *
- * @example С кнопками управления
+ * @example With control buttons
  * ```tsx
  * <Form.Field.Editable
  *   name="name"
@@ -92,7 +92,7 @@ export const FieldEditable = createField<EditableFieldProps, string>({
           onValueChange={(details) => field.handleChange(details.value)}
           disabled={resolved.disabled}
           readOnly={resolved.readOnly}
-          placeholder={resolved.placeholder ?? 'Кликните для редактирования'}
+          placeholder={resolved.placeholder ?? 'Click to edit'}
           activationMode={activationMode}
           submitMode={submitOnBlur ? 'blur' : 'enter'}
         >

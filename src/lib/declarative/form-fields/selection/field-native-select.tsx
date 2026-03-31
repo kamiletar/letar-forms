@@ -5,7 +5,7 @@ import type { ReactElement } from 'react'
 import type { BaseFieldProps, NativeSelectOption } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
-// Re-export для обратной совместимости
+// Re-export for backward compatibility
 export type { NativeSelectOption } from '../../types'
 
 export interface NativeSelectFieldProps<T = string> extends BaseFieldProps {

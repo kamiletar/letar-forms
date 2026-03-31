@@ -33,9 +33,9 @@ export interface FormGroupListDeclarativeProps {
   wrapper?: (props: FormGroupListWrapperProps) => ReactNode
   /** Enable drag-and-drop sorting for array items */
   sortable?: boolean
-  /** Максимальное количество элементов (автоматически из z.array().max()). Props имеет приоритет. */
+  /** Maximum number of items (auto-detected from z.array().max()). Props take priority. */
   maxItems?: number
-  /** Минимальное количество элементов (автоматически из z.array().min()). Props имеет приоритет. */
+  /** Minimum number of items (auto-detected from z.array().min()). Props take priority. */
   minItems?: number
 }
 
@@ -49,13 +49,13 @@ export interface FormGroupListContextValue<TItem = unknown> {
   pushValue: (value: TItem) => void
   /** Current array length */
   length: number
-  /** Максимальное количество элементов (из props или z.array().max()) */
+  /** Maximum number of items (from props or z.array().max()) */
   maxItems?: number
-  /** Минимальное количество элементов (из props или z.array().min()) */
+  /** Minimum number of items (from props or z.array().min()) */
   minItems?: number
-  /** Можно ли добавить ещё элементы (length < maxItems или maxItems не задан) */
+  /** Whether more items can be added (length < maxItems or maxItems not set) */
   canAdd: boolean
-  /** Можно ли удалять элементы (length > minItems или minItems не задан) */
+  /** Whether items can be removed (length > minItems or minItems not set) */
   canRemove: boolean
 }
 

@@ -7,27 +7,27 @@ import { createField, FieldError } from '../base'
 import { FieldTooltip } from '../base/field-tooltip'
 
 /**
- * Props для ColorPicker поля
+ * Props for ColorPicker field
  */
 export interface ColorPickerFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
-  /** Палитра цветов для быстрого выбора */
+  /** Color palette for quick selection */
   swatches?: string[]
-  /** Размер (по умолчанию: md) */
+  /** Size (by default: md) */
   size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-  /** Показывать area picker (насыщенность/яркость) (по умолчанию: true) */
+  /** Show area picker (saturation/brightness) (by default: true) */
   showArea?: boolean
-  /** Показывать кнопку пипетки (по умолчанию: true) */
+  /** Show eyedropper button (by default: true) */
   showEyeDropper?: boolean
-  /** Показывать слайдеры hue/alpha (по умолчанию: true) */
+  /** Show hue/alpha sliders (by default: true) */
   showSliders?: boolean
-  /** Показывать hex input (по умолчанию: true) */
+  /** Show hex input (by default: true) */
   showInput?: boolean
 }
 
 /**
- * Палитра по умолчанию
+ * Default palette
  */
 const defaultSwatches = [
   '#000000',
@@ -45,29 +45,29 @@ const defaultSwatches = [
 ]
 
 /**
- * Form.Field.ColorPicker - Выбор цвета с пикером
+ * Form.Field.ColorPicker - Color selection with picker
  *
- * Рендерит color picker с опциональной палитрой, area picker,
- * слайдерами и hex input.
+ * Renders color picker with optional palette, area picker,
+ * sliders and hex input.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.ColorPicker
  *   name="color"
- *   label="Выберите цвет"
+ *   label="Select color"
  * />
  * ```
  *
- * @example С кастомной палитрой
+ * @example With custom palette
  * ```tsx
  * <Form.Field.ColorPicker
  *   name="brandColor"
- *   label="Цвет бренда"
+ *   label="Brand color"
  *   swatches={['#FF0000', '#00FF00', '#0000FF']}
  * />
  * ```
  *
- * @example Минимальный (только палитра)
+ * @example Minimal (palette only)
  * ```tsx
  * <Form.Field.ColorPicker
  *   name="accent"
@@ -93,7 +93,7 @@ export const FieldColorPicker = createField<ColorPickerFieldProps, string>({
 
     const currentValue = (field.state.value as string) || '#000000'
 
-    // Парсим цвет безопасно
+    // Parse color safely
     let parsedColor
     try {
       parsedColor = parseColor(currentValue)
@@ -111,7 +111,7 @@ export const FieldColorPicker = createField<ColorPickerFieldProps, string>({
         <ColorPicker.Root
           value={parsedColor}
           onValueChange={(details) => {
-            // Используем valueAsString который уже в правильном формате
+            // Use valueAsString which is already in correct format
             field.handleChange(details.valueAsString)
           }}
           disabled={resolved.disabled}

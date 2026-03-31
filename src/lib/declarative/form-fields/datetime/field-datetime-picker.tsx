@@ -6,14 +6,14 @@ import type { DateTimePickerFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Парсит datetime строку в отдельные части даты и времени
+ * Parses a datetime string into separate date and time parts
  */
 function parseDateTime(value: string | undefined): { date: string; time: string } {
   if (!value) {
     return { date: '', time: '' }
   }
 
-  // Обработка ISO формата: 2024-01-15T14:30:00
+  // Handle ISO format: 2024-01-15T14:30:00
   const match = value.match(/^(\d{4}-\d{2}-\d{2})(?:T(\d{2}:\d{2}))?/)
   if (match) {
     return { date: match[1], time: match[2] || '' }
@@ -23,7 +23,7 @@ function parseDateTime(value: string | undefined): { date: string; time: string 
 }
 
 /**
- * Комбинирует дату и время в ISO datetime строку
+ * Combines date and time into an ISO datetime string
  */
 function combineDateTime(date: string, time: string): string {
   if (!date) {
@@ -36,16 +36,16 @@ function combineDateTime(date: string, time: string): string {
 }
 
 /**
- * Form.Field.DateTimePicker - Комбинированный выбор даты и времени
+ * Form.Field.DateTimePicker - Combined date and time picker
  *
- * Рендерит поля даты и времени, которые создают ISO datetime строку.
+ * Renders date and time fields that produce an ISO datetime string.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.DateTimePicker name="appointmentAt" label="Запись" />
+ * <Form.Field.DateTimePicker name="appointmentAt" label="Appointment" />
  * ```
  *
- * @example С ограничениями min/max
+ * @example With min/max constraints
  * ```tsx
  * <Form.Field.DateTimePicker
  *   name="eventAt"
@@ -60,11 +60,13 @@ export const FieldDateTimePicker = createField<DateTimePickerFieldProps, string>
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
     const { minDateTime, maxDateTime, timeStep = 15 } = componentProps
 
-    // Конвертация Date в строку если нужно
-    const minDateTimeStr =
-      minDateTime instanceof Date ? minDateTime.toISOString().slice(0, 16) : minDateTime?.slice(0, 16)
-    const maxDateTimeStr =
-      maxDateTime instanceof Date ? maxDateTime.toISOString().slice(0, 16) : maxDateTime?.slice(0, 16)
+    // Convert Date to string if needed
+    const minDateTimeStr = minDateTime instanceof Date
+      ? minDateTime.toISOString().slice(0, 16)
+      : minDateTime?.slice(0, 16)
+    const maxDateTimeStr = maxDateTime instanceof Date
+      ? maxDateTime.toISOString().slice(0, 16)
+      : maxDateTime?.slice(0, 16)
 
     const minDate = minDateTimeStr?.slice(0, 10)
     const maxDate = maxDateTimeStr?.slice(0, 10)

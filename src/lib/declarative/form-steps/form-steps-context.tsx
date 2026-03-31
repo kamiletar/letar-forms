@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, type ReactNode, useContext } from 'react'
 
 /**
  * Information about a single step
@@ -16,13 +16,13 @@ export interface StepInfo {
   icon?: ReactNode
   /** Field names in this step (for validation) */
   fieldNames: string[]
-  /** Callback при входе на шаг */
+  /** Callback when entering the step */
   onEnter?: () => void
-  /** Callback при уходе с шага (может отменить переход) */
+  /** Callback when leaving the step (can cancel transition) */
   onLeave?: (direction: StepDirection) => Promise<boolean> | boolean
 }
 
-/** Направление анимации */
+/** Animation direction */
 export type StepDirection = 'forward' | 'backward'
 
 /**
@@ -71,19 +71,19 @@ export interface FormStepsContextValue {
   variant: 'solid' | 'subtle'
   /** Color palette */
   colorPalette: string
-  /** Включены ли анимации переходов */
+  /** Whether transition animations are enabled */
   animated: boolean
-  /** Длительность анимации в секундах */
+  /** Animation duration in seconds */
   animationDuration: number
-  /** Направление последнего перехода (для анимации) */
+  /** Direction of the last transition (for animation) */
   direction: StepDirection
-  /** Скрытые поля (исключаются из валидации через Form.When) */
+  /** Hidden fields (excluded from validation via Form.When) */
   hiddenFields: Set<string>
-  /** Скрыть поля от валидации (вызывается из Form.When при скрытии) */
+  /** Hide fields from validation (called from Form.When when hiding) */
   hideFieldsFromValidation: (fieldNames: string[]) => void
-  /** Показать поля для валидации (вызывается из Form.When при показе) */
+  /** Show fields for validation (called from Form.When when showing) */
   showFieldsForValidation: (fieldNames: string[]) => void
-  /** Callback при успешном завершении шага */
+  /** Callback on successful step completion */
   onStepComplete?: (stepIndex: number, values: unknown) => Promise<void> | void
   /** Clear step persistence (call after successful submission) */
   clearStepPersistence: () => void

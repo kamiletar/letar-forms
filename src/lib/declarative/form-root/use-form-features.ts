@@ -13,27 +13,27 @@ export interface UseFormFeaturesConfig<TData extends object> {
   persistence?: FormPersistenceConfig
   /** Конфигурация offline-режима */
   offline?: FormOfflineConfig
-  /** Функция для онлайн-отправки (вызывается при submit) */
+  /** Function for online submission (called on submit) */
   onlineSubmit: (value: TData) => Promise<void>
 }
 
 /**
- * Результат хука useFormFeatures
+ * Result хука useFormFeatures
  */
 export interface UseFormFeaturesResult<TData extends object> {
-  /** Включена ли persistence */
+  /** Вkeyена ли persistence */
   isPersistenceEnabled: boolean
-  /** Включён ли offline-режим */
+  /** Вkeyён ли offline-режим */
   isOfflineEnabled: boolean
-  /** Результат persistence хука */
+  /** Result persistence хука */
   persistenceResult: ReturnType<typeof useFormPersistence<TData>>
-  /** Результат offline хука */
+  /** Result offline хука */
   offlineForm: ReturnType<typeof useOfflineForm<TData>>
-  /** Состояние offline для контекста формы */
+  /** State offline для contextа form */
   offlineState: FormOfflineState | undefined
-  /** Обработчик submit с поддержкой offline и persistence */
+  /** Handler submit with support for offline and persistence */
   handleSubmit: (value: TData) => Promise<void>
-  /** Подписка на изменения формы для persistence */
+  /** Подписка на изменения form для persistence */
   subscribeToFormChanges: (form: {
     store: { subscribe: (fn: () => void) => { unsubscribe: () => void } | (() => void) }
     state: { values: unknown }
@@ -44,8 +44,8 @@ export interface UseFormFeaturesResult<TData extends object> {
 }
 
 /**
- * Хук, объединяющий логику persistence и offline для форм.
- * Устраняет дублирование между FormSimple и FormWithApi.
+ * Hook, объединяющий логику persistence и offline для форм.
+ * Устраняет дублирование between FormSimple и FormWithApi.
  *
  * @example
  * const features = useFormFeatures({
@@ -64,27 +64,27 @@ export function useFormFeatures<TData extends object>({
   const isPersistenceEnabled = !!persistence
   const isOfflineEnabled = !!offline
 
-  // Хук persistence (если не включён — используем disabled ключ)
+  // Hook persistence (if не вkeyён — используем disabled key)
   const persistenceResult = useFormPersistence<TData>(persistence ?? { key: '__disabled__' })
 
-  // Обёртка для онлайн-отправки с очисткой persistence
+  // Wrapper для онлайн-отправки с очисткой persistence
   const offlineOnlineSubmit = useCallback(
     async (value: TData) => {
       try {
         await onlineSubmit(value)
-        // Очищаем persistence при успешной отправке
+        // Clear persistence on successful submit
         if (isPersistenceEnabled) {
           persistenceResult.clearSavedData()
         }
         return { success: true }
       } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Ошибка отправки' }
+        return { success: false, error: error instanceof Error ? error.message : 'Error отправки' }
       }
     },
     [onlineSubmit, isPersistenceEnabled, persistenceResult]
   )
 
-  // Хук offline (если включён)
+  // Hook offline (if вkeyён)
   const offlineForm = useOfflineForm<TData>({
     actionType: offline?.actionType ?? 'FORM_SUBMIT',
     onlineSubmit: offlineOnlineSubmit,
@@ -99,7 +99,7 @@ export function useFormFeatures<TData extends object>({
     onError: offline?.onSyncError,
   })
 
-  // Состояние offline для контекста формы
+  // State offline для contextа form
   const offlineState: FormOfflineState | undefined = isOfflineEnabled
     ? {
         isOffline: offlineForm.isOffline,
@@ -109,16 +109,16 @@ export function useFormFeatures<TData extends object>({
       }
     : undefined
 
-  // Обработчик submit
+  // Handler submit
   const handleSubmit = useCallback(
     async (value: TData): Promise<void> => {
       if (isOfflineEnabled) {
-        // Используем offline-aware submit
+        // Use offline-aware submit
         await offlineForm.submit(value)
       } else {
-        // Прямая отправка
+        // Direct submit
         await onlineSubmit(value)
-        // Очищаем persistence при успехе
+        // Clear persistence on success
         if (isPersistenceEnabled) {
           persistenceResult.clearSavedData()
         }
@@ -127,7 +127,7 @@ export function useFormFeatures<TData extends object>({
     [isOfflineEnabled, offlineForm, onlineSubmit, isPersistenceEnabled, persistenceResult]
   )
 
-  // Подписка на изменения формы для persistence
+  // Подписка на изменения form для persistence
   const subscribeToFormChanges = useCallback(
     (form: {
       store: { subscribe: (fn: () => void) => { unsubscribe: () => void } | (() => void) }
@@ -143,7 +143,7 @@ export function useFormFeatures<TData extends object>({
         persistenceResult.saveValues(values)
       })
 
-      // Совместимость: @tanstack/store 0.9+ возвращает Subscription, ранние — () => void
+      // Совместимость: @tanstack/store 0.9+ returns Subscription, ранние — () => void
       if (typeof subscription === 'function') {
         return subscription
       }
@@ -166,7 +166,7 @@ export function useFormFeatures<TData extends object>({
         form.setFieldValue(key, value)
       }
 
-      // Отмечаем восстановление как завершённое после тика
+      // Отмечаем восстановление как завершённое after тика
       setTimeout(() => {
         persistenceResult.markRestoreComplete()
       }, 0)

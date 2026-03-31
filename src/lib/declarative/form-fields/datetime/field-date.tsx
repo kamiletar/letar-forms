@@ -10,23 +10,23 @@ import { createField, FieldWrapper } from '../base'
  *
  * Renders a native date input with automatic form integration and error display.
  *
- * Автоматически извлекает из Zod схемы:
- * - `min` из `z.date().min(new Date('2024-01-01'))` → min="2024-01-01"
- * - `max` из `z.date().max(new Date('2024-12-31'))` → max="2024-12-31"
- * - `helperText` автоматически генерируется из constraints ("С 1 января 2024 г. по 31 декабря 2024 г.")
+ * Automatically extracts from Zod schema:
+ * - `min` from `z.date().min(new Date('2024-01-01'))` → min="2024-01-01"
+ * - `max` from `z.date().max(new Date('2024-12-31'))` → max="2024-12-31"
+ * - `helperText` automatically is generated from constraints ("From Jan 1, 2024 to Dec 31, 2024")
  *
- * Props всегда имеют приоритет над автоматическими значениями из схемы.
+ * Props always take priority over automatic values from schema.
  *
  * @example
  * ```tsx
  * <Form.Field.Date name="birthDate" label="Date of Birth" />
  * ```
  *
- * @example С автоматическими constraints из Zod
+ * @example With automatic constraints from Zod
  * ```tsx
- * // В схеме: z.object({ eventDate: z.date().min(new Date('2024-01-01')).max(new Date('2024-12-31')) })
+ * // In schema: z.object({ eventDate: z.date().min(new Date('2024-01-01')).max(new Date('2024-12-31')) })
  * <Form.Field.Date name="eventDate" label="Event Date" />
- * // Автоматически: min="2024-01-01", max="2024-12-31"
+ * // Automatically: min="2024-01-01", max="2024-12-31"
  * ```
  */
 export const FieldDate = createField<DateFieldProps, string | Date>({
@@ -43,7 +43,7 @@ export const FieldDate = createField<DateFieldProps, string | Date>({
       stringValue = rawValue
     }
 
-    // Props имеют приоритет над constraints
+    // Props take priority over constraints
     const min = componentProps.min ?? constraints.date?.min
     const max = componentProps.max ?? constraints.date?.max
 

@@ -65,15 +65,32 @@ interface CreateFormOptions {
   extraFields?: Record<string, AnyComponent>
   /** Extra button components to add to Form.Button */
   extraButtons?: Record<string, AnyComponent>
-  /** Extra select components to add to Form.Select (синхронные) */
+  /** Extra select components to add to Form.Select (synchronous) */
   extraSelects?: Record<string, AnyComponent>
-  /** Extra combobox components to add to Form.Combobox (синхронные) */
+  /** Extra combobox components to add to Form.Combobox (synchronous) */
   extraComboboxes?: Record<string, AnyComponent>
-  /** Extra listbox components to add to Form.Listbox (синхронные) */
+  /** Extra listbox components to add to Form.Listbox (synchronous) */
   extraListboxes?: Record<string, AnyComponent>
+  /**
+   * Default address suggestion provider for Form.Field.Address and Form.Field.City.
+   * Set once here instead of passing `provider` prop to every field.
+   *
+   * @example
+   * ```tsx
+   * import { createForm, createDaDataProvider } from '@letar/forms'
+   *
+   * const AppForm = createForm({
+   *   addressProvider: createDaDataProvider({ token: process.env.DADATA_TOKEN }),
+   * })
+   *
+   * <AppForm.Field.Address name="address" />
+   * <AppForm.Field.City name="city" />
+   * ```
+   */
+  addressProvider?: import('./form-fields/specialized/providers').AddressProvider
 
   /**
-   * Ленивые Select компоненты — загружаются только при рендере
+   * Lazy Select components — loaded only at render time
    *
    * @example
    * ```tsx
@@ -86,7 +103,7 @@ interface CreateFormOptions {
   lazySelects?: Record<string, LazyComponentImport>
 
   /**
-   * Ленивые Combobox компоненты — загружаются только при рендере
+   * Lazy Combobox components — loaded only at render time
    *
    * @example
    * ```tsx
@@ -98,7 +115,7 @@ interface CreateFormOptions {
   lazyComboboxes?: Record<string, LazyComponentImport>
 
   /**
-   * Ленивые Listbox компоненты — загружаются только при рендере
+   * Lazy Listbox components — loaded only at render time
    *
    * @example
    * ```tsx
@@ -263,9 +280,10 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
     lazySelects = {},
     lazyComboboxes = {},
     lazyListboxes = {},
+    addressProvider,
   } = options
 
-  // Создаём lazy-обёртки для компонентов
+  // Create lazy wrappers for components
   const lazySelectComponents = createLazyComponents(lazySelects)
   const lazyComboboxComponents = createLazyComponents(lazyComboboxes)
   const lazyListboxComponents = createLazyComponents(lazyListboxes)
@@ -280,7 +298,7 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
     ...extraButtons,
   }
 
-  // Объединяем синхронные и lazy компоненты
+  // Merge synchronous and lazy components
   const ExtendedSelect = {
     ...extraSelects,
     ...lazySelectComponents,
@@ -299,7 +317,11 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
   const ExtendedForm = Object.assign(
     // Root component
     function ExtendedFormRoot<TData extends object>(props: FormPropsWithApi<TData>) {
-      return Form(props)
+      // Inject addressProvider from createForm if not set on Form props
+      const mergedProps = addressProvider && !props.addressProvider
+        ? { ...props, addressProvider }
+        : props
+      return Form(mergedProps)
     },
     {
       Group: Form.Group,
@@ -309,12 +331,13 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
       Combobox: ExtendedCombobox,
       Listbox: ExtendedListbox,
       Errors: Form.Errors,
+      DebugValues: Form.DebugValues,
       DirtyGuard: Form.DirtyGuard,
       When: Form.When,
       Steps: Form.Steps,
       AutoFields: Form.AutoFields,
       FromSchema: Form.FromSchema,
-    }
+    },
   )
 
   return ExtendedForm as ExtendedForm

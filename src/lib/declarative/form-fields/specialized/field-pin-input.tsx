@@ -6,50 +6,50 @@ import type { BaseFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Props для PinInput поля
+ * Props for PinInput field
  */
 export interface PinInputFieldProps extends BaseFieldProps {
-  /** Количество input боксов (по умолчанию: 4) */
+  /** Number of input boxes (default: 4) */
   count?: number
-  /** Маскировать как пароль */
+  /** Mask as password */
   mask?: boolean
-  /** Включить OTP автозаполнение */
+  /** Enable OTP autofill */
   otp?: boolean
-  /** Тип ввода: numeric, alphanumeric, alphabetic (по умолчанию: numeric) */
+  /** Type input: numeric, alphanumeric, alphabetic (by default: numeric) */
   type?: 'numeric' | 'alphanumeric' | 'alphabetic'
-  /** Размер: 2xs, xs, sm, md, lg, xl, 2xl (по умолчанию: md) */
+  /** Size: 2xs, xs, sm, md, lg, xl, 2xl (by default: md) */
   size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-  /** Вариант: outline, subtle, flushed (по умолчанию: outline) */
+  /** Variant: outline, subtle, flushed (default: outline) */
   variant?: 'outline' | 'subtle' | 'flushed'
-  /** Соединить inputs вместе (без gap) */
+  /** Attach inputs together (no gap) */
   attached?: boolean
-  /** Callback когда все поля заполнены */
+  /** Callback when all fields are filled */
   onComplete?: (value: string) => void
 }
 
 /**
- * Form.Field.PinInput - Поле ввода PIN/OTP кода
+ * Form.Field.PinInput - PIN/OTP code input field
  *
- * Рендерит серию single-character inputs для PIN кодов, OTP и т.д.
- * Значение формы хранится как строка (например, "1234").
+ * Renders a series of single-character inputs for PIN codes, OTP etc.
+ * Form value is stored as a string (e.g., "1234").
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.PinInput name="pin" label="Введите PIN" />
+ * <Form.Field.PinInput name="pin" label="Enter PIN" />
  * ```
  *
- * @example OTP с 6 цифрами
+ * @example OTP with 6 digits
  * ```tsx
  * <Form.Field.PinInput
  *   name="otp"
- *   label="Код подтверждения"
+ *   label="Confirmation Code"
  *   count={6}
  *   otp
  *   onComplete={(code) => verifyCode(code)}
  * />
  * ```
  *
- * @example Маскированный как пароль
+ * @example Masked as password
  * ```tsx
  * <Form.Field.PinInput name="secret" mask count={6} />
  * ```
@@ -69,16 +69,16 @@ export const FieldPinInput = createField<PinInputFieldProps, string>({
       onComplete,
     } = componentProps
 
-    // Конвертируем строку в массив для PinInput
+    // Convert string to array for PinInput
     const stringValue = (field.state.value as string) ?? ''
     const arrayValue = stringValue.split('').slice(0, count)
-    // Дополняем пустыми строками до count
+    // Pad with empty strings up to count
     while (arrayValue.length < count) {
       arrayValue.push('')
     }
 
     const handleValueChange = (details: { value: string[] }) => {
-      // Конвертируем массив обратно в строку
+      // Convert array back to string
       const newValue = details.value.join('')
       field.handleChange(newValue)
     }

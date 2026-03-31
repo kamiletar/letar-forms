@@ -10,79 +10,79 @@ import { formatFieldErrors, hasFieldErrors } from './field-utils'
 import { useResolvedFieldProps } from './use-resolved-field-props'
 
 /**
- * Resolved props после применения schema meta и form-level настроек
+ * Resolved props after applying schema meta and form-level settings
  */
 export interface ResolvedFieldProps {
-  /** Label (из props или schema meta) */
+  /** Label (from props or schema meta) */
   label: ReactNode
   /** Placeholder */
   placeholder: string | undefined
-  /** Подсказка под полем (может быть автоматически сгенерирована из constraints) */
+  /** Helper text below field (can be automatically generated from constraints) */
   helperText: ReactNode
-  /** Tooltip с иконкой */
+  /** Tooltip with icon */
   tooltip: FieldTooltipMeta | undefined
-  /** Обязательное поле (из props или schema) */
+  /** Required field (from props or schema) */
   required: boolean | undefined
-  /** Поле отключено (из props или form-level) */
+  /** Field disabled (from props or form-level) */
   disabled: boolean | undefined
-  /** Только для чтения (из props или form-level) */
+  /** Read only (from props or form-level) */
   readOnly: boolean | undefined
-  /** Автоматические constraints из Zod схемы (min, max, minLength, maxLength и т.д.) */
+  /** Automatic constraints from Zod schema (min, max, minLength, maxLength etc.) */
   constraints: ZodConstraints
-  /** Опции для select полей (из meta.options с i18n переводами) */
+  /** Options for select fields (from meta.options with i18n translations) */
   options: Array<{ value: string | number; label: string; disabled?: boolean; i18nKey?: string }> | undefined
 }
 
 /**
- * Props передаваемые в render функцию
+ * Props passed to the render function
  */
 export interface FieldRenderProps<TValue = unknown, TState = Record<string, never>> {
   /** TanStack Form field API */
   field: AnyFieldApi
-  /** Типизированное значение поля */
+  /** Typed field value */
   value: TValue
-  /** Полный путь к полю (например, "user.address.city") */
+  /** Full path to the field (for example, "user.address.city") */
   fullPath: string
   /** Resolved props (label, placeholder, etc.) */
   resolved: ResolvedFieldProps
-  /** Есть ли ошибки валидации */
+  /** Whether there are validation errors */
   hasError: boolean
-  /** Отформатированное сообщение об ошибке */
+  /** Formatted error message */
   errorMessage: string
-  /** Локальное состояние компонента (из useFieldState) */
+  /** Local component state (from useFieldState) */
   fieldState: TState
 }
 
 /**
- * Render функция для createField
+ * Render function for createField
  *
- * Получает field API, resolved props, локальное состояние и должна вернуть полный JSX
- * включая Field.Root обёртку и отображение ошибок.
+ * Receives field API, resolved props, local state and must return full JSX
+ * including Field.Root wrapper and error display.
  */
 export type FieldRenderFn<P extends BaseFieldProps, TValue = unknown, TState = Record<string, never>> = (
   props: FieldRenderProps<TValue, TState> & { componentProps: Omit<P, keyof BaseFieldProps> }
 ) => ReactElement
 
 /**
- * Опции для createField
+ * Options for createField
  *
- * @template P - Тип props компонента (extends BaseFieldProps)
- * @template TValue - Тип значения поля
- * @template TState - Тип локального состояния (из useFieldState)
+ * @template P - Component props type (extends BaseFieldProps)
+ * @template TValue - Field value type
+ * @template TState - Local state type (from useFieldState)
  */
 export interface CreateFieldOptions<P extends BaseFieldProps, TValue = unknown, TState = Record<string, never>> {
-  /** Имя для React DevTools */
+  /** Name for React DevTools */
   displayName: string
 
   /**
-   * Хук для локального состояния компонента
+   * Hook for local component state
    *
-   * Вызывается на верхнем уровне компонента, ДО form.Field.
-   * Можно использовать useState, useEffect, useCallback, useMemo и другие хуки.
+   * Called at the top level of the component, BEFORE form.Field.
+   * Can use useState, useEffect, useCallback, useMemo and other hooks.
    *
-   * @param props - Props компонента (без BaseFieldProps)
+   * @param props - Component props (without BaseFieldProps)
    * @param resolved - Resolved props (label, placeholder, etc.)
-   * @returns Объект состояния, который будет передан в render как fieldState
+   * @returns State object that will be passed to render as fieldState
    *
    * @example
    * ```tsx
@@ -94,20 +94,20 @@ export interface CreateFieldOptions<P extends BaseFieldProps, TValue = unknown, 
    */
   useFieldState?: (componentProps: Omit<P, keyof BaseFieldProps>, resolved: ResolvedFieldProps) => TState
 
-  /** Render функция (полный контроль над JSX) */
+  /** Render function (full control over JSX) */
   render: FieldRenderFn<P, TValue, TState>
 }
 
 /**
- * Factory функция для создания Field компонентов с минимальным boilerplate
+ * Factory function for creating Field components with minimal boilerplate
  *
- * Автоматически:
- * - Резолвит props из schema meta и form-level настроек
- * - Создаёт form.Field обёртку
- * - Вычисляет hasError и errorMessage
- * - Вызывает useFieldState для локального состояния (если задан)
+ * Automatically:
+ * - Resolves props from schema meta and form-level settings
+ * - Creates form.Field wrapper
+ * - Computes hasError and errorMessage
+ * - Calls useFieldState for local state (if provided)
  *
- * @example Простое поле (Input, Textarea)
+ * @example Simple field (Input, Textarea)
  * ```tsx
  * export const FieldString = createField<StringFieldProps, string>({
  *   displayName: 'FieldString',
@@ -123,7 +123,7 @@ export interface CreateFieldOptions<P extends BaseFieldProps, TValue = unknown, 
  * })
  * ```
  *
- * @example Поле с локальным состоянием (Password с toggle)
+ * @example Field with local state (Password with toggle)
  * ```tsx
  * export const FieldPassword = createField<PasswordFieldProps, string, { visible: boolean; toggle: () => void }>({
  *   displayName: 'FieldPassword',
@@ -141,7 +141,7 @@ export interface CreateFieldOptions<P extends BaseFieldProps, TValue = unknown, 
  * })
  * ```
  *
- * @example Checkbox с кастомным лейблом
+ * @example Checkbox with custom label
  * ```tsx
  * export const FieldCheckbox = createField<CheckboxFieldProps, boolean>({
  *   displayName: 'FieldCheckbox',
@@ -166,7 +166,7 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
   options: CreateFieldOptions<P, TValue, TState>
 ): (props: P) => ReactElement {
   const { displayName, render } = options
-  // Используем no-op хук по умолчанию, чтобы вызов всегда был безусловным
+  // Use no-op hook by default so the call is always unconditional
   const useFieldState = options.useFieldState ?? (() => ({}) as TState)
 
   function FieldComponent(props: P): ReactElement {
@@ -194,8 +194,8 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
       options: resolvedRest.options,
     }
 
-    // Вызываем useFieldState на верхнем уровне (до form.Field)
-    // Это позволяет использовать хуки внутри useFieldState
+    // Call useFieldState at the top level (before form.Field)
+    // This allows using hooks inside useFieldState
     const fieldState = useFieldState(componentProps as Omit<P, keyof BaseFieldProps>, resolved)
 
     return (
@@ -203,7 +203,7 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
         {(field: AnyFieldApi) => {
           const errors = field.state.meta.errors
           const isTouched = field.state.meta.isTouched
-          // Показываем ошибки только если поле было touched (после blur или программной валидации)
+          // Show errors only if field was touched (after blur or programmatic validation)
           const hasError = isTouched && hasFieldErrors(errors)
           const errorMessage = hasError ? formatFieldErrors(errors) : ''
 
@@ -227,10 +227,10 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
 }
 
 /**
- * Компонент для отображения ошибок или подсказки
+ * Component for displaying errors or hints
  *
- * Вспомогательный компонент для использования внутри createField render функций.
- * Показывает ошибку если есть, иначе helperText.
+ * Helper component for use inside createField render functions.
+ * Shows error if present, otherwise helperText.
  *
  * @example
  * ```tsx
@@ -255,5 +255,5 @@ export function FieldError({
   return null
 }
 
-// Реэкспорт для удобства
+// Re-export for convenience
 export { FieldLabel }

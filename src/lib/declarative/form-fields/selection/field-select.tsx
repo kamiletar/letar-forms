@@ -1,11 +1,11 @@
 'use client'
 
 import { createListCollection, Field, Portal, Select } from '@chakra-ui/react'
-import { useMemo, type ReactElement } from 'react'
+import { type ReactElement, useMemo } from 'react'
 import type { BaseFieldProps, BaseOption, FieldSize } from '../../types'
-import { createField, FieldError, getOptionLabel, SelectionFieldLabel, type ResolvedFieldProps } from '../base'
+import { createField, FieldError, getOptionLabel, type ResolvedFieldProps, SelectionFieldLabel } from '../base'
 
-/** Нормализованная опция (value всегда string для Chakra) */
+/** Normalized option (value is always string for Chakra) */
 interface NormalizedOption {
   label: React.ReactNode
   value: string
@@ -13,22 +13,22 @@ interface NormalizedOption {
 }
 
 /**
- * Props для Select поля
+ * Props for Select field
  */
 export interface SelectFieldProps extends BaseFieldProps {
-  /** Опции для выбора (string или number значения). Если не указаны — берутся из schema meta */
+  /** Options for selection (string or number values). If not specified, taken from schema meta */
   options?: BaseOption<string | number>[]
-  /** Тип значения: 'string' (по умолчанию) или 'number' */
+  /** Value type: 'string' (by default) or 'number' */
   valueType?: 'string' | 'number'
-  /** Показывать кнопку очистки (автоопределение: true если optional, false если required) */
+  /** Show clear button (auto-determined: true if optional, false if required) */
   clearable?: boolean
-  /** Размер */
+  /** Size */
   size?: FieldSize
-  /** Визуальный вариант */
+  /** Visual variant */
   variant?: 'outline' | 'subtle'
 }
 
-/** Тип состояния для useFieldState */
+/** State type for useFieldState */
 interface SelectFieldState {
   collection: ReturnType<typeof createListCollection<NormalizedOption>>
   normalizedOptions: NormalizedOption[]
@@ -36,18 +36,18 @@ interface SelectFieldState {
 }
 
 /**
- * Form.Field.Select - Стилизованный Chakra Select dropdown
+ * Form.Field.Select - Styled Chakra Select dropdown
  *
- * Стилизованный select компонент с кастомизируемым внешним видом,
- * анимациями и расширенными функциями (поиск, очистка, кастомный рендеринг).
+ * Styled select component with customizable appearance,
+ * animations and advanced features (search, clear, custom rendering).
  *
- * Для простых случаев или лучшего мобильного UX используй Form.Field.NativeSelect.
+ * For simple cases or better mobile UX use Form.Field.NativeSelect.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.Select
  *   name="framework"
- *   label="Фреймворк"
+ *   label="Framework"
  *   options={[
  *     { label: 'React', value: 'react' },
  *     { label: 'Vue', value: 'vue' },
@@ -63,10 +63,10 @@ export const FieldSelect = createField<SelectFieldProps, string | number, Select
     componentProps: Omit<SelectFieldProps, keyof BaseFieldProps>,
     resolved: ResolvedFieldProps
   ): SelectFieldState => {
-    // Опции: props имеют приоритет, fallback на schema meta
+    // Options: props take priority, fallback to schema meta
     const sourceOptions = componentProps.options ?? resolved.options ?? []
 
-    // Нормализуем опции — value всегда string для Chakra
+    // Normalize options — value always string for Chakra
     const normalizedOptions: NormalizedOption[] = useMemo(
       () =>
         sourceOptions.map((opt) => ({
@@ -77,7 +77,7 @@ export const FieldSelect = createField<SelectFieldProps, string | number, Select
       [sourceOptions]
     )
 
-    // Создаём коллекцию из нормализованных опций
+    // Create collection from normalized options
     const collection = useMemo(
       () =>
         createListCollection({
@@ -88,13 +88,13 @@ export const FieldSelect = createField<SelectFieldProps, string | number, Select
       [normalizedOptions]
     )
 
-    // Автоопределение clearable: показывать кнопку очистки если поле optional
+    // Auto-determine clearable: show clear button if field is optional
     const resolvedClearable = componentProps.clearable ?? !resolved.required
 
     return { collection, normalizedOptions, resolvedClearable }
   },
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps, fieldState }): ReactElement => {
-    // Преобразуем текущее значение в строку для Chakra
+    // Convert current value to string for Chakra
     const currentValue = field.state.value
     const stringValue = currentValue !== null && currentValue !== undefined ? String(currentValue) : undefined
 
@@ -107,7 +107,7 @@ export const FieldSelect = createField<SelectFieldProps, string | number, Select
           value={stringValue ? [stringValue] : []}
           onValueChange={(details) => {
             const newStringValue = details.value[0] as string | undefined
-            // Преобразуем обратно в нужный тип
+            // Convert back to needed type
             if (componentProps.valueType === 'number') {
               field.handleChange(newStringValue ? Number(newStringValue) : 0)
             } else {

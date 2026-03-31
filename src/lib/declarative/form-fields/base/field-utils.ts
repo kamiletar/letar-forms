@@ -3,13 +3,13 @@
 import type { ValidationError } from '@tanstack/react-form'
 
 /**
- * Форматирует ошибки валидации в строку для отображения
+ * Formats validation errors into a string for display
  *
- * Обрабатывает различные форматы ошибок:
- * - Строки (возвращает как есть)
- * - Объекты с `message` (StandardSchemaV1Issue, ZodIssue)
- * - Объекты с `issues` массивом (ZodError)
- * - Вложенные структуры ошибок
+ * Handles various error formats:
+ * - Strings (returned as-is)
+ * - Objects with `message` (StandardSchemaV1Issue, ZodIssue)
+ * - Objects with `issues` array (ZodError)
+ * - Nested error structures
  *
  * @example
  * ```tsx
@@ -27,12 +27,12 @@ export function formatFieldErrors(errors: ValidationError[]): string {
 }
 
 /**
- * Извлекает сообщение об ошибке из различных форматов
+ * Extracts error message from various formats
  *
  * @internal
  */
 function extractErrorMessage(e: ValidationError): string {
-  // Строковая ошибка
+  // String error
   if (typeof e === 'string') {
     return e
   }
@@ -42,17 +42,17 @@ function extractErrorMessage(e: ValidationError): string {
     return ''
   }
 
-  // Объект с ошибкой
+  // Object with error
   if (typeof e === 'object') {
-    // Массив ошибок (Zod issues из superRefine, массив строк и т.д.)
+    // Array of errors (Zod issues from superRefine, array of strings etc.)
     if (Array.isArray(e)) {
       return e
         .map((item: unknown) => {
-          // Элемент с message (ZodIssue)
+          // Element with message (ZodIssue)
           if (typeof item === 'object' && item && 'message' in item) {
             return (item as { message: string }).message
           }
-          // Строка
+          // String
           if (typeof item === 'string') {
             return item
           }
@@ -62,12 +62,12 @@ function extractErrorMessage(e: ValidationError): string {
         .join(', ')
     }
 
-    // Стандартный формат: { message: string }
+    // Standard format: { message: string }
     if ('message' in e && typeof e.message === 'string') {
       return e.message
     }
 
-    // Zod формат с массивом issues: { issues: Array<{ message: string }> }
+    // Zod format with issues array: { issues: Array<{ message: string }> }
     if ('issues' in e && Array.isArray(e.issues)) {
       return e.issues
         .map((issue: unknown) => {
@@ -91,15 +91,15 @@ function extractErrorMessage(e: ValidationError): string {
       return (e._errors as string[]).filter(Boolean).join(', ')
     }
 
-    // Fallback: попробовать JSON.stringify для отладки
-    // Это лучше чем [object Object], поможет обнаружить неизвестные форматы
+    // Fallback: try JSON.stringify for debugging
+    // This is better than [object Object], can detect unknown formats
     try {
       const json = JSON.stringify(e)
-      // Если JSON слишком длинный или это пустой объект, не показываем
+      // If JSON is too long or empty object, don't show
       if (json === '{}' || json.length > 200) {
         return ''
       }
-      // Логируем в dev режиме для отладки неизвестных форматов
+      // Log in dev mode for debugging unknown formats
       if (process.env.NODE_ENV === 'development') {
         console.warn('[form-components] Unknown error format:', e)
       }
@@ -109,12 +109,12 @@ function extractErrorMessage(e: ValidationError): string {
     }
   }
 
-  // Другие типы (число, boolean) — маловероятно, но обрабатываем
+  // Other types (number, boolean) — unlikely, but handled
   return String(e)
 }
 
 /**
- * Проверяет наличие ошибок валидации
+ * Checks for the presence of validation errors
  *
  * @example
  * ```tsx
@@ -127,22 +127,22 @@ export function hasFieldErrors(errors: ValidationError[] | undefined): errors is
 }
 
 /**
- * Интерфейс для результата useFieldErrors
+ * Interface for useFieldErrors result
  */
 export interface FieldErrorsResult {
-  /** Ошибки валидации */
+  /** Validation errors */
   errors: ValidationError[]
-  /** Есть ли ошибки */
+  /** Whether there are errors */
   hasError: boolean
-  /** Отформатированное сообщение об ошибке */
+  /** Formatted error message */
   errorMessage: string
 }
 
 /**
- * Извлекает информацию об ошибках из field API
+ * Extracts error information from field API
  *
- * Упрощает получение ошибок в ручных Field компонентах,
- * которые не используют createField factory.
+ * Simplifies error retrieval in manual Field components
+ * that do not use the createField factory.
  *
  * @example
  * ```tsx

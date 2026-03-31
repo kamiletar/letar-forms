@@ -6,20 +6,20 @@ import type { FieldTooltipMeta } from '../../types'
 import { FieldTooltip } from './field-tooltip'
 
 /**
- * Props для SelectionFieldLabel
+ * Props for SelectionFieldLabel
  */
 export interface SelectionFieldLabelProps {
-  /** Текст label */
+  /** Label text */
   label: ReactNode
-  /** Данные для tooltip подсказки */
+  /** Data for tooltip hint */
   tooltip?: FieldTooltipMeta
-  /** Показывать индикатор обязательного поля */
+  /** Show required field indicator */
   required?: boolean
 }
 
 /**
- * Унифицированный label для selection полей (Select, Combobox, Listbox, Autocomplete).
- * Избегает дублирования паттерна HStack + FieldTooltip в 12+ файлах.
+ * Unified label for selection fields (Select, Combobox, Listbox, Autocomplete).
+ * Avoids duplicating the HStack + FieldTooltip pattern across 12+ files.
  *
  * @example
  * ```tsx

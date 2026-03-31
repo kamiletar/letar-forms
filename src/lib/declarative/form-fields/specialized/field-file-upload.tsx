@@ -19,54 +19,54 @@ import type { FieldTooltipMeta } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Props для FileUpload поля
+ * Props for FileUpload field
  */
 export interface FileUploadFieldProps {
-  /** Имя поля */
+  /** Field name */
   name?: string
-  /** Лейбл поля */
+  /** Field label */
   label?: string
-  /** Вспомогательный текст под полем */
+  /** Helper text below the field */
   helperText?: string
-  /** Обязательное ли поле */
+  /** Required field */
   required?: boolean
-  /** Отключено ли поле */
+  /** Disabled field */
   disabled?: boolean
-  /** Tooltip для лейбла поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
 
   /**
-   * Допустимые типы файлов
+   * Accepted file types
    * @example "image/*"
    * @example ["image/png", "image/jpeg"]
    * @example ".pdf,.doc,.docx"
    */
   accept?: string | string[]
-  /** Максимальный размер файла в байтах */
+  /** Maximum file size in bytes */
   maxFileSize?: number
-  /** Максимальное количество файлов (по умолчанию: 1) */
+  /** Maximum number of files (by default: 1) */
   maxFiles?: number
   /**
-   * Вариант отображения
-   * - 'button': Простая кнопка-триггер
-   * - 'dropzone': Зона drag & drop
-   * - 'input': Input-подобный вид
+   * Display variant
+   * - 'button': Simple trigger button
+   * - 'dropzone': Drag & drop zone
+   * - 'input': Input-like appearance
    */
   variant?: 'button' | 'dropzone' | 'input'
-  /** Показывать размер файлов в списке */
+  /** Show file sizes in list */
   showSize?: boolean
-  /** Разрешить удаление файлов из списка */
+  /** Allow removing files from list */
   clearable?: boolean
-  /** Текст зоны dropzone */
+  /** Dropzone label text */
   dropzoneLabel?: ReactNode
-  /** Описание зоны dropzone */
+  /** Dropzone description */
   dropzoneDescription?: ReactNode
-  /** Текст кнопки (для варианта 'button') */
+  /** Button text (for 'button' variant) */
   buttonText?: ReactNode
 }
 
 /**
- * Список файлов с превью изображений
+ * File list with image previews
  */
 function FileImageList({ clearable }: { clearable?: boolean }) {
   const fileUpload = useFileUploadContext()
@@ -103,7 +103,7 @@ function FileImageList({ clearable }: { clearable?: boolean }) {
 }
 
 /**
- * Стандартный список файлов (не изображения)
+ * Standard file list (non-images)
  */
 function FileList({ showSize, clearable }: { showSize?: boolean; clearable?: boolean }) {
   const fileUpload = useFileUploadContext()
@@ -145,44 +145,44 @@ function FileList({ showSize, clearable }: { showSize?: boolean; clearable?: boo
 }
 
 /**
- * Form.Field.FileUpload - Поле загрузки файлов с несколькими вариантами
+ * Form.Field.FileUpload - File upload field with multiple variants
  *
- * Поддерживает загрузку одного или нескольких файлов с drag & drop,
- * превью файлов и автоматической интеграцией с формой.
+ * Supports uploading single or multiple files with drag & drop,
+ * file preview and automatic form integration.
  *
- * @example Вариант кнопки (по умолчанию)
+ * @example Button variant (by default)
  * ```tsx
- * <Form.Field.FileUpload name="avatar" label="Аватар" accept="image/*" />
+ * <Form.Field.FileUpload name="avatar" label="Avatar" accept="image/*" />
  * ```
  *
- * @example Вариант dropzone
+ * @example Dropzone variant
  * ```tsx
  * <Form.Field.FileUpload
  *   name="documents"
- *   label="Документы"
+ *   label="Documents"
  *   variant="dropzone"
  *   maxFiles={5}
  *   accept=".pdf,.doc,.docx"
- *   dropzoneLabel="Перетащите файлы сюда"
- *   dropzoneDescription="PDF, DOC до 10МБ"
+ *   dropzoneLabel="Drop files here"
+ *   dropzoneDescription="PDF, DOC up to 10MB"
  * />
  * ```
  *
- * @example Вариант input
+ * @example Input variant
  * ```tsx
  * <Form.Field.FileUpload
  *   name="file"
- *   label="Выберите файл"
+ *   label="Select file"
  *   variant="input"
- *   placeholder="Выберите файл..."
+ *   placeholder="Select file..."
  * />
  * ```
  *
- * @example Несколько изображений с превью
+ * @example Multiple images with preview
  * ```tsx
  * <Form.Field.FileUpload
  *   name="gallery"
- *   label="Галерея"
+ *   label="Gallery"
  *   variant="dropzone"
  *   accept="image/*"
  *   maxFiles={10}
@@ -202,21 +202,21 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
       variant = 'button',
       showSize = false,
       clearable = true,
-      dropzoneLabel = 'Перетащите файлы сюда',
+      dropzoneLabel = 'Drag and drop files here',
       dropzoneDescription,
-      buttonText = 'Загрузить файл',
+      buttonText = 'Upload file',
     } = componentProps
 
-    const placeholder = resolved.placeholder ?? 'Выберите файл(ы)'
+    const placeholder = resolved.placeholder ?? 'Select file(s)'
 
-    // Нормализация accept в массив для Chakra
+    // Normalize accept to array for Chakra
     const normalizedAccept = accept
       ? typeof accept === 'string'
         ? accept.split(',').map((s) => s.trim())
         : accept
       : undefined
 
-    // Проверка, работаем ли с изображениями для превью
+    // Check if working with images for preview
     const isImageUpload = normalizedAccept?.some((type) => type.startsWith('image/') || type === 'image/*')
 
     return (
@@ -279,7 +279,7 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
                       return <span>{acceptedFiles[0].name}</span>
                     }
                     if (acceptedFiles.length > 1) {
-                      return <span>{acceptedFiles.length} файлов</span>
+                      return <span>{acceptedFiles.length} files</span>
                     }
                     return <Text color="fg.subtle">{placeholder}</Text>
                   }}

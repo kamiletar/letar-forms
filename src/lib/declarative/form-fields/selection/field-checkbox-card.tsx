@@ -6,53 +6,53 @@ import type { BaseFieldProps, FieldSizeWithoutXs, FieldTooltipMeta, RichOption }
 import { createField, SelectionFieldLabel } from '../base'
 
 /**
- * Props для CheckboxCard поля
+ * Props for CheckboxCard field
  */
 export interface CheckboxCardFieldProps<T = string> extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
-  /** Опции для карточек */
+  /** Options for cards */
   options: RichOption<T>[]
-  /** Размер (по умолчанию: md) */
+  /** Size (by default: md) */
   size?: FieldSizeWithoutXs
-  /** Визуальный вариант (по умолчанию: outline) */
+  /** Visual variant (by default: outline) */
   variant?: 'surface' | 'subtle' | 'outline' | 'solid'
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
-  /** Выравнивание контента (по умолчанию: start) */
+  /** Content alignment (by default: start) */
   align?: 'start' | 'end' | 'center'
-  /** Ориентация (по умолчанию: horizontal) */
+  /** Orientation (by default: horizontal) */
   orientation?: 'horizontal' | 'vertical'
-  /** Отступ между карточками (по умолчанию: 2) */
+  /** Gap between cards (by default: 2) */
   gap?: number | string
 }
 
 /**
- * Form.Field.CheckboxCard - Множественный выбор в виде карточек
+ * Form.Field.CheckboxCard - Multiple selection as cards
  *
- * Рендерит группу checkbox карточек для выбора нескольких опций.
- * Каждая карточка может иметь label, описание и иконку.
+ * Renders a group of checkbox cards for selecting multiple options.
+ * Each card can have a label, description and icon.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.CheckboxCard
  *   name="features"
- *   label="Выберите функции"
+ *   label="Select features"
  *   options={[
- *     { label: 'TypeScript', value: 'ts', description: 'Типизация' },
- *     { label: 'ESLint', value: 'eslint', description: 'Качество кода' },
- *     { label: 'Prettier', value: 'prettier', description: 'Форматирование' },
+ *     { label: 'TypeScript', value: 'ts', description: 'Type safety' },
+ *     { label: 'ESLint', value: 'eslint', description: 'Code quality' },
+ *     { label: 'Prettier', value: 'prettier', description: 'Formatting' },
  *   ]}
  * />
  * ```
  *
- * @example С иконками
+ * @example With icons
  * ```tsx
  * <Form.Field.CheckboxCard
  *   name="permissions"
  *   options={[
- *     { label: 'Админ', value: 'admin', icon: <ShieldIcon /> },
- *     { label: 'Пользователь', value: 'user', icon: <UserIcon /> },
+ *     { label: 'Admin', value: 'admin', icon: <ShieldIcon /> },
+ *     { label: 'User', value: 'user', icon: <UserIcon /> },
  *   ]}
  *   align="center"
  * />
@@ -61,7 +61,7 @@ export interface CheckboxCardFieldProps<T = string> extends Omit<BaseFieldProps,
 export const FieldCheckboxCard = createField<CheckboxCardFieldProps, string[]>({
   displayName: 'FieldCheckboxCard',
   render: ({ field, resolved, hasError, errorMessage, componentProps }): ReactElement => {
-    // Значение всегда массив для checkbox карточек
+    // Value always array for checkbox cards
     const currentValue = field.state.value as string[] | undefined
     const valueArray: string[] = currentValue ?? []
 

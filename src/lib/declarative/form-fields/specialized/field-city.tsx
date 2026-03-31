@@ -2,37 +2,41 @@
 
 import { Box, Field, Input, List, Spinner, Text } from '@chakra-ui/react'
 import { type ReactElement, useCallback, useEffect, useRef, useState } from 'react'
-import type { BaseFieldProps } from '../../types'
+import { useDeclarativeFormOptional } from '../../form-context'
+import type { CityFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel, useDebounce } from '../base'
+import { createDaDataProvider } from './providers'
+import type { AddressProvider, AddressSuggestion } from './providers'
 
 /**
- * Пропсы для поля выбора города
+ * Resolve address provider from props, context, token, or env fallback.
  */
-export interface CityFieldProps extends BaseFieldProps {
-  /** Токен API DaData (по умолчанию: NEXT_PUBLIC_DADATA_API_KEY) */
-  token?: string
-  /** Минимум символов перед поиском (по умолчанию: 2) */
-  minChars?: number
-  /** Задержка debounce в мс (по умолчанию: 300) */
-  debounceMs?: number
+function useCityProvider(
+  propProvider?: AddressProvider,
+  token?: string,
+): AddressProvider | null {
+  const formContext = useDeclarativeFormOptional()
+
+  // Priority: prop > createForm context > token > env
+  if (propProvider) return propProvider
+  if (formContext?.addressProvider) return formContext.addressProvider
+  if (token) return createDaDataProvider({ token })
+
+  // Backward compatible: try env variable
+  const envKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_DADATA_API_KEY : ''
+  if (envKey) return createDaDataProvider({ token: envKey })
+
+  return null
 }
 
 /**
- * Состояние поля города
+ * City field state
  */
 interface CityFieldState {
   inputValue: string
   setInputValue: (value: string) => void
-  suggestions: Array<{
-    value: string
-    data: {
-      city: string | null
-      settlement: string | null
-      city_fias_id: string | null
-      region_with_type: string | null
-    }
-  }>
-  setSuggestions: (suggestions: CityFieldState['suggestions']) => void
+  suggestions: AddressSuggestion[]
+  setSuggestions: (suggestions: AddressSuggestion[]) => void
   isLoading: boolean
   setIsLoading: (loading: boolean) => void
   isOpen: boolean
@@ -44,81 +48,73 @@ interface CityFieldState {
 }
 
 /**
- * Form.Field.City — выбор города с подсказками DaData
+ * Form.Field.City — city selection with autocomplete suggestions.
  *
- * Использует DaData API с from_bound/to_bound для ограничения до уровня города/населённого пункта.
- * Возвращает строковое значение (название города).
+ * Supports pluggable address providers. DaData (Russia) is built-in;
+ * pass any `AddressProvider` for other geocoding services.
+ * Uses bounds to restrict suggestions to city/settlement level.
  *
- * @example
+ * @example With provider (recommended)
  * ```tsx
- * <Form.Field.City name="city" label="Город" />
+ * <Form.Field.City name="city" label="City" provider={dadata} />
  * ```
  *
- * @example С кастомным токеном
+ * @example With token (backward compatible)
  * ```tsx
  * <Form.Field.City name="city" token="your-token" />
+ * ```
+ *
+ * @example Auto-detect from env (NEXT_PUBLIC_DADATA_API_KEY)
+ * ```tsx
+ * <Form.Field.City name="city" label="City" />
  * ```
  */
 export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
   displayName: 'FieldCity',
 
   useFieldState: (props) => {
-    const { token, minChars = 2, debounceMs = 300 } = props
-    const apiKey = token || (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_DADATA_API_KEY : '') || ''
+    const { provider: propProvider, token, minChars = 2, debounceMs = 300 } = props
+    const provider = useCityProvider(propProvider, token)
 
     const [inputValue, setInputValue] = useState('')
-    const [suggestions, setSuggestions] = useState<CityFieldState['suggestions']>([])
+    const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(-1)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const debouncedQuery = useDebounce(inputValue, debounceMs)
-    // Флаг: только что выбрали город, пропустить следующий fetch
+    // Flag: just selected city, skip next fetch
     const justSelectedRef = useRef(false)
-    // Флаг: inputValue уже инициализирован из значения поля
+    // Flag: inputValue already initialized from field value
     const initializedRef = useRef(false)
 
-    // Загрузка подсказок городов из DaData
+    // Fetch city suggestions from provider
     const fetchSuggestions = useCallback(
       async (query: string) => {
-        if (query.length < minChars || !apiKey) {
+        if (query.length < minChars || !provider) {
           setSuggestions([])
           return
         }
 
         setIsLoading(true)
         try {
-          const response = await fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-              Authorization: `Token ${apiKey}`,
-            },
-            body: JSON.stringify({
-              query,
-              count: 7,
-              from_bound: { value: 'city' },
-              to_bound: { value: 'settlement' },
-            }),
+          const results = await provider.getSuggestions(query, {
+            count: 7,
+            bounds: { from: 'city', to: 'settlement' },
           })
-
-          if (response.ok) {
-            const data = await response.json()
-            setSuggestions(data.suggestions || [])
-            setIsOpen(data.suggestions?.length > 0)
-          }
+          setSuggestions(results)
+          setIsOpen(results.length > 0)
         } catch (error) {
-          console.error('Ошибка загрузки городов DaData:', error)
+          console.error('Error loading city suggestions:', error)
           setSuggestions([])
         } finally {
           setIsLoading(false)
         }
       },
-      [apiKey, minChars]
+      [provider, minChars],
     )
 
-    // Загрузка при изменении debounced запроса
+    // Load on debounced query change
     useEffect(() => {
       if (justSelectedRef.current) {
         justSelectedRef.current = false
@@ -133,7 +129,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
       }
     }, [debouncedQuery, fetchSuggestions])
 
-    // Закрытие при клике вне
+    // Close on click outside
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -183,15 +179,18 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
 
     const fieldValue = field.state.value as string | undefined
 
-    // Инициализация значения ввода из field (однократно, без useEffect)
+    // Initialize input value from field (once, without useEffect)
     if (!initializedRef.current && fieldValue && fieldValue !== inputValue) {
       initializedRef.current = true
       setInputValue(fieldValue)
     }
 
-    // Обработчик выбора города
-    const handleSelect = (suggestion: CityFieldState['suggestions'][number]) => {
-      const cityName = suggestion.data.city || suggestion.data.settlement || suggestion.value
+    // Handler for city selection
+    const handleSelect = (suggestion: AddressSuggestion) => {
+      // Extract city name from provider data, fallback to suggestion value
+      const cityName = (suggestion.data?.city as string)
+        || (suggestion.data?.settlement as string)
+        || suggestion.value
       justSelectedRef.current = true
       setInputValue(cityName)
       setIsOpen(false)
@@ -199,7 +198,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
       field.handleChange(cityName)
     }
 
-    // Клавиатурная навигация
+    // Keyboard navigation
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (!isOpen || suggestions.length === 0) {
         return
@@ -240,7 +239,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
             onChange={(e) => {
               setInputValue(e.target.value)
               setHighlightedIndex(-1)
-              // Если пользователь стирает текст, обновляем значение формы
+              // If user erases text, update form value
               if (!e.target.value) {
                 field.handleChange('')
               }
@@ -250,9 +249,15 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
                 setIsOpen(true)
               }
             }}
-            onBlur={field.handleBlur}
+            onBlur={() => {
+              // If user typed without selecting from suggestions — save as is
+              if (inputValue && inputValue !== (field.state.value as string)) {
+                field.handleChange(inputValue)
+              }
+              field.handleBlur()
+            }}
             onKeyDown={handleKeyDown}
-            placeholder={resolved.placeholder ?? 'Введите город'}
+            placeholder={resolved.placeholder ?? 'Enter city'}
             data-field-name={fullPath}
           />
           {isLoading && (
@@ -276,7 +281,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
             >
               {suggestions.map((suggestion, index) => (
                 <List.Item
-                  key={`${suggestion.data.city_fias_id}-${index}`}
+                  key={`${suggestion.value}-${index}`}
                   px={3}
                   py={2}
                   cursor="pointer"
@@ -285,7 +290,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
                   onClick={() => handleSelect(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  <Text fontSize="sm">{suggestion.value}</Text>
+                  <Text fontSize="sm">{suggestion.label}</Text>
                 </List.Item>
               ))}
             </List.Root>

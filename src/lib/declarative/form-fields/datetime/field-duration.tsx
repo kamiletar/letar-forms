@@ -6,7 +6,7 @@ import type { DurationFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Конвертирует минуты в формат ЧЧ:ММ
+ * Converts minutes to HH:MM format
  */
 function minutesToHHMM(minutes: number): { hours: number; mins: number } {
   return {
@@ -16,29 +16,29 @@ function minutesToHHMM(minutes: number): { hours: number; mins: number } {
 }
 
 /**
- * Конвертирует ЧЧ:ММ в минуты
+ * Converts HH:MM to minutes
  */
 function hhmmToMinutes(hours: number, mins: number): number {
   return hours * 60 + mins
 }
 
 /**
- * Form.Field.Duration - Поле ввода длительности
+ * Form.Field.Duration - Duration input field
  *
- * Рендерит поле длительности с часами и минутами или только минутами.
- * Значение хранится как общее количество минут.
+ * Renders duration field with hours and minutes or minutes only.
+ * Value is stored as total number of minutes.
  *
- * @example Формат ЧЧ:ММ (по умолчанию)
+ * @example HH:MM format (by default)
  * ```tsx
- * <Form.Field.Duration name="duration" label="Длительность" />
+ * <Form.Field.Duration name="duration" label="Duration" />
  * ```
  *
- * @example Только минуты
+ * @example Minutes only
  * ```tsx
  * <Form.Field.Duration name="duration" format="minutes" />
  * ```
  *
- * @example С ограничениями min/max
+ * @example With min/max constraints
  * ```tsx
  * <Form.Field.Duration name="duration" min={30} max={240} step={15} />
  * ```
@@ -69,7 +69,7 @@ export const FieldDuration = createField<DurationFieldProps, number>({
       field.handleChange(clampedValue)
     }
 
-    // Формат только минуты
+    // Minutes only format
     if (format === 'minutes') {
       return (
         <Field.Root
@@ -96,14 +96,14 @@ export const FieldDuration = createField<DurationFieldProps, number>({
               <NumberInput.IncrementTrigger />
               <NumberInput.DecrementTrigger />
             </NumberInput.Control>
-            <NumberInput.Input placeholder={resolved.placeholder ?? 'мин'} data-field-name={fullPath} />
+            <NumberInput.Input placeholder={resolved.placeholder ?? 'min'} data-field-name={fullPath} />
           </NumberInput.Root>
           <FieldError hasError={hasError} errorMessage={errorMessage} helperText={resolved.helperText} />
         </Field.Root>
       )
     }
 
-    // Формат ЧЧ:ММ
+    // HH:MM format
     return (
       <Field.Root
         invalid={hasError}

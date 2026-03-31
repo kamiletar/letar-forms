@@ -4,23 +4,23 @@ import { createFormHook, type FieldApi, type FormApi } from '@tanstack/react-for
 import { fieldContext, formContext } from './context'
 
 /**
- * Базовые компоненты полей для форм
- * Могут быть расширены в отдельных приложениях
+ * Base field components for forms
+ * Can be extended in individual applications
  */
 const fieldComponents = {}
 
 /**
- * Базовые компоненты форм
- * Могут быть расширены в отдельных приложениях
+ * Base form components
+ * Can be extended in individual applications
  */
 const formComponents = {}
 
 /**
- * Создаёт хук формы для конкретного приложения
+ * Creates a form hook for a specific application
  *
- * useAppForm предоставляет преднастроенный хук формы с:
- * - Уже настроенными контекстами поля и формы
- * - Доступом к form.AppField и form.AppForm для кастомных компонентов
+ * useAppForm provides a preconfigured form hook with:
+ * - Pre-configured field and form contexts
+ * - Access to form.AppField and form.AppForm for custom components
  *
  * @example
  * ```tsx
@@ -61,5 +61,5 @@ export const { useAppForm, withForm } = createFormHook({
   formComponents,
 })
 
-// Реэкспорт типов для удобства
+// Re-export types for convenience
 export type { FieldApi, FormApi }

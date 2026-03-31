@@ -19,30 +19,30 @@ import { SortableItem, SortableWrapper } from './form-group-list-sortable'
  * For object arrays: children are cloned for each element with FormGroup index
  * For primitive arrays: children without name get direct array index access
  *
- * Автоматически извлекает из Zod схемы:
- * - `maxItems` из `z.array().max(5)` → отключает кнопку Add при достижении лимита
- * - `minItems` из `z.array().min(1)` → отключает кнопку Remove если элементов меньше
- * - `helperText` подсказка "Максимум 5 элементов" (через Form.Group.List wrapper)
+ * Automatically extracts from Zod schema:
+ * - `maxItems` from `z.array().max(5)` — disables Add button when limit is reached
+ * - `minItems` from `z.array().min(1)` — disables Remove button when below minimum
+ * - `helperText` hint "Maximum 5 items" (via Form.Group.List wrapper)
  *
- * Props всегда имеют приоритет над автоматическими значениями из схемы.
+ * Props always take priority over automatic values from the schema.
  *
  * @example Object array with auto constraints from Zod
  * ```tsx
- * // В схеме: z.object({ tags: z.array(z.string()).min(1).max(5) })
+ * // In schema: z.object({ tags: z.array(z.string()).min(1).max(5) })
  * <Form.Group.List
  *   name="tags"
  *   wrapper={({ children }) => (
  *     <VStack>
  *       {children}
  *       <Form.Group.List.Button.Add />
- *       {/* Кнопка Add автоматически отключается при 5 элементах *\/}
+ *       {/* Add button is automatically disabled at 5 items *\/}
  *     </VStack>
  *   )}
  * >
  *   <HStack>
  *     <Form.Field.String />
  *     <Form.Group.List.Button.Remove />
- *     {/* Кнопка Remove автоматически отключается при 1 элементе *\/}
+ *     {/* Remove button is automatically disabled at 1 item *\/}
  *   </HStack>
  * </Form.Group.List>
  * ```
@@ -62,10 +62,10 @@ export function FormGroupListDeclarative({
   // Build full path from parent groups
   const fullPath = parentGroup ? `${parentGroup.name}.${name}` : name
 
-  // Извлекаем constraints для массива
+  // Extract constraints for the array
   const constraints = getZodConstraints(schema, fullPath)
 
-  // Props имеют приоритет над constraints
+  // Props take priority over constraints
   const maxItems = maxItemsProp ?? constraints.array?.maxItems
   const minItems = minItemsProp ?? constraints.array?.minItems
 
@@ -77,7 +77,7 @@ export function FormGroupListDeclarative({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const arrayValue = (arrayField.state.value as any[] | undefined) ?? []
 
-        // Вычисляем canAdd и canRemove на основе constraints
+        // Compute canAdd and canRemove based on constraints
         const canAdd = maxItems === undefined || arrayValue.length < maxItems
         const canRemove = minItems === undefined || arrayValue.length > minItems
 

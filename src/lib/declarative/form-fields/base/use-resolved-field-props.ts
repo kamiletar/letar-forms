@@ -8,13 +8,13 @@ import type { BaseFieldProps, FieldOptionMeta, FieldTooltipMeta } from '../../ty
 import { useDeclarativeField } from './base-field'
 
 /**
- * Резолвит все props поля с учётом схемы и form-level настроек
+ * Resolves all field props considering schema and form-level settings
  *
- * Приоритет:
- * 1. Props компонента (высший)
+ * Priority:
+ * 1. Component props (highest)
  * 2. Zod schema meta (ui: { title, placeholder, description, tooltip })
- * 3. Автоматически сгенерированная подсказка из constraints (если helperText не задан)
- * 4. Form-level настройки (disabled, readOnly)
+ * 3. Automatically generated hint from constraints (if helperText not set)
+ * 4. Form-level settings (disabled, readOnly)
  *
  * @example
  * ```tsx
@@ -47,9 +47,9 @@ export function useResolvedFieldProps(
   required: boolean | undefined
   disabled: boolean | undefined
   readOnly: boolean | undefined
-  /** Автоматические constraints из Zod схемы (min, max, minLength, maxLength и т.д.) */
+  /** Automatic constraints from Zod schema (min, max, minLength, maxLength etc.) */
   constraints: ZodConstraints
-  /** Опции для select полей (из meta.options с i18n переводами) */
+  /** Options for select fields (from meta.options with i18n translations) */
   options: FieldOptionMeta[] | undefined
 } {
   const {
@@ -62,22 +62,22 @@ export function useResolvedFieldProps(
     constraints,
   } = useDeclarativeField(name)
 
-  // Получаем контекст i18n (может быть null)
+  // Get i18n context (can be null)
   const i18n = useFormI18n()
   const i18nKey = meta?.i18nKey
 
-  // Резолвим переведённые значения
-  // Приоритет: props > i18n перевод > meta fallback
+  // Resolve translated values
+  // Priority: props > i18n translation > meta fallback
   const resolvedTitle = getLocalizedValue(i18n, i18nKey, 'title', meta?.title)
   const resolvedPlaceholder = getLocalizedValue(i18n, i18nKey, 'placeholder', meta?.placeholder)
   const resolvedDescription = getLocalizedValue(i18n, i18nKey, 'description', meta?.description)
 
-  // Автоматическая подсказка из constraints (если helperText не задан явно)
-  // Приоритет: props.helperText > i18n description > meta.description > auto-generated hint
-  const autoHint = generateConstraintHint(constraints)
+  // Automatic hint from constraints (if helperText not explicitly set)
+  // Priority: props.helperText > i18n description > meta.description > auto-generated hint
+  const autoHint = generateConstraintHint(constraints, i18n?.locale ?? 'en')
   const helperText = props.helperText ?? resolvedDescription ?? autoHint
 
-  // Локализуем опции из meta (для select/enum полей)
+  // Localize options from meta (for select/enum fields)
   const localizedOptions = useLocalizedOptions(meta?.options)
 
   return {
@@ -94,9 +94,9 @@ export function useResolvedFieldProps(
     // Form-level + local props (local wins)
     disabled: props.disabled ?? formDisabled,
     readOnly: props.readOnly ?? formReadOnly,
-    // Constraints для дополнительной настройки компонентов
+    // Constraints for additional component configuration
     constraints,
-    // Options с i18n переводами
+    // Options with i18n translations
     options: localizedOptions,
   }
 }

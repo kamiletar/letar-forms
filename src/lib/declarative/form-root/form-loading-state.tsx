@@ -3,14 +3,14 @@
 import type { ReactElement } from 'react'
 
 /**
- * Состояние загрузки для формы с API.
- * Отображается пока данные загружаются в режиме редактирования.
- * Не рендерит children, чтобы избежать ошибок контекста в Field компонентах.
+ * Loading state for API-integrated forms.
+ * Displayed while data is loading in edit mode.
+ * Does not render children to avoid context errors in Field components.
  */
 export function FormLoadingState(): ReactElement {
   return (
     <div style={{ opacity: 0.5, padding: '1rem' }}>
-      <p>Загрузка данных формы...</p>
+      <p>Loading form data...</p>
     </div>
   )
 }

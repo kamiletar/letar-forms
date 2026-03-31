@@ -3,14 +3,14 @@
 import type { ValidateOn } from '../types'
 
 /**
- * Строит объект validators для TanStack Form на основе validateOn prop.
+ * Строит object validators для TanStack Form based on validateOn prop.
  *
- * @param schema - Zod схема для валидации
+ * @param schema - Zod schema for validation
  * @param validateOn - режим(ы) валидации ('change' | 'blur' | 'submit' | 'mount')
- * @returns объект validators для useAppForm или undefined если схема не указана
+ * @returns object validators для useAppForm или undefined if schema не указана
  *
  * @example
- * // Валидация при изменении (по умолчанию)
+ * // Валидация on change (by default)
  * buildValidators(MySchema) // { onChange: MySchema }
  *
  * // Валидация при blur
@@ -25,12 +25,12 @@ export function buildValidators(schema: any, validateOn?: ValidateOn | ValidateO
     return undefined
   }
 
-  // По умолчанию — валидация на onChange
+  // По умолчанию — validation на onChange
   if (!validateOn) {
     return { onChange: schema }
   }
 
-  // Нормализуем в массив
+  // Нормализуем в array
   const modes = Array.isArray(validateOn) ? validateOn : [validateOn]
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

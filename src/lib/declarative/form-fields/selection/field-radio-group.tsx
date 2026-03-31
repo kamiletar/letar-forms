@@ -6,49 +6,49 @@ import type { BaseFieldProps, BaseOption, FieldSize } from '../../types'
 import { createField, FieldError, FieldLabel, getOptionLabel } from '../base'
 
 /**
- * Props для RadioGroup поля
+ * Props for RadioGroup field
  */
 export interface RadioGroupFieldProps<T = string> extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Опции для radio группы */
+  /** Options for radio group */
   options: BaseOption<T>[]
-  /** Ориентация (по умолчанию: vertical) */
+  /** Orientation (by default: vertical) */
   orientation?: 'horizontal' | 'vertical'
-  /** Размер */
+  /** Size */
   size?: FieldSize
-  /** Визуальный вариант */
+  /** Visual variant */
   variant?: 'outline' | 'subtle' | 'solid'
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
 }
 
 /**
- * Form.Field.RadioGroup - Группа radio кнопок для единичного выбора
+ * Form.Field.RadioGroup - Radio button group for single selection
  *
- * Рендерит группу radio кнопок для взаимоисключающих опций.
- * Используй Select для длинных списков, RadioGroup для коротких (2-5 опций).
+ * Renders a radio button group for mutually exclusive options.
+ * Use Select for long lists, RadioGroup for short ones (2-5 options).
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.RadioGroup
  *   name="size"
- *   label="Размер"
+ *   label="Size"
  *   options={[
- *     { label: 'Маленький', value: 'sm' },
- *     { label: 'Средний', value: 'md' },
- *     { label: 'Большой', value: 'lg' },
+ *     { label: 'Small', value: 'sm' },
+ *     { label: 'Medium', value: 'md' },
+ *     { label: 'Large', value: 'lg' },
  *   ]}
  * />
  * ```
  *
- * @example Горизонтальная раскладка
+ * @example Horizontal layout
  * ```tsx
  * <Form.Field.RadioGroup
  *   name="priority"
  *   orientation="horizontal"
  *   options={[
- *     { label: 'Низкий', value: 'low' },
- *     { label: 'Средний', value: 'medium' },
- *     { label: 'Высокий', value: 'high' },
+ *     { label: 'Low', value: 'low' },
+ *     { label: 'Medium', value: 'medium' },
+ *     { label: 'High', value: 'high' },
  *   ]}
  * />
  * ```
@@ -73,6 +73,10 @@ export const FieldRadioGroup = createField<RadioGroupFieldProps, string>({
         disabled={resolved.disabled}
         readOnly={resolved.readOnly}
         data-field-name={fullPath}
+        display="flex"
+        flexDirection={componentProps.orientation === 'horizontal' ? 'row' : 'column'}
+        gap={componentProps.orientation === 'horizontal' ? 4 : 2}
+        flexWrap="wrap"
       >
         {componentProps.options.map((opt) => (
           <RadioGroup.Item key={opt.value} value={opt.value} disabled={opt.disabled}>

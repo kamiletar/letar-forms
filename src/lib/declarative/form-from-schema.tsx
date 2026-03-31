@@ -11,106 +11,110 @@ import { FormSimple } from './form-root'
 import type { FormMiddleware, ValidateOn } from './types'
 
 /**
- * Props для Form.FromSchema
+ * Props for Form.FromSchema
  */
 export interface FormFromSchemaProps<TData extends object> {
   /**
-   * Zod схема (обязательна)
-   * Используется для валидации и автогенерации полей
+   * Zod schema (required)
+   * Used for validation and auto-generation of fields
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: any
   /**
-   * Начальные значения формы
+   * Initial values form
    */
   initialValue: TData
   /**
-   * Обработчик отправки формы
+   * Submit handler form
    */
   onSubmit: (data: TData) => void | Promise<void>
   /**
-   * Текст кнопки отправки
-   * @default 'Сохранить'
+   * Submit button text
+   * @default 'Save'
    */
   submitLabel?: ReactNode
   /**
-   * Показывать кнопку сброса
+   * Show reset button
    * @default false
    */
   showReset?: boolean
   /**
-   * Текст кнопки сброса
-   * @default 'Сбросить'
+   * Reset button text
+   * @default 'Reset'
    */
   resetLabel?: ReactNode
   /**
-   * Исключить поля из автогенерации
+   * Exclude fields from auto-generation
    * @example exclude={['id', 'createdAt', 'updatedAt']}
    */
   exclude?: string[]
   /**
-   * Режим валидации
+   * Validation mode
    */
   validateOn?: ValidateOn | ValidateOn[]
   /**
-   * Middleware для обработки событий формы
+   * Middleware for processing form events
    */
   middleware?: FormMiddleware<TData>
   /**
-   * Глобальное отключение всех полей
+   * Globally disable all fields
    */
   disabled?: boolean
   /**
-   * Глобальный режим только для чтения
+   * Global read-only mode
    */
   readOnly?: boolean
   /**
-   * Конфигурация localStorage персистенции
+   * localStorage persistence configuration
    */
   persistence?: FormPersistenceConfig
   /**
-   * Конфигурация оффлайн режима
+   * Offline mode configuration
    */
   offline?: FormOfflineConfig
   /**
-   * Дополнительный контент перед кнопками
+   * JSON value inspector: true = dev only, 'force' = also in production
+   */
+  debug?: boolean | 'force'
+  /**
+   * Additional content before buttons
    */
   beforeButtons?: ReactNode
   /**
-   * Дополнительный контент после кнопок
+   * Additional content after buttons
    */
   afterButtons?: ReactNode
   /**
-   * Gap между полями
+   * Gap between fields
    * @default 4
    */
   gap?: number
 }
 
 /**
- * Form.FromSchema — полностью автоматическая генерация формы из Zod схемы
+ * Form.FromSchema — fully automatic form generation from Zod schema
  *
- * Создаёт форму с автоматически сгенерированными полями на основе
- * типов и метаданных Zod схемы.
+ * Creates a form with automatically generated fields based on
+ * Zod schema types and metadata.
  *
- * @example Простое использование
+ * @example Basic usage
  * ```tsx
  * const UserSchema = z.object({
- *   firstName: z.string().meta({ ui: { title: 'Имя' } }),
- *   lastName: z.string().meta({ ui: { title: 'Фамилия' } }),
+ *   firstName: z.string().meta({ ui: { title: 'Name' } }),
+ *   lastName: z.string().meta({ ui: { title: 'Last Name' } }),
  *   email: z.string().email().meta({ ui: { title: 'Email' } }),
- *   bio: z.string().meta({ ui: { title: 'О себе', fieldType: 'textarea' } }),
+ *   bio: z.string().meta({ ui: { title: 'About', fieldType: 'textarea' } }),
  * })
  *
  * <Form.FromSchema
  *   schema={UserSchema}
  *   initialValue={{ firstName: '', lastName: '', email: '', bio: '' }}
  *   onSubmit={saveUser}
- *   submitLabel="Создать пользователя"
+ *   submitLabel="Create User"
  * />
  * ```
  *
- * @example С исключением полей и кнопкой сброса
+ * @example With field exclusion and reset button
  * ```tsx
  * <Form.FromSchema
  *   schema={UserSchema}
@@ -118,12 +122,12 @@ export interface FormFromSchemaProps<TData extends object> {
  *   onSubmit={updateUser}
  *   exclude={['id', 'createdAt']}
  *   showReset
- *   submitLabel="Обновить"
- *   resetLabel="Отменить изменения"
+ *   submitLabel="Update"
+ *   resetLabel="Undo changes"
  * />
  * ```
  *
- * @example С middleware и валидацией
+ * @example With middleware and validation
  * ```tsx
  * <Form.FromSchema
  *   schema={UserSchema}
@@ -131,7 +135,7 @@ export interface FormFromSchemaProps<TData extends object> {
  *   onSubmit={save}
  *   validateOn="blur"
  *   middleware={{
- *     afterSuccess: () => toaster.success({ title: 'Сохранено!' }),
+ *     afterSuccess: () => toaster.success({ title: 'Saved!' }),
  *     onError: (e) => toaster.error({ title: e.message }),
  *   }}
  * />
@@ -141,14 +145,15 @@ export function FormFromSchema<TData extends object>({
   schema,
   initialValue,
   onSubmit,
-  submitLabel = 'Сохранить',
+  submitLabel = 'Save',
   showReset = false,
-  resetLabel = 'Сбросить',
+  resetLabel = 'Reset',
   exclude,
   validateOn,
   middleware,
   disabled,
   readOnly,
+  debug,
   persistence,
   offline,
   beforeButtons,
@@ -164,23 +169,24 @@ export function FormFromSchema<TData extends object>({
       middleware={middleware}
       disabled={disabled}
       readOnly={readOnly}
+      debug={debug}
       persistence={persistence}
       offline={offline}
     >
       <VStack align="stretch" gap={gap}>
-        {/* Автоматически сгенерированные поля */}
+        {/* Automatically generated fields */}
         <FormAutoFields exclude={exclude} />
 
-        {/* Дополнительный контент перед кнопками */}
+        {/* Additional content before buttons */}
         {beforeButtons}
 
-        {/* Кнопки */}
+        {/* Buttons */}
         <HStack justify="flex-end" gap={2}>
           {showReset && <ButtonReset variant="outline">{resetLabel}</ButtonReset>}
           <ButtonSubmit>{submitLabel}</ButtonSubmit>
         </HStack>
 
-        {/* Дополнительный контент после кнопок */}
+        {/* Additional content after buttons */}
         {afterButtons}
       </VStack>
     </FormSimple>

@@ -6,33 +6,33 @@ import type { CurrencyFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Form.Field.Currency - Поле ввода валюты
+ * Form.Field.Currency - Currency input field
  *
- * Рендерит NumberInput с форматированием валюты (символ и дробная часть).
+ * Renders NumberInput with currency formatting (symbol and decimal part).
  *
- * @example Российские рубли (по умолчанию)
+ * @example Russian rubles (by default)
  * ```tsx
- * <Form.Field.Currency name="price" label="Цена" />
+ * <Form.Field.Currency name="price" label="Price" />
  * ```
  *
- * @example Доллары США
+ * @example US Dollars
  * ```tsx
- * <Form.Field.Currency name="amount" label="Сумма" currency="USD" />
+ * <Form.Field.Currency name="amount" label="Amount" currency="USD" />
  * ```
  *
- * @example Евро с кодом валюты
+ * @example Euro with currency code
  * ```tsx
  * <Form.Field.Currency
  *   name="total"
- *   label="Итого"
+ *   label="Total"
  *   currency="EUR"
  *   currencyDisplay="code"
  * />
  * ```
  */
-/** Состояние поля валюты */
+/** Currency field state */
 interface CurrencyFieldState {
-  /** Мемоизированные опции форматирования */
+  /** Memoized format options */
   formatOptions: Intl.NumberFormatOptions
 }
 
@@ -42,7 +42,7 @@ export const FieldCurrency = createField<CurrencyFieldProps, number | undefined,
   useFieldState: (props) => {
     const { currency = 'RUB', currencyDisplay = 'symbol', decimalScale = 2 } = props
 
-    // Мемоизируем formatOptions на верхнем уровне компонента
+    // Memoize formatOptions at component top level
     const formatOptions = useMemo(
       () => ({
         style: 'currency' as const,

@@ -1,4 +1,4 @@
-// Хук формы и контексты
+// Form hook and contexts
 export {
   fieldContext,
   formContext,
@@ -9,11 +9,11 @@ export {
 } from './lib/context'
 export { useAppForm, withForm } from './lib/form-hook'
 
-// Базовые компоненты форм (для именования/группировки)
+// Base form components (for naming/grouping)
 export { FormField, useFormField, type FormFieldContextValue, type FormFieldProps } from './lib/form-field'
 export { FormGroup, useFormGroup, type FormGroupContextValue, type FormGroupProps } from './lib/form-group'
 
-// Компоненты с интеграцией TanStack Form
+// Components with TanStack Form integration
 export {
   TanStackFormField,
   useTanStackFormField,
@@ -21,10 +21,10 @@ export {
   type TanStackFormFieldProps,
 } from './lib/tanstack-form-field'
 
-// Компоненты с интеграцией Chakra UI
+// Components with Chakra UI integration
 export { ChakraFormField, type ChakraFormFieldProps } from './lib/chakra-form-field'
 
-// Компоненты для массивов полей
+// Array field components
 export {
   FormGroupList,
   FormGroupListItem,
@@ -36,10 +36,10 @@ export {
   type FormGroupListProps,
 } from './lib/form-group-list'
 
-// Типы
+// Types
 export type { BaseFieldProps, DeepKeys, DeepValue, FieldApi, FormApi } from './lib/types'
 
-// Декларативное API форм
+// Declarative forms API
 export {
   ButtonSubmit,
   DeclarativeFormContext,
@@ -52,7 +52,7 @@ export {
   Form,
   FormGroupDeclarative,
   FormGroupListDeclarative,
-  // Провайдер для полей связей
+  // Relation field provider
   RelationFieldProvider,
   booleanMeta,
   commonMeta,
@@ -60,7 +60,7 @@ export {
   dateMeta,
   enumMeta,
   numberMeta,
-  // Хелперы для метаданных
+  // Metadata helpers
   relationMeta,
   textMeta,
   useDeclarativeField,
@@ -69,7 +69,7 @@ export {
   useRelationFieldContext,
   useRelationOptions,
   withRelations,
-  // Обогащение схемы UI метаданными
+  // Enrich schema with UI metadata
   withUIMeta,
   withUIMetaDeep,
 } from './lib/declarative'
@@ -92,7 +92,7 @@ export type {
   ListboxFieldProps,
   ListboxOption,
   NumberFieldProps,
-  // Типы провайдера связей
+  // Relation provider types
   QueryHookResult,
   RelationConfig,
   RelationFieldConfig,
@@ -114,14 +114,14 @@ export type {
 
 export { useFieldActions, useFormApi, useFormStepsContext, type FieldActionsResult } from './lib/declarative'
 
-// Хуки для async поиска (Combobox, Autocomplete)
+// Hooks for async search (Combobox, Autocomplete)
 export { useAsyncSearch, useDebounce } from './lib/declarative'
 export type { AsyncQueryFn, AsyncQueryResult, UseAsyncSearchOptions, UseAsyncSearchResult } from './lib/declarative'
 
-// UI компоненты полей
+// Field UI components
 export { FieldLabel, FieldTooltip, type FieldLabelProps, type FieldTooltipProps } from './lib/declarative'
 
-// Утилиты контекста
+// Context utilities
 export {
   createNamedGroupContext,
   createSafeContext,
@@ -129,7 +129,7 @@ export {
   type SafeContextResult,
 } from './lib/contexts'
 
-// Оффлайн поддержка
+// Offline support
 export { FormOfflineIndicator, FormSyncStatus, useOfflineForm, useOfflineStatus, useSyncQueue } from './lib/offline'
 
 export type {
@@ -144,7 +144,7 @@ export type {
   UseSyncQueueResult,
 } from './lib/offline'
 
-// i18n поддержка
+// i18n support
 export { FormI18nProvider, getLocalizedValue, useFormI18n, useLocalizedOptions } from './lib/i18n'
 
 export type { LocalizableOption, TranslateFunction, TranslateParams } from './lib/i18n'

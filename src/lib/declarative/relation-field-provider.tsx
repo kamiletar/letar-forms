@@ -1,33 +1,33 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 /**
- * Опция для поля выбора
+ * Option for selection field
  */
 export interface RelationOption {
-  /** Значение (обычно ID) */
+  /** Value (usually ID) */
   value: string
-  /** Отображаемый текст */
+  /** Display text */
   label: string
-  /** Описание (опционально) */
+  /** Description (optional) */
   description?: string
 }
 
 /**
- * Состояние загрузки relation
+ * Loading state relation
  */
 export interface RelationState {
-  /** Опции для выбора */
+  /** Options for selection */
   options: RelationOption[]
-  /** Идёт загрузка */
+  /** Loading in progress */
   isLoading: boolean
-  /** Ошибка загрузки */
+  /** Error loading */
   error: Error | null
 }
 
 /**
- * Результат хука загрузки данных
+ * Data loading hook result
  */
 export interface QueryHookResult<TData = unknown> {
   data?: TData[] | null
@@ -36,52 +36,52 @@ export interface QueryHookResult<TData = unknown> {
 }
 
 /**
- * Конфигурация relation для загрузки
+ * Relation loading configuration
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface RelationConfig<TData = any, TArgs = any> {
-  /** Имя модели (должно совпадать с model в relationMeta) */
+  /** Model name (must match model in relationMeta) */
   model: string
   /**
-   * React hook для загрузки данных (должен возвращать { data, isLoading, error })
+   * React hook for loading data (must return { data, isLoading, error })
    * @example useFindManyCategory
    */
   useQuery: (args?: TArgs) => QueryHookResult<TData>
-  /** Поле для отображения label */
+  /** Field to display as label */
   labelField: string
-  /** Поле для значения (по умолчанию 'id') */
+  /** Field for value (by default 'id') */
   valueField?: string
-  /** Поле для description (опционально) */
+  /** Field for description (optional) */
   descriptionField?: string
-  /** Аргументы для useQuery (фильтры, сортировка) */
+  /** Arguments for useQuery (filters, sorting) */
   queryArgs?: TArgs
 }
 
 /**
- * Значение контекста RelationFieldProvider
+ * RelationFieldProvider context value
  */
 export interface RelationFieldContextValue {
-  /** Получить options для модели */
+  /** Get options for model */
   getOptions: (model: string) => RelationOption[]
-  /** Получить состояние загрузки для модели */
+  /** Get state loading for model */
   getState: (model: string) => RelationState
-  /** Все загруженные relation */
+  /** All loaded relations */
   relations: Record<string, RelationState>
 }
 
 const RelationFieldContext = createContext<RelationFieldContextValue | null>(null)
 
 /**
- * Хук для получения контекста RelationFieldProvider
+ * Hook for getting RelationFieldProvider context
  */
 export function useRelationFieldContext(): RelationFieldContextValue | null {
   return useContext(RelationFieldContext)
 }
 
 /**
- * Хук для получения options конкретной модели
- * @param model - имя модели
- * @returns options и состояние загрузки
+ * Hook for getting options of a specific model
+ * @param model - model name
+ * @returns options and loading state
  */
 export function useRelationOptions(model: string): RelationState {
   const context = useRelationFieldContext()
@@ -98,8 +98,8 @@ export function useRelationOptions(model: string): RelationState {
 }
 
 /**
- * Компонент-загрузчик для одной relation
- * Вызывается внутри провайдера, соблюдает правила хуков
+ * Loader component for a single relation
+ * Called inside the provider, follows hooks rules
  */
 function RelationLoader<TData>({
   config,
@@ -110,10 +110,10 @@ function RelationLoader<TData>({
 }) {
   const { model, useQuery, labelField, valueField = 'id', descriptionField, queryArgs } = config
 
-  // Вызываем хук для загрузки данных
+  // Call the data loading hook
   const { data, isLoading, error } = useQuery(queryArgs)
 
-  // Преобразуем данные в options при изменении
+  // Transform data into options on change
   useEffect(() => {
     if (isLoading) {
       onLoaded(model, { options: [], isLoading: true, error: null })
@@ -138,17 +138,17 @@ function RelationLoader<TData>({
     onLoaded(model, { options, isLoading: false, error: null })
   }, [data, isLoading, error, model, labelField, valueField, descriptionField, onLoaded])
 
-  // Компонент не рендерит ничего
+  // Component renders nothing
   return null
 }
 
 /**
- * Провайдер для автозагрузки options relation полей
+ * Provider for auto-loading relation field options
  *
- * Позволяет автоматически загружать опции для полей с `relationMeta()`,
- * интегрируясь с ZenStack hooks.
+ * Allows automatically loading options for fields with `relationMeta()`,
+ * integrating with ZenStack hooks.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * import { useFindManyCategory, useFindManyTag } from '@/generated/hooks'
  *
@@ -164,7 +164,7 @@ function RelationLoader<TData>({
  * </RelationFieldProvider>
  * ```
  *
- * @example С фильтрацией и сортировкой
+ * @example With filtering and sorting
  * ```tsx
  * <RelationFieldProvider
  *   relations={[
@@ -181,7 +181,7 @@ function RelationLoader<TData>({
  * >
  * ```
  *
- * @example С description для RadioCard/CheckboxCard
+ * @example With description for RadioCard/CheckboxCard
  * ```tsx
  * <RelationFieldProvider
  *   relations={[
@@ -199,18 +199,18 @@ export function RelationFieldProvider({
   relations,
   children,
 }: {
-  /** Конфигурации relation для загрузки */
+  /** Relation loading configurations */
   relations: RelationConfig[]
   children: ReactNode
 }) {
-  // Состояние всех загруженных relation
+  // State of all loaded relations
   const [relationsState, setRelationsState] = useState<Record<string, RelationState>>({})
 
-  // Callback для обновления состояния relation
+  // Callback for updating relation state
   const handleLoaded = useMemo(
     () => (model: string, state: RelationState) => {
       setRelationsState((prev) => {
-        // Проверяем, изменились ли данные
+        // Check if data has changed
         const prevState = prev[model]
         if (
           prevState &&
@@ -218,7 +218,7 @@ export function RelationFieldProvider({
           prevState.error === state.error &&
           JSON.stringify(prevState.options) === JSON.stringify(state.options)
         ) {
-          return prev // Без изменений
+          return prev // No changes
         }
         return { ...prev, [model]: state }
       })
@@ -226,7 +226,7 @@ export function RelationFieldProvider({
     []
   )
 
-  // Значение контекста
+  // Context value
   const contextValue = useMemo<RelationFieldContextValue>(
     () => ({
       getOptions: (model: string) => relationsState[model]?.options ?? [],
@@ -243,7 +243,7 @@ export function RelationFieldProvider({
 
   return (
     <RelationFieldContext.Provider value={contextValue}>
-      {/* Рендерим загрузчики для каждой relation */}
+      {/* Render loaders for each relation */}
       {relations.map((config) => (
         <RelationLoader key={config.model} config={config} onLoaded={handleLoaded} />
       ))}
@@ -253,7 +253,7 @@ export function RelationFieldProvider({
 }
 
 /**
- * HOC для оборачивания компонента в RelationFieldProvider
+ * HOC for wrapping a component with RelationFieldProvider
  *
  * @example
  * ```tsx

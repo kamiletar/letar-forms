@@ -6,70 +6,70 @@ import type { BaseFieldProps, FieldTooltipMeta } from '../../types'
 import { createField, FieldError, SelectionFieldLabel } from '../base'
 
 /**
- * Props для Form.Field.Tags
+ * Props for Form.Field.Tags
  */
 export interface TagsFieldProps extends BaseFieldProps {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
-  /** Максимальное количество тегов */
+  /** Maximum number of tags */
   maxTags?: number
-  /** Минимальная длина каждого тега (по умолчанию: 1) */
+  /** Minimum length of each tag (by default: 1) */
   minTagLength?: number
-  /** Кастомный разделитель (regex или строка). По умолчанию Enter */
+  /** Custom delimiter (regex or string). Default: Enter */
   delimiter?: RegExp | string
-  /** Добавлять теги при blur (по умолчанию: false) */
+  /** Add tags on blur (by default: false) */
   addOnBlur?: boolean
-  /** Добавлять теги при вставке (по умолчанию: true) */
+  /** Add tags on paste (by default: true) */
   addOnPaste?: boolean
-  /** Разрешить редактирование тегов по клику (по умолчанию: false) */
+  /** Allow editing tags on click (by default: false) */
   editable?: boolean
-  /** Показывать кнопку очистки (по умолчанию: false) */
+  /** Show clear button (by default: false) */
   clearable?: boolean
-  /** Размер (по умолчанию: md) */
+  /** Size (by default: md) */
   size?: 'xs' | 'sm' | 'md' | 'lg'
-  /** Визуальный вариант (по умолчанию: outline) */
+  /** Visual variant (by default: outline) */
   variant?: 'outline' | 'subtle' | 'flushed'
-  /** Цветовая палитра для тегов */
+  /** Color palette for tags */
   colorPalette?: string
 }
 
 /**
- * Form.Field.Tags - Поле ввода тегов
+ * Form.Field.Tags - Tags input field
  *
- * Рендерит input для добавления/удаления строковых тегов.
- * Интегрируется с Chakra UI TagsInput компонентом.
+ * Renders input for adding/removing string tags.
+ * Integrates with Chakra UI TagsInput component.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.Tags name="tags" label="Теги" placeholder="Добавить тег..." />
+ * <Form.Field.Tags name="tags" label="Tags" placeholder="Add tag..." />
  * ```
  *
- * @example С ограничениями
+ * @example With constraints
  * ```tsx
  * <Form.Field.Tags
  *   name="categories"
- *   label="Категории"
+ *   label="Categories"
  *   maxTags={5}
  *   minTagLength={2}
- *   helperText="До 5 категорий"
+ *   helperText="Up to 5 categories"
  * />
  * ```
  *
- * @example С кастомным разделителем
+ * @example With custom delimiter
  * ```tsx
  * <Form.Field.Tags
  *   name="emails"
- *   label="Email адреса"
+ *   label="Email addresses"
  *   delimiter={/[;,\s]/}
  *   addOnPaste
  * />
  * ```
  *
- * @example Редактируемые теги
+ * @example Editable tags
  * ```tsx
  * <Form.Field.Tags
  *   name="tags"
- *   label="Теги"
+ *   label="Tags"
  *   editable
  *   clearable
  * />

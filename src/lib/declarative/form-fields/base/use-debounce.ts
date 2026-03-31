@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Хук для debounce значения
+ * Hook for debouncing a value
  *
- * Задерживает обновление значения на указанное время.
- * Полезен для поисковых полей, autocomplete и других случаев,
- * когда нужно ограничить частоту запросов.
+ * Delays value update by the specified time.
+ * Useful for search fields, autocomplete and other cases
+ * when you need to limit request frequency.
  *
- * @param value - Значение для debounce
- * @param delay - Задержка в миллисекундах (по умолчанию 300)
- * @returns Debounced значение
+ * @param value - Value to debounce
+ * @param delay - Delay in milliseconds (default 300)
+ * @returns Debounced value
  *
  * @example
  * ```tsx
@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react'
  * const debouncedValue = useDebounce(inputValue, 300)
  *
  * useEffect(() => {
- *   // Выполняется только когда пользователь перестал печатать
+ *   // Executes only when user stops typing
  *   searchAPI(debouncedValue)
  * }, [debouncedValue])
  * ```

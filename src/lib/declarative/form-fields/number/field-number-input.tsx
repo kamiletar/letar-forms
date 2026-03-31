@@ -6,25 +6,25 @@ import type { NumberInputFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Form.Field.NumberInput - Числовое поле с расширенными опциями
+ * Form.Field.NumberInput - Number field with extended options
  *
- * Расширяет базовое Number поле форматированием, поддержкой колеса мыши и др.
+ * Extends base Number field with formatting, mouse wheel support, etc.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.NumberInput name="quantity" label="Количество" min={1} max={100} />
+ * <Form.Field.NumberInput name="quantity" label="Quantity" min={1} max={100} />
  * ```
  *
- * @example С форматированием валюты
+ * @example With currency formatting
  * ```tsx
  * <Form.Field.NumberInput
  *   name="price"
- *   label="Цена"
+ *   label="Price"
  *   formatOptions={{ style: 'currency', currency: 'RUB' }}
  * />
  * ```
  *
- * @example С колесом мыши
+ * @example With mouse wheel
  * ```tsx
  * <Form.Field.NumberInput name="count" allowMouseWheel />
  * ```

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, type ReactNode } from 'react'
+import { createContext, type ReactNode, useContext, useEffect } from 'react'
 import { z } from 'zod/v4'
 import { createFormErrorMap } from './create-form-error-map'
 
@@ -37,11 +37,13 @@ const FormI18nContext = createContext<FormI18nContextValue | null>(null)
  */
 interface FormI18nProviderProps {
   /**
-   * Функция перевода из next-intl или другой i18n библиотеки
+   * Функция перевода из next-intl или другой i18n библиотеки.
+   * Если не задана, переводы полей (title, placeholder) не применяются,
+   * но locale используется для constraint hints.
    * @example useTranslations('formSchemas')
    */
-  t: TranslateFunction
-  /** Текущая локаль */
+  t?: TranslateFunction
+  /** Текущая локаль (default: 'en') */
   locale: string
   children: ReactNode
   /**
@@ -97,9 +99,12 @@ interface FormI18nProviderProps {
  * ```
  */
 export function FormI18nProvider({ t, locale, children, setupZodErrorMap = false }: FormI18nProviderProps) {
+  // Fallback t-функция: возвращает ключ как есть (без перевода)
+  const resolvedT: TranslateFunction = t ?? ((key: string) => key)
+
   // Настраиваем глобальный Zod error map при включённом флаге
   useEffect(() => {
-    if (setupZodErrorMap) {
+    if (setupZodErrorMap && t) {
       const errorMap = createFormErrorMap({ t })
       // Type assertion: наш error map совместим с Zod v4 API,
       // но TypeScript не может вывести это автоматически
@@ -107,7 +112,7 @@ export function FormI18nProvider({ t, locale, children, setupZodErrorMap = false
     }
   }, [setupZodErrorMap, t])
 
-  return <FormI18nContext.Provider value={{ t, locale, enabled: true }}>{children}</FormI18nContext.Provider>
+  return <FormI18nContext.Provider value={{ t: resolvedT, locale, enabled: !!t }}>{children}</FormI18nContext.Provider>
 }
 
 /**
@@ -147,7 +152,7 @@ export function getLocalizedValue(
   i18n: FormI18nContextValue | null,
   i18nKey: string | undefined,
   property: 'title' | 'placeholder' | 'description' | 'label',
-  fallback: string | undefined
+  fallback: string | undefined,
 ): string | undefined {
   if (!i18n || !i18nKey) {
     return fallback

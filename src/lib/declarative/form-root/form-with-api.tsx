@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, type ReactElement, type ReactNode } from 'react'
+import { type ReactElement, type ReactNode, useEffect } from 'react'
 import { useAppForm } from '../../form-hook'
 import type { FormOfflineConfig } from '../../offline'
 import { DeclarativeFormContext } from '../form-context'
+import { FormDebugValues } from '../form-debug-values'
 import type { FormPersistenceConfig } from '../form-persistence'
 import type { DeclarativeFormContextValue, FormApiConfig, FormMiddleware, ValidateOn } from '../types'
 import { useFormApi } from '../use-form-api'
@@ -12,52 +13,56 @@ import { buildValidators } from './form-validators'
 import { useFormFeatures } from './use-form-features'
 
 /**
- * Props для FormWithApi компонента
+ * Props for FormWithApi component
  */
 export interface FormWithApiProps<TData extends object> {
-  /** Конфигурация API (ZenStack) */
+  /** API configuration (ZenStack) */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   api: FormApiConfig<TData, any>
-  /** Начальные значения (fallback пока данные загружаются) */
+  /** Initial values (fallback while data is loading) */
   initialValue?: TData
-  /** Дополнительный обработчик после успешной отправки */
+  /** Additional handler after successful submission */
   onSubmit?: (data: TData) => void | Promise<void>
-  /** Zod схема для валидации */
+  /** Zod schema for validation */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema?: any
-  /** Конфигурация persistence (localStorage) */
+  /** Persistence configuration (localStorage) */
   persistence?: FormPersistenceConfig
-  /** Конфигурация offline-режима */
+  /** Offline mode configuration */
   offline?: FormOfflineConfig
-  /** Режим(ы) валидации */
+  /** Validation mode(s) */
   validateOn?: ValidateOn | ValidateOn[]
-  /** Отключить все поля формы */
+  /** Disable all form fields */
   disabled?: boolean
-  /** Режим "только чтение" для всех полей */
+  /** Read-only mode for all fields */
   readOnly?: boolean
-  /** Middleware для обработки событий формы */
+  /** JSON value inspector: true = dev only, 'force' = also in production */
+  debug?: boolean | 'force'
+  /** Middleware for form event handling */
   middleware?: FormMiddleware<TData>
-  /** Содержимое формы */
+  /** Address suggestion provider for Form.Field.Address and Form.Field.City */
+  addressProvider?: import('../form-fields/specialized/providers').AddressProvider
+  /** Form content */
   children: ReactNode
 }
 
 /**
- * Форма с интеграцией ZenStack API.
- * Автоматически загружает данные в режиме редактирования,
- * использует create/update мутации для сохранения.
+ * Form with ZenStack API integration.
+ * Automatically loads data in edit mode,
+ * uses create/update mutations for saving.
  *
  * @example
  * <FormWithApi
  *   api={{
- *     id: 'abc123', // пустой = создание, заполненный = редактирование
+ *     id: 'abc123', // empty = create, filled = edit
  *     query: { hook: useFindUniqueRecipe, include: { components: true } },
  *     mutations: { create: useCreateRecipe, update: useUpdateRecipe },
  *   }}
  *   schema={RecipeSchema}
- *   onSubmit={(data) => console.log('Сохранено:', data)}
+ *   onSubmit={(data) => console.log('Saved:', data)}
  * >
- *   <Form.Field.String name="title" label="Название" />
- *   <Form.Button.Submit>Сохранить</Form.Button.Submit>
+ *   <Form.Field.String name="title" label="Title" />
+ *   <Form.Button.Submit>Save</Form.Button.Submit>
  * </FormWithApi>
  */
 export function FormWithApi<TData extends object>({
@@ -70,43 +75,45 @@ export function FormWithApi<TData extends object>({
   validateOn,
   disabled,
   readOnly,
+  debug,
   middleware,
+  addressProvider,
   children,
 }: FormWithApiProps<TData>): ReactElement {
-  // Хук для работы с API
+  // Hook for API operations
   const formApi = useFormApi(api)
 
-  // Используем общий хук для persistence и offline
+  // Use shared hook for persistence and offline
   const features = useFormFeatures<TData>({
     persistence,
     offline,
     onlineSubmit: async (value) => {
-      // Вызываем API мутацию
+      // Call API mutation
       await formApi.submit(value)
-      // Вызываем пользовательский callback
+      // Call user callback
       await onSubmit?.(value)
     },
   })
 
-  // Определяем начальные значения:
-  // - Режим редактирования: используем загруженные данные (или initialValue как fallback)
-  // - Режим создания: используем initialValue (или пустой объект)
+  // Determine initial values:
+  // - Edit mode: use loaded data (or initialValue as fallback)
+  // - Create mode: use initialValue (or empty object)
   const defaultValues = formApi.isEditMode
     ? (formApi.data ?? initialValue ?? ({} as TData))
     : (initialValue ?? ({} as TData))
 
-  // Инициализируем форму
+  // Initialize form
   const form = useAppForm({
     defaultValues,
     validators: buildValidators(schema, validateOn),
     onSubmit: async ({ value, formApi: tanstackFormApi }) => {
       let dataToSubmit = value as TData
 
-      // Применяем beforeSubmit middleware
+      // Apply beforeSubmit middleware
       if (middleware?.beforeSubmit) {
         const transformed = await middleware.beforeSubmit(dataToSubmit)
         if (transformed === undefined) {
-          // Отмена submit
+          // Cancel submit
           return
         }
         dataToSubmit = transformed
@@ -115,15 +122,15 @@ export function FormWithApi<TData extends object>({
       try {
         await features.handleSubmit(dataToSubmit)
 
-        // Вызываем afterSuccess middleware
+        // Call afterSuccess middleware
         if (middleware?.afterSuccess) {
           await middleware.afterSuccess(dataToSubmit)
         }
 
-        // Сбрасываем форму с текущими значениями для очистки dirty-состояния
+        // Reset form with current values to clear dirty state
         tanstackFormApi.reset(dataToSubmit)
       } catch (error) {
-        // Вызываем onError middleware
+        // Call onError middleware
         if (middleware?.onError) {
           await middleware.onError(error instanceof Error ? error : new Error(String(error)))
         }
@@ -132,17 +139,17 @@ export function FormWithApi<TData extends object>({
     },
   })
 
-  // Подписка на изменения для persistence
+  // Subscribe to changes for persistence
   useEffect(() => {
     return features.subscribeToFormChanges(form)
   }, [form, features])
 
-  // Восстановление данных из persistence
+  // Restore data from persistence
   useEffect(() => {
     if (
-      !features.isPersistenceEnabled ||
-      !features.persistenceResult.shouldRestore ||
-      !features.persistenceResult.savedData
+      !features.isPersistenceEnabled
+      || !features.persistenceResult.shouldRestore
+      || !features.persistenceResult.savedData
     ) {
       return
     }
@@ -155,14 +162,14 @@ export function FormWithApi<TData extends object>({
     features.persistenceResult.savedData,
   ])
 
-  // Флаг загрузки данных (режим редактирования)
+  // Data loading flag (edit mode)
   const dataLoaded = formApi.isEditMode && formApi.data && !formApi.isLoading
 
-  // Формируем значение контекста
+  // Build context value
   const contextValue: DeclarativeFormContextValue = {
     form,
     schema,
-    // Экспортируем состояние API для компонентов, которым оно нужно
+    // Export API state for components that need it
     apiState: {
       isEditMode: formApi.isEditMode,
       isLoading: formApi.isLoading,
@@ -173,16 +180,17 @@ export function FormWithApi<TData extends object>({
     offlineState: features.offlineState,
     disabled,
     readOnly,
+    addressProvider,
   }
 
-  // Показываем состояние загрузки в режиме редактирования
+  // Show loading state in edit mode
   if (formApi.isLoading) {
     return <FormLoadingState />
   }
 
   return (
     <DeclarativeFormContext.Provider value={contextValue} key={dataLoaded ? 'loaded' : 'initial'}>
-      {/* Диалог восстановления данных */}
+      {/* Data restore dialog */}
       {features.isPersistenceEnabled && <features.persistenceResult.RestoreDialog />}
       <form
         onSubmit={(e) => {
@@ -192,6 +200,7 @@ export function FormWithApi<TData extends object>({
         }}
       >
         {children}
+        {debug && <FormDebugValues showInProduction={debug === 'force'} />}
       </form>
     </DeclarativeFormContext.Provider>
   )

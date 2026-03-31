@@ -8,15 +8,15 @@ import type { FieldTooltipMeta } from '../../types'
 export type FieldTooltipProps = FieldTooltipMeta
 
 /**
- * Компонент подсказки для полей формы.
- * Показывает иконку "?" с всплывающей подсказкой при наведении.
+ * Tooltip component for form fields.
+ * Shows a "?" icon with a popup hint on hover.
  *
  * @example
  * ```tsx
  * <FieldTooltip
- *   description="Укажите марку вашего учебного автомобиля"
+ *   description="Specify the brand of your training car"
  *   example="Hyundai, Kia, Volkswagen"
- *   impact="Ученики часто ищут инструктора по марке авто"
+ *   impact="Students often search for instructor by car brand"
  * />
  * ```
  */
@@ -51,7 +51,7 @@ export function FieldTooltip({ title, description, example, impact }: FieldToolt
               {example && (
                 <Box bg="bg.emphasized" px={2} py={1} borderRadius="md" w="full">
                   <Text fontSize="xs" color="fg.muted">
-                    Пример:
+                    Example:
                   </Text>
                   <Text fontSize="sm" fontStyle="italic">
                     &quot;{example}&quot;

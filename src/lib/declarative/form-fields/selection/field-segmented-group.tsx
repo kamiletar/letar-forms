@@ -6,30 +6,30 @@ import type { BaseFieldProps, BaseOption, FieldSize } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Props для SegmentedGroup поля
+ * Props for SegmentedGroup field
  */
 export interface SegmentedGroupFieldProps<T = string> extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Опции для сегментированного контрола */
+  /** Options for segmented control */
   options: BaseOption<T>[]
-  /** Размер (по умолчанию: md) */
+  /** Size (by default: md) */
   size?: FieldSize
-  /** Ориентация (по умолчанию: horizontal) */
+  /** Orientation (by default: horizontal) */
   orientation?: 'horizontal' | 'vertical'
-  /** Цветовая палитра */
+  /** Color palette */
   colorPalette?: string
 }
 
 /**
- * Form.Field.SegmentedGroup - Сегментированный контрол для единичного выбора
+ * Form.Field.SegmentedGroup - Segmented control for single selection
  *
- * Рендерит сегментированный контрол для выбора одной опции из набора.
- * Похож на radio кнопки, но стилизован как соединённые сегменты.
+ * Renders a segmented control for selecting one option from a set.
+ * Similar to radio buttons but styled as connected segments.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.SegmentedGroup
  *   name="size"
- *   label="Размер"
+ *   label="Size"
  *   options={[
  *     { label: 'S', value: 'sm' },
  *     { label: 'M', value: 'md' },
@@ -38,13 +38,13 @@ export interface SegmentedGroupFieldProps<T = string> extends Omit<BaseFieldProp
  * />
  * ```
  *
- * @example Разные размеры
+ * @example Different sizes
  * ```tsx
  * <Form.Field.SegmentedGroup
  *   name="billing"
  *   options={[
- *     { label: 'Месячная', value: 'monthly' },
- *     { label: 'Годовая', value: 'yearly' },
+ *     { label: 'Monthly', value: 'monthly' },
+ *     { label: 'Yearly', value: 'yearly' },
  *   ]}
  *   size="sm"
  * />

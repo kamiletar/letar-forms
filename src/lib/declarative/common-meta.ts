@@ -3,13 +3,13 @@
 import type { FieldComponentType, FieldUIMeta } from './types/meta-types'
 
 /**
- * Готовые пресеты для системных полей (id, createdAt, updatedAt)
+ * Ready-made presets for system fields (id, createdAt, updatedAt)
  *
  * @example
  * ```ts
  * const UserFormSchema = withUIMeta(UserCreateInputSchema, {
- *   ...commonMeta,  // Добавит id, createdAt, updatedAt
- *   name: { title: 'Имя' },
+ *   ...commonMeta,  // Adds id, createdAt, updatedAt
+ *   name: { title: 'Name' },
  * })
  * ```
  */
@@ -20,19 +20,19 @@ export const commonMeta: Record<string, FieldUIMeta> = {
     fieldProps: { disabled: true },
   },
   createdAt: {
-    title: 'Создано',
+    title: 'Created',
     fieldType: 'date',
     fieldProps: { readOnly: true },
   },
   updatedAt: {
-    title: 'Обновлено',
+    title: 'Updated',
     fieldType: 'date',
     fieldProps: { readOnly: true },
   },
 }
 
 /**
- * Типы полей для выбора из списка (enum/select)
+ * Field types for selection from a list (enum/select)
  */
 export type SelectionFieldType = Extract<
   FieldComponentType,
@@ -40,23 +40,23 @@ export type SelectionFieldType = Extract<
 >
 
 /**
- * Хелпер для создания UI метаданных relation полей
+ * Helper for creating UI metadata for relation fields
  *
  * @example
  * ```ts
  * const OrderFormSchema = withUIMeta(OrderCreateInputSchema, {
  *   categoryId: relationMeta({
- *     title: 'Категория',
+ *     title: 'Category',
  *     model: 'Category',
  *     labelField: 'name',
  *   }),
  * })
  * ```
  *
- * @example С кастомным типом поля
+ * @example With custom field type
  * ```ts
  * categoryId: relationMeta({
- *   title: 'Категория',
+ *   title: 'Category',
  *   model: 'Category',
  *   labelField: 'name',
  *   fieldType: 'combobox',
@@ -64,17 +64,17 @@ export type SelectionFieldType = Extract<
  * ```
  */
 export function relationMeta(config: {
-  /** Заголовок поля */
+  /** Field title */
   title: string
-  /** Имя связанной модели */
+  /** Related model name */
   model: string
-  /** Поле для отображения label */
+  /** Field to display as label */
   labelField: string
-  /** Поле для значения (по умолчанию 'id') */
+  /** Field for value (default 'id') */
   valueField?: string
-  /** Тип компонента для отображения (по умолчанию 'select') */
+  /** Component type for display (default 'select') */
   fieldType?: SelectionFieldType
-  /** Дополнительные props */
+  /** Additional props */
   fieldProps?: Record<string, unknown>
 }): FieldUIMeta {
   return {
@@ -92,40 +92,40 @@ export function relationMeta(config: {
 }
 
 /**
- * Хелпер для создания UI метаданных enum полей с кастомными метками
+ * Helper for creating UI metadata for enum fields with custom labels
  *
- * @example Простое использование
+ * @example Simple usage
  * ```ts
  * const UserFormSchema = withUIMeta(UserCreateInputSchema, {
  *   role: enumMeta({
- *     title: 'Роль',
+ *     title: 'Role',
  *     labels: {
- *       ADMIN: 'Администратор',
- *       MANAGER: 'Менеджер',
- *       USER: 'Пользователь',
- *       GUEST: 'Гость',
+ *       ADMIN: 'Administrator',
+ *       MANAGER: 'Manager',
+ *       USER: 'User',
+ *       GUEST: 'Guest',
  *     },
  *   }),
  * })
  * ```
  *
- * @example С кастомным типом поля
+ * @example With custom field type
  * ```ts
  * role: enumMeta({
- *   title: 'Роль',
+ *   title: 'Role',
  *   fieldType: 'radioCard',
- *   labels: { ADMIN: 'Администратор', USER: 'Пользователь' },
+ *   labels: { ADMIN: 'Administrator', USER: 'User' },
  * })
  * ```
  *
- * @example С описаниями для каждой опции
+ * @example With descriptions for each option
  * ```ts
  * priority: enumMeta({
- *   title: 'Приоритет',
+ *   title: 'Priority',
  *   fieldType: 'radioCard',
  *   options: [
- *     { value: 'LOW', label: 'Низкий', description: 'Сделать когда-нибудь' },
- *     { value: 'HIGH', label: 'Высокий', description: 'Срочно!' },
+ *     { value: 'LOW', label: 'Low', description: 'Do it sometime' },
+ *     { value: 'HIGH', label: 'High', description: 'Urgent!' },
  *   ],
  * })
  * ```
@@ -133,31 +133,31 @@ export function relationMeta(config: {
 export function enumMeta<T extends string>(
   config:
     | {
-        /** Заголовок поля */
+        /** Field title */
         title: string
-        /** Тип компонента для отображения (по умолчанию nativeSelect) */
+        /** Component type for display (default nativeSelect) */
         fieldType?: SelectionFieldType
-        /** Маппинг enum значений на русские метки */
+        /** Mapping of enum values to custom labels */
         labels: Record<T, string>
-        /** Описание поля */
+        /** Field description */
         description?: string
-        /** Дополнительные props */
+        /** Additional props */
         fieldProps?: Record<string, unknown>
       }
     | {
-        /** Заголовок поля */
+        /** Field title */
         title: string
-        /** Тип компонента для отображения (по умолчанию nativeSelect) */
+        /** Component type for display (default nativeSelect) */
         fieldType?: SelectionFieldType
-        /** Полные опции с value, label и опционально description */
+        /** Full options with value, label and optional description */
         options: Array<{ value: T; label: string; description?: string }>
-        /** Описание поля */
+        /** Field description */
         description?: string
-        /** Дополнительные props */
+        /** Additional props */
         fieldProps?: Record<string, unknown>
       }
 ): FieldUIMeta {
-  // Определяем options из labels или напрямую
+  // Determine options from labels or directly
   let options: Array<{ value: string; label: string; description?: string }>
 
   if ('labels' in config) {
@@ -181,12 +181,12 @@ export function enumMeta<T extends string>(
 }
 
 /**
- * Хелпер для создания UI метаданных текстовых полей
+ * Helper for creating UI metadata for text fields
  *
  * @example
  * ```ts
- * name: textMeta({ title: 'Имя', placeholder: 'Введите имя' })
- * bio: textMeta({ title: 'О себе', fieldType: 'richText' })
+ * name: textMeta({ title: 'Name', placeholder: 'Enter name' })
+ * bio: textMeta({ title: 'About', fieldType: 'richText' })
  * ```
  */
 export function textMeta(config: {
@@ -206,13 +206,13 @@ export function textMeta(config: {
 }
 
 /**
- * Хелпер для создания UI метаданных числовых полей
+ * Helper for creating UI metadata for number fields
  *
  * @example
  * ```ts
- * age: numberMeta({ title: 'Возраст', min: 0, max: 120 })
- * price: numberMeta({ title: 'Цена', fieldType: 'currency', currency: 'RUB' })
- * rating: numberMeta({ title: 'Рейтинг', fieldType: 'rating', count: 5 })
+ * age: numberMeta({ title: 'Age', min: 0, max: 120 })
+ * price: numberMeta({ title: 'Price', fieldType: 'currency', currency: 'RUB' })
+ * rating: numberMeta({ title: 'Rating', fieldType: 'rating', count: 5 })
  * ```
  */
 export function numberMeta(config: {
@@ -223,7 +223,7 @@ export function numberMeta(config: {
   max?: number
   step?: number
   currency?: string
-  count?: number // для rating
+  count?: number // for rating
   fieldProps?: Record<string, unknown>
 }): FieldUIMeta {
   const { title, description, fieldType, min, max, step, currency, count, fieldProps = {} } = config
@@ -244,12 +244,12 @@ export function numberMeta(config: {
 }
 
 /**
- * Хелпер для создания UI метаданных булевых полей
+ * Helper for creating UI metadata for boolean fields
  *
  * @example
  * ```ts
- * isActive: booleanMeta({ title: 'Активен', fieldType: 'switch' })
- * newsletter: booleanMeta({ title: 'Подписка', description: 'Получать новости' })
+ * isActive: booleanMeta({ title: 'Active', fieldType: 'switch' })
+ * newsletter: booleanMeta({ title: 'Newsletter', description: 'Receive news' })
  * ```
  */
 export function booleanMeta(config: {
@@ -267,13 +267,13 @@ export function booleanMeta(config: {
 }
 
 /**
- * Хелпер для создания UI метаданных полей даты/времени
+ * Helper for creating UI metadata for date/time fields
  *
  * @example
  * ```ts
- * birthDate: dateMeta({ title: 'Дата рождения' })
- * appointment: dateMeta({ title: 'Встреча', fieldType: 'dateTimePicker' })
- * duration: dateMeta({ title: 'Длительность', fieldType: 'duration', min: 15, max: 480 })
+ * birthDate: dateMeta({ title: 'Date of birth' })
+ * appointment: dateMeta({ title: 'Appointment', fieldType: 'dateTimePicker' })
+ * duration: dateMeta({ title: 'Duration', fieldType: 'duration', min: 15, max: 480 })
  * ```
  */
 export function dateMeta(config: {

@@ -5,26 +5,26 @@ import type { FieldUIMeta } from './types/meta-types'
 import { unwrapSchema } from './zod-utils'
 
 /**
- * Конфигурация UI метаданных для плоской схемы (только верхний уровень)
+ * UI metadata configuration for flat schemas (top-level fields only)
  */
 export type UIMetaConfig<T extends z.ZodRawShape> = {
   [K in keyof T]?: FieldUIMeta
 }
 
-/** Мутабельный тип для создания новой shape */
+/** Mutable type for creating a new shape */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MutableShape = { [key: string]: any }
 
 /**
- * Конфигурация UI метаданных с поддержкой вложенных объектов
- * Для вложенных объектов используйте _meta для метаданных самой группы
+ * UI metadata configuration with nested object support
+ * For nested objects, use _meta for the group's own metadata
  */
 export type DeepUIMetaConfig<T extends z.ZodRawShape> = {
   [K in keyof T]?: FieldUIMeta | ({ _meta?: FieldUIMeta } & Record<string, FieldUIMeta | unknown>)
 }
 
 /**
- * Проверить, является ли схема ZodObject
+ * Check if a schema is a ZodObject
  */
 function isZodObject(schema: unknown): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,29 +32,29 @@ function isZodObject(schema: unknown): boolean {
 }
 
 /**
- * Проверить, содержит ли конфигурация вложенные настройки
+ * Check if the configuration contains nested settings
  */
 function hasNestedConfig(config: unknown): boolean {
   if (typeof config !== 'object' || config === null) {
     return false
   }
 
-  // Если есть _meta — это точно вложенная конфигурация
+  // If _meta exists — this is definitely a nested configuration
   if ('_meta' in config) {
     return true
   }
 
-  // Проверяем, есть ли вложенные объекты с title/fieldType
-  // Исключаем стандартные поля FieldUIMeta
+  // Check for nested objects with title/fieldType
+  // Exclude standard FieldUIMeta fields
   const fieldUIMetaKeys = ['title', 'description', 'placeholder', 'tooltip', 'fieldType', 'fieldProps']
 
   for (const [key, value] of Object.entries(config)) {
-    // Пропускаем стандартные поля FieldUIMeta
+    // Skip standard FieldUIMeta fields
     if (fieldUIMetaKeys.includes(key)) {
       continue
     }
 
-    // Если значение — объект с title/fieldType/description, это вложенная конфигурация
+    // If the value is an object with title/fieldType/description, it's a nested configuration
     if (typeof value === 'object' && value !== null) {
       if ('title' in value || 'fieldType' in value || 'description' in value) {
         return true
@@ -66,41 +66,41 @@ function hasNestedConfig(config: unknown): boolean {
 }
 
 /**
- * Обогатить ZenStack/Zod схему UI метаданными
+ * Enrich ZenStack/Zod schema with UI metadata
  *
- * Добавляет .meta({ ui: {...} }) к полям схемы на основе конфигурации.
- * Работает только с верхним уровнем полей.
+ * Adds .meta({ ui: {...} }) to schema fields based on configuration.
+ * Works only with top-level fields.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```ts
  * import { ProductCreateInputSchema } from '@/generated/zod/objects/ProductCreateInput.schema'
  *
  * const ProductFormSchema = withUIMeta(ProductCreateInputSchema, {
- *   name: { title: 'Название', placeholder: 'Введите название' },
- *   price: { title: 'Цена', fieldType: 'currency', fieldProps: { currency: 'RUB' } },
- *   isActive: { title: 'Активен', fieldType: 'switch' },
+ *   name: { title: 'Name', placeholder: 'Enter name' },
+ *   price: { title: 'Price', fieldType: 'currency', fieldProps: { currency: 'RUB' } },
+ *   isActive: { title: 'Active', fieldType: 'switch' },
  * })
  * ```
  *
- * @example С enum полями
+ * @example With enum fields
  * ```ts
  * const UserFormSchema = withUIMeta(UserCreateInputSchema, {
  *   role: {
- *     title: 'Роль',
+ *     title: 'Role',
  *     fieldType: 'radioCard',
  *     fieldProps: {
  *       options: [
- *         { value: 'ADMIN', label: 'Администратор' },
- *         { value: 'USER', label: 'Пользователь' },
+ *         { value: 'ADMIN', label: 'Administrator' },
+ *         { value: 'USER', label: 'User' },
  *       ],
  *     },
  *   },
  * })
  * ```
  *
- * @param schema Zod object схема
- * @param config Конфигурация UI метаданных для полей
- * @returns Новая схема с добавленными метаданными
+ * @param schema Zod object schema
+ * @param config UI metadata configuration for fields
+ * @returns New schema with added metadata
  */
 export function withUIMeta<T extends z.ZodRawShape>(schema: z.ZodObject<T>, config: UIMetaConfig<T>): z.ZodObject<T> {
   const shape = schema.shape
@@ -109,7 +109,7 @@ export function withUIMeta<T extends z.ZodRawShape>(schema: z.ZodObject<T>, conf
   for (const [key, fieldSchema] of Object.entries(shape)) {
     const meta = config[key as keyof T]
     if (meta) {
-      // Добавить .meta({ ui: {...} }) к полю
+      // Add .meta({ ui: {...} }) to field
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       newShape[key] = (fieldSchema as any).meta({ ui: meta })
     } else {
@@ -117,7 +117,7 @@ export function withUIMeta<T extends z.ZodRawShape>(schema: z.ZodObject<T>, conf
     }
   }
 
-  // Сохраняем strict/passthrough режим если был
+  // Preserve strict/passthrough mode if it was set
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const unknownKeys = (schema as any)._zod?.def?.unknownKeys
   if (unknownKeys === 'strict') {
@@ -131,43 +131,43 @@ export function withUIMeta<T extends z.ZodRawShape>(schema: z.ZodObject<T>, conf
 }
 
 /**
- * Обогатить ZenStack/Zod схему UI метаданными с поддержкой вложенных объектов
+ * Enrich ZenStack/Zod schema with UI metadata with nested object support
  *
- * Расширенная версия withUIMeta, которая рекурсивно обрабатывает вложенные объекты.
- * Для метаданных вложенной группы используйте ключ `_meta`.
+ * Extended version of withUIMeta that recursively processes nested objects.
+ * Use the `_meta` key for nested group metadata.
  *
- * @example С вложенными объектами
+ * @example With nested objects
  * ```ts
  * const UserFormSchema = withUIMetaDeep(UserCreateInputSchema, {
- *   firstName: { title: 'Имя' },
- *   lastName: { title: 'Фамилия' },
+ *   firstName: { title: 'First Name' },
+ *   lastName: { title: 'Last Name' },
  *   address: {
- *     _meta: { title: 'Адрес доставки' },  // meta для группы
- *     country: { title: 'Страна', fieldType: 'select' },
- *     city: { title: 'Город' },
- *     street: { title: 'Улица' },
+ *     _meta: { title: 'Shipping Address' },  // meta for the group
+ *     country: { title: 'Country', fieldType: 'select' },
+ *     city: { title: 'City' },
+ *     street: { title: 'Street' },
  *   },
  * })
  * ```
  *
- * @example Глубокая вложенность
+ * @example Deep nesting
  * ```ts
  * const OrderFormSchema = withUIMetaDeep(OrderCreateInputSchema, {
- *   orderNumber: { title: 'Номер заказа' },
+ *   orderNumber: { title: 'Order Number' },
  *   user: {
- *     _meta: { title: 'Данные клиента' },
- *     firstName: { title: 'Имя' },
+ *     _meta: { title: 'Customer Data' },
+ *     firstName: { title: 'First Name' },
  *     address: {
- *       _meta: { title: 'Адрес' },
- *       city: { title: 'Город' },
+ *       _meta: { title: 'Address' },
+ *       city: { title: 'City' },
  *     },
  *   },
  * })
  * ```
  *
- * @param schema Zod object схема
- * @param config Конфигурация UI метаданных (может быть вложенной)
- * @returns Новая схема с добавленными метаданными
+ * @param schema Zod object schema
+ * @param config UI metadata configuration (can be nested)
+ * @returns New schema with added metadata
  */
 export function withUIMetaDeep<T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
@@ -184,35 +184,35 @@ export function withUIMetaDeep<T extends z.ZodRawShape>(
       continue
     }
 
-    // Получаем unwrapped схему для проверки типа
+    // Get unwrapped schema to check type
     const unwrapped = unwrapSchema(fieldSchema)
 
-    // Проверяем, это вложенный объект или обычное поле
+    // Check if this is a nested object or a regular field
     if (isZodObject(unwrapped) && hasNestedConfig(fieldConfig)) {
-      // Это вложенный объект с конфигурацией полей
+      // This is a nested object with field configuration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { _meta, ...nestedConfig } = fieldConfig as { _meta?: FieldUIMeta } & Record<string, any>
 
-      // Рекурсивно обрабатываем вложенный объект
+      // Recursively process nested object
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let nestedSchema = withUIMetaDeep(unwrapped as any, nestedConfig)
 
-      // Применяем _meta к самому полю (для label группы)
+      // Apply _meta to the field itself (for group label)
       if (_meta) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         nestedSchema = (nestedSchema as any).meta({ ui: _meta })
       }
 
-      // Восстанавливаем wrapper'ы (optional, nullable, default)
+      // Restore wrappers (optional, nullable, default)
       newShape[key] = rewrapSchema(fieldSchema, nestedSchema)
     } else {
-      // Обычное поле — просто добавляем meta
+      // Regular field — just add meta
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       newShape[key] = (fieldSchema as any).meta({ ui: fieldConfig as FieldUIMeta })
     }
   }
 
-  // Сохраняем strict/passthrough режим если был
+  // Preserve strict/passthrough mode if it was set
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const unknownKeys = (schema as any)._zod?.def?.unknownKeys
   if (unknownKeys === 'strict') {
@@ -226,7 +226,7 @@ export function withUIMetaDeep<T extends z.ZodRawShape>(
 }
 
 /**
- * Восстановить wrapper'ы (optional, nullable, default) вокруг новой внутренней схемы
+ * Restore wrappers (optional, nullable, default) around a new inner schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rewrapSchema(original: any, newInner: any): any {

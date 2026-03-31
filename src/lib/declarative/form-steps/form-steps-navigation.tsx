@@ -99,7 +99,7 @@ export function FormStepsNavigation({
     onStepChange?.(currentStep - 1)
   }, [goToPrev, currentStep, onStepChange])
 
-  // Handle submit - trigger form submission с защитой от double-click
+  // Handle submit - trigger form submission with double-click protection
   const handleSubmit = useCallback(async () => {
     if (isSubmittingForm) {
       return

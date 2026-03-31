@@ -7,34 +7,34 @@ import type { MaskedInputFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Состояние для маскированного поля
+ * State for masked field
  */
 interface MaskedInputFieldState {
-  /** Ref callback для применения маски */
+  /** Ref callback for applying mask */
   maskRef: (element: HTMLInputElement | null) => void
 }
 
 /**
- * Form.Field.MaskedInput - Поле ввода с маской
+ * Form.Field.MaskedInput - Masked input field
  *
- * Рендерит input с маской используя библиотеку use-mask-input.
+ * Renders masked input using the use-mask-input library.
  *
- * Символы маски:
- * - 9: цифра
- * - a: буква
- * - *: буква или цифра
+ * Mask characters:
+ * - 9: digit
+ * - a: letter
+ * - *: letter or digit
  *
- * @example Маска паспорта
+ * @example Passport mask
  * ```tsx
- * <Form.Field.MaskedInput name="passport" label="Паспорт" mask="99 99 999999" />
+ * <Form.Field.MaskedInput name="passport" label="Passport" mask="99 99 999999" />
  * ```
  *
- * @example Несколько масок (адаптируется к вводу)
+ * @example Multiple masks (adapts to input)
  * ```tsx
  * <Form.Field.MaskedInput name="phone" mask={['9999-9999', '99999-9999']} />
  * ```
  *
- * @example С кастомным placeholder символом
+ * @example With custom placeholder character
  * ```tsx
  * <Form.Field.MaskedInput name="date" mask="99/99/9999" placeholderChar="#" />
  * ```
@@ -52,7 +52,7 @@ export const FieldMaskedInput = createField<MaskedInputFieldProps, string, Maske
       autoUnmask = false,
     } = props
 
-    // Создаём ref callback для применения маски
+    // Create ref callback for applying mask
     const maskRef = useCallback(
       (element: HTMLInputElement | null) => {
         if (element && mask) {

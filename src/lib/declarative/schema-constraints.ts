@@ -3,34 +3,34 @@
 import { unwrapSchema } from './zod-utils'
 
 /**
- * Извлечение constraints из Zod v4 схем для автоматической настройки полей форм
+ * Constraint extraction from Zod v4 schemas for automatic form field configuration
  *
- * Поддерживает:
- * - Строки: minLength, maxLength, email, url, regex
- * - Числа: min, max, step (int, multipleOf), positive/negative
- * - Даты: min, max
- * - Массивы: minItems, maxItems
+ * Supports:
+ * - Strings: minLength, maxLength, email, url, regex
+ * - Numbers: min, max, step (int, multipleOf), positive/negative
+ * - Dates: min, max
+ * - Arrays: minItems, maxItems
  *
- * Структура Zod v4:
- * - Checks хранятся в `schema._zod.def.checks[]`
- * - Каждый check имеет `_zod.def` с типом и параметрами
+ * Zod v4 structure:
+ * - Checks are stored in `schema._zod.def.checks[]`
+ * - Each check has `_zod.def` with type and parameters
  */
 
 // =============================================================================
-// Типы constraints
+// Constraint types
 // =============================================================================
 
-/** Constraints для строковых полей */
+/** Constraints for string fields */
 export interface ZodStringConstraints {
   minLength?: number
   maxLength?: number
-  /** Автоматический input type на основе Zod checks (email, url) */
+  /** Automatically input type based on Zod checks (email, url) */
   inputType?: 'text' | 'email' | 'url' | 'tel'
-  /** HTML5 pattern из regex */
+  /** HTML5 pattern from regex */
   pattern?: string
 }
 
-/** Constraints для числовых полей */
+/** Constraints for number fields */
 export interface ZodNumberConstraints {
   min?: number
   max?: number
@@ -38,36 +38,36 @@ export interface ZodNumberConstraints {
   isInteger?: boolean
 }
 
-/** Constraints для полей дат */
+/** Constraints for date fields */
 export interface ZodDateConstraints {
-  /** Минимальная дата в формате YYYY-MM-DD */
+  /** Minimum date in YYYY-MM-DD format */
   min?: string
-  /** Максимальная дата в формате YYYY-MM-DD */
+  /** Maximum date in YYYY-MM-DD format */
   max?: string
 }
 
-/** Constraints для массивов */
+/** Constraints for arrays */
 export interface ZodArrayConstraints {
   minItems?: number
   maxItems?: number
 }
 
-/** Результат извлечения constraints из схемы */
+/** Result of constraint extraction from schema */
 export interface ZodConstraints {
   string?: ZodStringConstraints
   number?: ZodNumberConstraints
   date?: ZodDateConstraints
   array?: ZodArrayConstraints
-  /** Тип схемы для определения какие constraints применять */
+  /** Schema type to determine which constraints to apply */
   schemaType?: 'string' | 'number' | 'date' | 'array' | 'boolean' | 'enum' | 'unknown'
 }
 
 // =============================================================================
-// Основная функция
+// Main function
 // =============================================================================
 
 /**
- * Извлекает constraints из Zod схемы по пути к полю
+ * Extracts constraints from Zod schema by field path
  *
  * @example
  * ```tsx
@@ -141,25 +141,25 @@ export function getZodConstraints(schema: any, path: string): ZodConstraints {
 }
 
 // =============================================================================
-// Извлечение constraints по типам (Zod v4 структура)
+// Constraint extraction by types (Zod v4 structure)
 // =============================================================================
 
 /**
- * Тип обработчика для check
- * Получает объект constraints и checkDef, модифицирует constraints
+ * Handler type for a check
+ * Receives constraints object and checkDef, modifies constraints
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CheckHandler<T> = (constraints: T, checkDef: any) => void
 
 /**
- * Общая функция извлечения constraints из Zod checks
+ * Generic function to extract constraints from Zod checks
  *
- * Паттерн handlers позволяет избежать дублирования логики итерации.
- * Каждый тип (string, number, date, array) определяет свои handlers.
+ * The handler pattern avoids duplicating iteration logic.
+ * Each type (string, number, date, array) defines its own handlers.
  *
- * @param checks - Массив Zod checks из схемы
- * @param handlers - Объект с обработчиками для каждого типа check
- * @returns Объект constraints заполненный обработчиками
+ * @param checks - Array of Zod checks from schema
+ * @param handlers - Object with handlers for each check type
+ * @returns Constraints object populated by handlers
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractConstraints<T extends object>(checks: any[], handlers: Record<string, CheckHandler<T>>): T {
@@ -181,7 +181,7 @@ function extractConstraints<T extends object>(checks: any[], handlers: Record<st
 }
 
 // =============================================================================
-// Handlers для строковых constraints
+// Handlers for string constraints
 // =============================================================================
 
 const stringConstraintHandlers: Record<string, CheckHandler<ZodStringConstraints>> = {
@@ -192,12 +192,12 @@ const stringConstraintHandlers: Record<string, CheckHandler<ZodStringConstraints
     c.maxLength = def.maximum
   },
   length_equals: (c, def) => {
-    // Точная длина = и min и max
+    // Exact length = both min and max
     c.minLength = def.length
     c.maxLength = def.length
   },
   string_format: (c, def) => {
-    // email(), url() и другие форматы
+    // email(), url() and other formats
     if (def.format === 'email') {
       c.inputType = 'email'
     } else if (def.format === 'url') {
@@ -209,7 +209,7 @@ const stringConstraintHandlers: Record<string, CheckHandler<ZodStringConstraints
 }
 
 /**
- * Извлекает constraints из строковых checks
+ * Extracts constraints from string checks
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractStringConstraints(checks: any[]): ZodStringConstraints {
@@ -217,20 +217,20 @@ function extractStringConstraints(checks: any[]): ZodStringConstraints {
 }
 
 // =============================================================================
-// Handlers для числовых constraints
+// Handlers for number constraints
 // =============================================================================
 
 const numberConstraintHandlers: Record<string, CheckHandler<ZodNumberConstraints>> = {
   greater_than: (c, def) => {
-    // min() создаёт inclusive: true, gt() создаёт inclusive: false
+    // min() creates inclusive: true, gt() creates inclusive: false
     c.min = def.value
   },
   less_than: (c, def) => {
-    // max() создаёт inclusive: true, lt() создаёт inclusive: false
+    // max() creates inclusive: true, lt() creates inclusive: false
     c.max = def.value
   },
   number_format: (c, def) => {
-    // int() создаёт format: 'safeint'
+    // int() creates format: 'safeint'
     if (def.format === 'safeint') {
       c.isInteger = true
       c.step = 1
@@ -242,7 +242,7 @@ const numberConstraintHandlers: Record<string, CheckHandler<ZodNumberConstraints
 }
 
 /**
- * Извлекает constraints из числовых checks
+ * Extracts constraints from number checks
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractNumberConstraints(checks: any[]): ZodNumberConstraints {
@@ -250,18 +250,18 @@ function extractNumberConstraints(checks: any[]): ZodNumberConstraints {
 }
 
 // =============================================================================
-// Handlers для constraints дат
+// Handlers for date constraints
 // =============================================================================
 
 const dateConstraintHandlers: Record<string, CheckHandler<ZodDateConstraints>> = {
   greater_than: (c, def) => {
-    // min() для дат
+    // min() for dates
     if (def.value) {
       c.min = formatDateToISO(def.value)
     }
   },
   less_than: (c, def) => {
-    // max() для дат
+    // max() for dates
     if (def.value) {
       c.max = formatDateToISO(def.value)
     }
@@ -269,7 +269,7 @@ const dateConstraintHandlers: Record<string, CheckHandler<ZodDateConstraints>> =
 }
 
 /**
- * Извлекает constraints из checks дат
+ * Extracts constraints from date checks
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractDateConstraints(checks: any[]): ZodDateConstraints {
@@ -277,7 +277,7 @@ function extractDateConstraints(checks: any[]): ZodDateConstraints {
 }
 
 // =============================================================================
-// Handlers для constraints массивов
+// Handlers for array constraints
 // =============================================================================
 
 const arrayConstraintHandlers: Record<string, CheckHandler<ZodArrayConstraints>> = {
@@ -294,7 +294,7 @@ const arrayConstraintHandlers: Record<string, CheckHandler<ZodArrayConstraints>>
 }
 
 /**
- * Извлекает constraints из checks массивов
+ * Extracts constraints from array checks
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractArrayConstraints(checks: any[]): ZodArrayConstraints {
@@ -302,12 +302,12 @@ function extractArrayConstraints(checks: any[]): ZodArrayConstraints {
 }
 
 // =============================================================================
-// Вспомогательные функции
+// Helper functions
 // =============================================================================
 
 /**
- * Навигация к схеме по пути (переиспользуем логику из schema-meta.ts)
- * Поддерживает вложенные объекты, массивы, optional/nullable
+ * Navigate to schema by path (reuses logic from schema-meta.ts)
+ * Supports nested objects, arrays, optional/nullable
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSchemaAtPath(schema: any, path: string): any {
@@ -325,7 +325,7 @@ function getSchemaAtPath(schema: any, path: string): any {
       return undefined
     }
 
-    // Пропускаем числовые индексы (для массивов используем element schema)
+    // Skip numeric indices (for arrays we use element schema)
     if (/^\d+$/.test(part)) {
       if (current._zod?.def?.type === 'array') {
         current = current._zod.def.element
@@ -333,7 +333,7 @@ function getSchemaAtPath(schema: any, path: string): any {
       continue
     }
 
-    // Навигация в shape объекта
+    // Navigate into object shape
     if (current._zod?.def?.type === 'object') {
       const shape = current._zod.def.shape
       if (shape && part in shape) {
@@ -350,8 +350,8 @@ function getSchemaAtPath(schema: any, path: string): any {
 }
 
 /**
- * Форматирует дату в строку YYYY-MM-DD для HTML input[type="date"]
- * Принимает Date, ISO string или timestamp
+ * Formats a date to YYYY-MM-DD string for HTML input[type="date"]
+ * Accepts Date, ISO string or timestamp
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatDateToISO(value: any): string {

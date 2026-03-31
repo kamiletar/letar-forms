@@ -30,74 +30,74 @@ import type { FieldSize } from '../types/size-types'
 // =============================================================================
 
 /**
- * Базовая конфигурация поля
+ * Base field configuration
  */
 interface BaseFieldConfig {
-  /** Имя поля (ключ в данных формы) */
+  /** Field name (key in form data) */
   name: string
-  /** Label поля (если не указан, генерируется из name) */
+  /** Field label (if not specified, generated from name) */
   label?: string
   /** Placeholder */
   placeholder?: string
-  /** Подсказка под полем */
+  /** Helper text below field */
   helperText?: string
-  /** Обязательное поле */
+  /** Required field */
   required?: boolean
-  /** Отключено */
+  /** Disabled */
   disabled?: boolean
-  /** Размер */
+  /** Size */
   size?: FieldSize
 }
 
 /**
- * Конфигурация текстового поля
+ * Text field configuration
  */
 interface StringFieldConfig extends BaseFieldConfig {
   type: 'string'
-  /** Максимальная длина */
+  /** Maximum length */
   maxLength?: number
 }
 
 /**
- * Конфигурация многострочного поля
+ * Multiline field configuration
  */
 interface TextareaFieldConfig extends BaseFieldConfig {
   type: 'textarea'
-  /** Количество строк */
+  /** Number of rows */
   rows?: number
 }
 
 /**
- * Конфигурация числового поля
+ * Number field configuration
  */
 interface NumberFieldConfig extends BaseFieldConfig {
   type: 'number'
-  /** Минимальное значение */
+  /** Minimum value */
   min?: number
-  /** Максимальное значение */
+  /** Maximum value */
   max?: number
-  /** Шаг */
+  /** Step */
   step?: number
 }
 
 /**
- * Конфигурация валютного поля
+ * Currency field configuration
  */
 interface CurrencyFieldConfig extends BaseFieldConfig {
   type: 'currency'
-  /** Код валюты (по умолчанию 'RUB') */
+  /** Currency code (by default 'RUB') */
   currency?: string
 }
 
 /**
- * Конфигурация процентного поля
+ * Percentage field configuration
  */
 interface PercentageFieldConfig extends BaseFieldConfig {
   type: 'percentage'
 }
 
 /**
- * Конфигурация слайдера
+ * Slider configuration
  */
 interface SliderFieldConfig extends BaseFieldConfig {
   type: 'slider'
@@ -107,69 +107,69 @@ interface SliderFieldConfig extends BaseFieldConfig {
 }
 
 /**
- * Конфигурация рейтинга
+ * Rating configuration
  */
 interface RatingFieldConfig extends BaseFieldConfig {
   type: 'rating'
-  /** Максимальное значение (по умолчанию 5) */
+  /** Maximum value (by default 5) */
   max?: number
 }
 
 /**
- * Конфигурация чекбокса
+ * Checkbox configuration
  */
 interface CheckboxFieldConfig extends BaseFieldConfig {
   type: 'checkbox'
 }
 
 /**
- * Конфигурация switch
+ * Switch configuration
  */
 interface SwitchFieldConfig extends BaseFieldConfig {
   type: 'switch'
 }
 
 /**
- * Конфигурация select
+ * Select configuration
  */
 interface SelectFieldConfig extends BaseFieldConfig {
   type: 'select'
-  /** Опции для выбора */
+  /** Options for selection */
   options: BaseOption[]
-  /** Использовать NativeSelect */
+  /** Use NativeSelect */
   native?: boolean
 }
 
 /**
- * Конфигурация даты
+ * Date configuration
  */
 interface DateFieldConfig extends BaseFieldConfig {
   type: 'date'
 }
 
 /**
- * Конфигурация пароля
+ * Password configuration
  */
 interface PasswordFieldConfig extends BaseFieldConfig {
   type: 'password'
 }
 
 /**
- * Конфигурация телефона
+ * Phone configuration
  */
 interface PhoneFieldConfig extends BaseFieldConfig {
   type: 'phone'
 }
 
 /**
- * Конфигурация auto-поля (тип определяется из схемы)
+ * Auto-field configuration (type determined from schema)
  */
 interface AutoFieldConfig extends BaseFieldConfig {
   type: 'auto'
 }
 
 /**
- * Объединённый тип конфигурации поля
+ * Union type of field configuration
  */
 export type FieldConfig =
   | StringFieldConfig
@@ -192,24 +192,24 @@ export type FieldConfig =
 // =============================================================================
 
 /**
- * Секция формы для группировки полей
+ * Form section for grouping fields
  */
 export interface FormBuilderSection {
-  /** Заголовок секции */
+  /** Section title */
   title?: string
-  /** Описание секции */
+  /** Section description */
   description?: string
-  /** Поля в секции */
+  /** Fields in section */
   fields: FieldConfig[]
 }
 
 /**
- * Конфигурация формы для FormBuilder
+ * Form configuration for FormBuilder
  */
 export interface FormBuilderConfig {
-  /** Поля формы (простой список) */
+  /** Form fields (simple list) */
   fields?: FieldConfig[]
-  /** Секции формы (для группировки) */
+  /** Form sections (for grouping) */
   sections?: FormBuilderSection[]
 }
 
@@ -218,29 +218,29 @@ export interface FormBuilderConfig {
 // =============================================================================
 
 /**
- * Props для FormBuilder
+ * Props for FormBuilder
  */
 export interface FormBuilderProps<TData extends object> {
-  /** Конфигурация формы */
+  /** Form configuration */
   config: FormBuilderConfig
-  /** Начальные значения */
+  /** Initial values */
   initialValue: TData
-  /** Обработчик отправки */
+  /** Submit handler */
   onSubmit: (data: TData) => void | Promise<void>
-  /** Zod схема для валидации */
+  /** Zod schema for validation */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema?: any
-  /** Режим валидации */
+  /** Validation mode */
   validateOn?: ValidateOn | ValidateOn[]
   /** Middleware */
   middleware?: FormMiddleware<TData>
-  /** Отключить все поля */
+  /** Disable all fields */
   disabled?: boolean
-  /** Только для чтения */
+  /** Read only */
   readOnly?: boolean
-  /** Текст кнопки отправки */
+  /** Submit button text */
   submitLabel?: string
-  /** Дополнительный контент после полей */
+  /** Additional content after fields */
   children?: ReactNode
 }
 
@@ -249,7 +249,7 @@ export interface FormBuilderProps<TData extends object> {
 // =============================================================================
 
 /**
- * Извлекает базовые props из конфигурации
+ * Extracts base props from configuration
  */
 function getBaseProps(config: FieldConfig) {
   return {
@@ -261,7 +261,7 @@ function getBaseProps(config: FieldConfig) {
 }
 
 /**
- * Рендерит поле по конфигурации
+ * Renders field by configuration
  */
 function renderField(config: FieldConfig): ReactElement {
   const { name, label } = config
@@ -310,7 +310,7 @@ function renderField(config: FieldConfig): ReactElement {
 
     case 'select':
       if (config.native) {
-        // NativeSelect использует title вместо label
+        // NativeSelect uses title instead of label
         const nativeOptions = config.options.map((opt) => ({
           title: opt.label,
           value: opt.value,
@@ -341,22 +341,22 @@ function renderField(config: FieldConfig): ReactElement {
 // =============================================================================
 
 /**
- * Form.Builder - Генерация формы из JSON конфигурации
+ * Form.Builder - Form generation from JSON configuration
  *
- * Позволяет создавать формы декларативно через объект конфигурации
- * вместо написания JSX.
+ * Allows creating forms declaratively via configuration object
+ * instead of writing JSX.
  *
- * @example Простая форма
+ * @example Simple form
  * ```tsx
  * const config = {
  *   fields: [
- *     { type: 'string', name: 'firstName', label: 'Имя' },
- *     { type: 'string', name: 'lastName', label: 'Фамилия' },
+ *     { type: 'string', name: 'firstName', label: 'Name' },
+ *     { type: 'string', name: 'lastName', label: 'Last Name' },
  *     { type: 'string', name: 'email', label: 'Email', placeholder: 'email@example.com' },
- *     { type: 'number', name: 'age', label: 'Возраст', min: 0, max: 120 },
- *     { type: 'select', name: 'role', label: 'Роль', options: [
- *       { label: 'Пользователь', value: 'user' },
- *       { label: 'Администратор', value: 'admin' },
+ *     { type: 'number', name: 'age', label: 'Age', min: 0, max: 120 },
+ *     { type: 'select', name: 'role', label: 'Role', options: [
+ *       { label: 'User', value: 'user' },
+ *       { label: 'Administrator', value: 'admin' },
  *     ]},
  *   ]
  * }
@@ -368,19 +368,19 @@ function renderField(config: FieldConfig): ReactElement {
  * />
  * ```
  *
- * @example С секциями
+ * @example With sections
  * ```tsx
  * const config = {
  *   sections: [
  *     {
- *       title: 'Личные данные',
+ *       title: 'Personal data',
  *       fields: [
  *         { type: 'string', name: 'firstName' },
  *         { type: 'string', name: 'lastName' },
  *       ]
  *     },
  *     {
- *       title: 'Контакты',
+ *       title: 'Contacts',
  *       fields: [
  *         { type: 'string', name: 'email' },
  *         { type: 'phone', name: 'phone' },
@@ -392,7 +392,7 @@ function renderField(config: FieldConfig): ReactElement {
  * <Form.Builder config={config} ... />
  * ```
  *
- * @example С auto-полями (тип определяется из Zod схемы)
+ * @example With auto-fields (type determined from Zod schema)
  * ```tsx
  * const config = {
  *   fields: [
@@ -414,7 +414,7 @@ export function FormBuilder<TData extends object>({
   middleware,
   disabled,
   readOnly,
-  submitLabel = 'Сохранить',
+  submitLabel = 'Save',
   children,
 }: FormBuilderProps<TData>): ReactElement {
   return (
@@ -427,10 +427,10 @@ export function FormBuilder<TData extends object>({
       disabled={disabled}
       readOnly={readOnly}
     >
-      {/* Простой список полей */}
+      {/* Simple field list */}
       {config.fields?.map((fieldConfig) => renderField(fieldConfig))}
 
-      {/* Секции с полями */}
+      {/* Sections with fields */}
       {config.sections?.map((section, sectionIndex) => (
         <div key={sectionIndex}>
           {section.title && <h3>{section.title}</h3>}
@@ -439,10 +439,10 @@ export function FormBuilder<TData extends object>({
         </div>
       ))}
 
-      {/* Дополнительный контент */}
+      {/* Additional content */}
       {children}
 
-      {/* Кнопка отправки */}
+      {/* Submit button */}
       <ButtonSubmit>{submitLabel}</ButtonSubmit>
     </Form>
   )

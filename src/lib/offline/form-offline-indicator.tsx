@@ -7,10 +7,10 @@ import type { OfflineIndicatorProps } from './types'
 import { useOfflineStatus } from './use-offline-status'
 
 /**
- * Индикатор оффлайн режима
+ * Offline mode indicator
  *
- * Автоматически отображается когда браузер оффлайн.
- * Скрывается при восстановлении соединения.
+ * Automatically shown when the browser is offline.
+ * Hidden when connection is restored.
  *
  * @example
  * ```tsx
@@ -23,17 +23,17 @@ import { useOfflineStatus } from './use-offline-status'
  * </Form>
  * ```
  *
- * @example С настройками
+ * @example With custom settings
  * ```tsx
  * <Form.OfflineIndicator
- *   label="Нет связи"
+ *   label="No connection"
  *   colorPalette="red"
  *   variant="solid"
  * />
  * ```
  */
 export function FormOfflineIndicator({
-  label = 'Оффлайн режим',
+  label = 'Offline mode',
   colorPalette = 'orange',
   variant = 'subtle',
   ...rest

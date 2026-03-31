@@ -15,20 +15,20 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import type { Editor } from '@tiptap/react'
-import { useCallback, useRef, useState, type ReactElement } from 'react'
+import { type ReactElement, useCallback, useRef, useState } from 'react'
 import { LuImage, LuUpload, LuX } from 'react-icons/lu'
 
 /**
- * Конфигурация загрузки изображений
+ * Image upload configuration
  */
 export interface ImageUploadConfig {
-  /** URL endpoint для загрузки */
+  /** URL endpoint for upload */
   endpoint: string
   /** Категория изображения (для upload API) */
   category?: string
-  /** Максимальный размер файла в байтах (по умолчанию: 10MB) */
+  /** Maximum file size in bytes (by default: 10MB) */
   maxSize?: number
-  /** Разрешённые MIME типы (по умолчанию: ['image/*']) */
+  /** Разрешённые MIME typeы (by default: ['image/*']) */
   acceptTypes?: string[]
 }
 
@@ -41,14 +41,14 @@ interface ImagePopoverProps {
   disabled?: boolean
 }
 
-/** Состояния загрузки */
+/** Loading states */
 type UploadState = 'idle' | 'uploading' | 'error'
 
 /**
- * Компонент для загрузки и вставки изображений в RichText редактор
+ * Component для loading и вставки изображений в RichText редактор
  *
- * Использует Popover с drag-n-drop зоной и кнопкой выбора файла.
- * После успешной загрузки вставляет изображение в редактор.
+ * Использует Popover с drag-n-drop зоной и кнопкой выбора fileа.
+ * После успешной loading вставляет изображение в редактор.
  */
 export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): ReactElement {
   const [isOpen, setIsOpen] = useState(false)
@@ -58,30 +58,30 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const maxSize = config.maxSize ?? 10 * 1024 * 1024 // 10MB по умолчанию
+  const maxSize = config.maxSize ?? 10 * 1024 * 1024 // 10MB by default
   const acceptTypes = config.acceptTypes ?? ['image/*']
 
   /**
-   * Загрузка файла на сервер
+   * File upload на сервер
    */
   const handleUpload = useCallback(
     async (file: File) => {
-      // Проверка типа файла
+      // Проверка typeа fileа
       if (!file.type.startsWith('image/')) {
-        setErrorMessage('Файл должен быть изображением')
+        setErrorMessage('File must be an image')
         setUploadState('error')
         return
       }
 
-      // Проверка размера
+      // Проверка sizeа
       if (file.size > maxSize) {
         const maxSizeMB = (maxSize / 1024 / 1024).toFixed(0)
-        setErrorMessage(`Размер файла не должен превышать ${maxSizeMB}MB`)
+        setErrorMessage(`Size fileа не must превышать ${maxSizeMB}MB`)
         setUploadState('error')
         return
       }
 
-      // Создаём превью
+      // Создаём preview
       const preview = URL.createObjectURL(file)
       setPreviewUrl(preview)
       setUploadState('uploading')
@@ -102,22 +102,22 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
         const result = await response.json()
 
         if (!response.ok) {
-          throw new Error(result.error || 'Ошибка загрузки')
+          throw new Error(result.error || 'Upload error')
         }
 
         if (result.url) {
-          // Вставляем изображение в редактор
+          // Insert image into editor
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(editor.chain().focus() as any).setImage({ src: result.url }).run()
           handleClose()
         } else {
-          throw new Error('URL изображения не получен')
+          throw new Error('Image URL not received')
         }
       } catch (err) {
-        setErrorMessage(err instanceof Error ? err.message : 'Ошибка загрузки')
+        setErrorMessage(err instanceof Error ? err.message : 'Upload error')
         setUploadState('error')
       } finally {
-        // Очищаем превью URL
+        // Clean up preview URL
         if (preview) {
           URL.revokeObjectURL(preview)
         }
@@ -127,7 +127,7 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
   )
 
   /**
-   * Обработка выбора файла через input
+   * Handle file selection via input
    */
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,14 +135,14 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
       if (file) {
         handleUpload(file)
       }
-      // Сбрасываем input для повторного выбора того же файла
+      // Reset input for re-selecting the same file
       e.target.value = ''
     },
     [handleUpload]
   )
 
   /**
-   * Обработка drop события
+   * Handle drop event
    */
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -158,7 +158,7 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
   )
 
   /**
-   * Закрытие popover и сброс состояния
+   * Close popover and reset state
    */
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -169,7 +169,7 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
   }, [])
 
   /**
-   * Повторная попытка после ошибки
+   * Повторная попытка after ошибки
    */
   const handleRetry = useCallback(() => {
     setUploadState('idle')
@@ -181,7 +181,7 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
     <Popover.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
       <Popover.Trigger asChild>
         <IconButton
-          aria-label="Вставить изображение"
+          aria-label="Insert image"
           size="sm"
           variant="ghost"
           onClick={() => setIsOpen(true)}
@@ -198,7 +198,7 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
               <Popover.ArrowTip />
             </Popover.Arrow>
             <Popover.Body p={3}>
-              {/* Состояние: idle - зона загрузки */}
+              {/* State: idle - зона loading */}
               {uploadState === 'idle' && (
                 <VStack gap={3} align="stretch">
                   <Box
@@ -228,17 +228,17 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
                           <LuUpload />
                         </Icon>
                         <Text fontSize="sm" fontWeight="medium" textAlign="center">
-                          Перетащите изображение сюда
+                          Drag image here
                         </Text>
                         <Text fontSize="xs" color="fg.muted">
-                          или нажмите для выбора
+                          or click to select
                         </Text>
                       </VStack>
                     </Center>
                   </Box>
 
                   <Text fontSize="xs" color="fg.muted" textAlign="center">
-                    PNG, JPG, WEBP до {(maxSize / 1024 / 1024).toFixed(0)}MB
+                    PNG, JPG, WEBP up to {(maxSize / 1024 / 1024).toFixed(0)}MB
                   </Text>
 
                   <input
@@ -251,37 +251,37 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
 
                   <HStack justify="flex-end">
                     <Button size="sm" variant="ghost" onClick={handleClose}>
-                      Отмена
+                      Cancel
                     </Button>
                   </HStack>
                 </VStack>
               )}
 
-              {/* Состояние: uploading - загрузка */}
+              {/* State: uploading - uploading */}
               {uploadState === 'uploading' && (
                 <VStack gap={3} align="stretch">
                   {previewUrl && (
                     <Box borderRadius="md" overflow="hidden" bg="bg.subtle">
-                      <Image src={previewUrl} alt="Превью" maxH="150px" w="100%" objectFit="contain" />
+                      <Image src={previewUrl} alt="Preview" maxH="150px" w="100%" objectFit="contain" />
                     </Box>
                   )}
                   <Center py={2}>
                     <HStack gap={2}>
                       <Spinner size="sm" color="colorPalette.500" />
                       <Text fontSize="sm" color="fg.muted">
-                        Загрузка...
+                        Loading...
                       </Text>
                     </HStack>
                   </Center>
                 </VStack>
               )}
 
-              {/* Состояние: error - ошибка */}
+              {/* State: error - error */}
               {uploadState === 'error' && (
                 <VStack gap={3} align="stretch">
                   {previewUrl && (
                     <Box borderRadius="md" overflow="hidden" bg="bg.subtle" position="relative">
-                      <Image src={previewUrl} alt="Превью" maxH="150px" w="100%" objectFit="contain" opacity={0.5} />
+                      <Image src={previewUrl} alt="Preview" maxH="150px" w="100%" objectFit="contain" opacity={0.5} />
                       <Center position="absolute" inset={0} bg="blackAlpha.500" borderRadius="md">
                         <Icon color="red.400" fontSize="2xl">
                           <LuX />
@@ -294,10 +294,10 @@ export function ImagePopover({ editor, config, disabled }: ImagePopoverProps): R
                   </Text>
                   <HStack justify="center" gap={2}>
                     <Button size="sm" variant="ghost" onClick={handleClose}>
-                      Отмена
+                      Cancel
                     </Button>
                     <Button size="sm" colorPalette="brand" onClick={handleRetry}>
-                      Попробовать снова
+                      Try again
                     </Button>
                   </HStack>
                 </VStack>

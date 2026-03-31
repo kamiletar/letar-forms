@@ -16,8 +16,8 @@ import { LinkPopover } from './link-popover'
 import { DEFAULT_TOOLBAR_BUTTONS, TOOLBAR_CONFIG, type ToolbarButton } from './toolbar-config'
 
 /**
- * Безопасный парсинг JSON с fallback на пустой документ
- * Предотвращает крэш при невалидном JSON
+ * Safe JSON parsing with fallback to empty document
+ * Prevents crash on invalid JSON
  */
 function safeParseJSON(value: string): Content {
   try {
@@ -29,63 +29,63 @@ function safeParseJSON(value: string): Content {
 }
 
 /**
- * Props для RichText поля
+ * Props for RichText field
  */
 export interface RichTextFieldProps extends BaseFieldProps {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
-  /** Минимальная высота редактора (по умолчанию: 150px) */
+  /** Minimum editor height (by default: 150px) */
   minHeight?: string | number
-  /** Максимальная высота редактора (включает скролл) */
+  /** Maximum editor height (includes scroll) */
   maxHeight?: string | number
-  /** Показывать панель инструментов (по умолчанию: true) */
+  /** Show toolbar (by default: true) */
   showToolbar?: boolean
-  /** Кнопки панели инструментов (по умолчанию: все) */
+  /** Toolbar buttons (by default: all) */
   toolbarButtons?: ToolbarButton[]
-  /** Формат вывода: 'html' или 'json' (по умолчанию: 'html') */
+  /** Output format: 'html' or 'json' (by default: 'html') */
   outputFormat?: 'html' | 'json'
-  /** Конфигурация загрузки изображений (опционально) */
+  /** Image upload configuration (optional) */
   imageUpload?: ImageUploadConfig
 }
 
-// Реэкспортируем тип для удобства использования
+// Re-export type for convenience
 export type { ImageUploadConfig }
 
 /**
- * Form.Field.RichText - WYSIWYG редактор форматированного текста
+ * Form.Field.RichText - WYSIWYG rich text editor
  *
- * Рендерит редактор на базе Tiptap с панелью инструментов
- * и автоматической интеграцией с формой.
+ * Renders Tiptap-based editor with toolbar
+ * and automatic form integration.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.RichText name="content" label="Контент" />
+ * <Form.Field.RichText name="content" label="Content" />
  * ```
  *
- * @example С кастомной высотой
+ * @example With custom height
  * ```tsx
  * <Form.Field.RichText
  *   name="description"
- *   label="Описание"
+ *   label="Description"
  *   minHeight="200px"
  *   maxHeight="400px"
  * />
  * ```
  *
- * @example С ограниченной панелью инструментов
+ * @example With limited toolbar
  * ```tsx
  * <Form.Field.RichText
  *   name="comment"
- *   label="Комментарий"
+ *   label="Comment"
  *   toolbarButtons={['bold', 'italic', 'link']}
  * />
  * ```
  *
- * @example JSON вывод (для хранения в БД)
+ * @example JSON output (for database storage)
  * ```tsx
  * <Form.Field.RichText
  *   name="article"
- *   label="Статья"
+ *   label="Article"
  *   outputFormat="json"
  * />
  * ```
@@ -156,7 +156,7 @@ export function FieldRichText({
 }
 
 /**
- * Props для внутреннего компонента редактора
+ * Props for internal editor component
  */
 interface RichTextEditorProps {
   value: string
@@ -176,7 +176,7 @@ interface RichTextEditorProps {
 }
 
 /**
- * Внутренний компонент Tiptap редактора
+ * Internal Tiptap editor component
  */
 function RichTextEditor({
   value,
@@ -194,9 +194,9 @@ function RichTextEditor({
   fieldName,
   imageUpload,
 }: RichTextEditorProps) {
-  // Собираем расширения динамически
+  // Build extensions dynamically
   const extensions = useMemo(() => {
-    // Базовые расширения
+    // Base extensions
     const baseExtensions = [
       StarterKit,
       Underline,
@@ -208,9 +208,9 @@ function RichTextEditor({
         },
       }),
       Placeholder.configure({
-        placeholder: placeholder ?? 'Начните вводить...',
+        placeholder: placeholder ?? 'Start typing...',
       }),
-      // Добавляем Image extension только если imageUpload настроен
+      // Add Image extension only if imageUpload is configured
       ...(imageUpload
         ? [
             TiptapImage.configure({
@@ -229,7 +229,7 @@ function RichTextEditor({
 
   const editor = useEditor({
     // Cast needed: minor @tiptap/core version drift (e.g. 3.20.0 vs 3.20.1) causes nominal type mismatch
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- несовместимость версий @tiptap/core
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- @tiptap/core version incompatibility
     extensions: extensions as any[],
     content: outputFormat === 'json' && value ? safeParseJSON(value) : value || '',
     editable: !disabled && !readOnly,
@@ -246,7 +246,7 @@ function RichTextEditor({
     immediatelyRender: false,
   })
 
-  // Синхронизация внешних изменений значения
+  // Synchronize external value changes
   useEffect(() => {
     if (!editor) {
       return
@@ -254,14 +254,14 @@ function RichTextEditor({
 
     const currentContent = outputFormat === 'json' ? JSON.stringify(editor.getJSON()) : editor.getHTML()
 
-    // Обновлять только если контент изменился (избегаем прыжка курсора)
+    // Update only if content changed (avoid cursor jump)
     if (value !== currentContent) {
       const content = outputFormat === 'json' && value ? safeParseJSON(value) : value || ''
       editor.commands.setContent(content, { emitUpdate: false })
     }
   }, [editor, value, outputFormat])
 
-  // Обновление состояния редактируемости
+  // Update editable state
   useEffect(() => {
     if (editor) {
       editor.setEditable(!disabled && !readOnly)
@@ -289,14 +289,14 @@ function RichTextEditor({
       {showToolbar && !readOnly && (
         <HStack p={1} gap={0.5} borderBottomWidth="1px" borderColor="border" bg="bg.subtle" flexWrap="wrap">
           {toolbarButtons.map((button) => {
-            // Специальная обработка для link — используем Popover вместо window.prompt
+            // Special handling for link — use Popover instead of window.prompt
             if (button === 'link') {
               return <LinkPopover key={button} editor={editor} disabled={disabled} />
             }
 
-            // Специальная обработка для image — используем ImagePopover с загрузкой
+            // Special handling for image — use ImagePopover with upload
             if (button === 'image') {
-              // Показываем кнопку только если imageUpload настроен
+              // Show button only if imageUpload is configured
               if (!imageUpload) {
                 return null
               }

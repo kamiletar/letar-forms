@@ -5,65 +5,65 @@ import { useCallback, useRef, useState } from 'react'
 import type { StepDirection, StepInfo } from './form-steps-context'
 
 /**
- * Параметры хука useStepNavigation
+ * Parameters for useStepNavigation hook
  */
 export interface UseStepNavigationParams {
   /** TanStack Form API */
   form: AnyFormApi
-  /** Текущий индекс шага */
+  /** Current step index */
   currentStep: number
-  /** Общее количество шагов */
+  /** Total number of steps */
   stepCount: number
-  /** Отсортированные шаги */
+  /** Sorted steps */
   sortedSteps: StepInfo[]
-  /** Скрытые поля (исключаются из валидации) */
+  /** Hidden fields (excluded from validation) */
   hiddenFields: Set<string>
-  /** Контролируемый шаг извне */
+  /** Externally controlled step */
   controlledStep?: number
-  /** Callback при изменении шага */
+  /** Callback on step change */
   onStepChange?: (step: number) => void
-  /** Callback при завершении шага */
+  /** Callback on step completion */
   onStepComplete?: (stepIndex: number, values: unknown) => Promise<void> | void
-  /** Валидировать при переходе к следующему шагу */
+  /** Validate when navigating to next step */
   validateOnNext?: boolean
-  /** Setter для внутреннего состояния шага */
+  /** Setter for internal step state */
   setInternalStep: (step: number) => void
 }
 
 /**
- * Результат хука useStepNavigation
+ * Result of useStepNavigation hook
  */
 export interface UseStepNavigationResult {
-  /** Направление перехода (для анимации) */
+  /** Transition direction (for animation) */
   direction: StepDirection
-  /** Перейти к следующему шагу (с валидацией) */
+  /** Go to next step (with validation) */
   goToNext: () => Promise<boolean>
-  /** Перейти к предыдущему шагу */
+  /** Go to previous step */
   goToPrev: () => Promise<void>
-  /** Перейти к конкретному шагу */
+  /** Go to specific step */
   goToStep: (step: number) => void
-  /** Пропустить до конца (без валидации) */
+  /** Skip to end (without validation) */
   skipToEnd: () => void
-  /** Запустить отправку формы */
+  /** Trigger form submission */
   triggerSubmit: () => void
-  /** Валидировать текущий шаг */
+  /** Validate current step */
   validateCurrentStep: () => Promise<boolean>
 }
 
 /**
- * Хук для навигации между шагами формы
+ * Hook for navigating between form steps
  *
- * Управляет:
- * - Переходами между шагами
- * - Валидацией перед переходом
- * - Направлением анимации
- * - Callbacks шагов (onEnter, onLeave)
+ * Manages:
+ * - Transitions between steps
+ * - Validation before transition
+ * - Animation direction
+ * - Step callbacks (onEnter, onLeave)
  *
- * ВАЖНО: Все callback'и используют refs для нестабильных значений (sortedSteps, stepCount,
- * currentStep, hiddenFields, onStepChange, onStepComplete). Это предотвращает пересоздание
- * callback'ов при каждой регистрации шага, что вызывало бесконечный цикл:
- * registerStep → новый sortedSteps/stepCount → новые callback'и → новый contextValue →
- * ре-рендер → повторная регистрация → бесконечный цикл.
+ * IMPORTANT: All callbacks use refs for unstable values (sortedSteps, stepCount,
+ * currentStep, hiddenFields, onStepChange, onStepComplete). This prevents callback
+ * recreation on each step registration, which caused an infinite loop:
+ * registerStep -> new sortedSteps/stepCount -> new callbacks -> new contextValue ->
+ * re-render -> re-registration -> infinite loop.
  */
 export function useStepNavigation({
   form,
@@ -77,10 +77,10 @@ export function useStepNavigation({
   validateOnNext = true,
   setInternalStep,
 }: UseStepNavigationParams): UseStepNavigationResult {
-  // Направление анимации (для slide эффекта)
+  // Animation direction (for slide effect)
   const [direction, setDirection] = useState<StepDirection>('forward')
 
-  // Все нестабильные значения через refs — callback'и НИКОГДА не пересоздаются
+  // All unstable values via refs — callbacks are NEVER recreated
   const sortedStepsRef = useRef(sortedSteps)
   sortedStepsRef.current = sortedSteps
 
@@ -105,7 +105,7 @@ export function useStepNavigation({
   const validateOnNextRef = useRef(validateOnNext)
   validateOnNextRef.current = validateOnNext
 
-  // Валидация полей текущего шага (исключая скрытые поля)
+  // Validate current step fields (excluding hidden fields)
 
   const validateCurrentStep = useCallback(async (): Promise<boolean> => {
     if (!validateOnNextRef.current) {
@@ -117,14 +117,14 @@ export function useStepNavigation({
       return true
     }
 
-    // Фильтруем скрытые поля — они не должны валидироваться
+    // Filter hidden fields — they should not be validated
     const visibleFieldNames = currentStepInfo.fieldNames.filter((name) => !hiddenFieldsRef.current.has(name))
 
     if (visibleFieldNames.length === 0) {
       return true
     }
 
-    // Помечаем поля как touched для показа ошибок
+    // Mark fields as touched to show errors
     for (const fieldName of visibleFieldNames) {
       form.setFieldMeta(fieldName, (prev) => ({
         ...prev,
@@ -132,12 +132,12 @@ export function useStepNavigation({
       }))
     }
 
-    // Валидируем каждое видимое поле текущего шага
+    // Validate each visible field on the current step
     for (const fieldName of visibleFieldNames) {
       await form.validateField(fieldName, 'change')
     }
 
-    // Проверяем наличие ошибок
+    // Check for errors
     const state = form.store.state
     for (const fieldName of visibleFieldNames) {
       const fieldMeta = state.fieldMeta[fieldName]
@@ -149,7 +149,7 @@ export function useStepNavigation({
     return true
   }, [form])
 
-  // Переход к следующему шагу
+  // Go to next step
 
   const goToNext = useCallback(async (): Promise<boolean> => {
     const isValid = await validateCurrentStep()
@@ -160,7 +160,7 @@ export function useStepNavigation({
     const step = currentStepRef.current
     const currentStepInfo = sortedStepsRef.current[step]
 
-    // Вызываем onLeave callback если есть (может отменить переход)
+    // Call onLeave callback if exists (can cancel transition)
     if (currentStepInfo?.onLeave) {
       const canLeave = await currentStepInfo.onLeave('forward')
       if (!canLeave) {
@@ -168,7 +168,7 @@ export function useStepNavigation({
       }
     }
 
-    // Вызываем onStepComplete callback
+    // Call onStepComplete callback
     if (onStepCompleteRef.current) {
       await onStepCompleteRef.current(step, form.state.values)
     }
@@ -181,7 +181,7 @@ export function useStepNavigation({
       }
       onStepChangeRef.current?.(nextStep)
 
-      // Вызываем onEnter callback следующего шага
+      // Call onEnter callback of next step
       const nextStepInfo = sortedStepsRef.current[nextStep]
       if (nextStepInfo?.onEnter) {
         nextStepInfo.onEnter()
@@ -192,7 +192,7 @@ export function useStepNavigation({
     return false
   }, [form, validateCurrentStep, setInternalStep])
 
-  // Переход к предыдущему шагу
+  // Go to previous step
 
   const goToPrev = useCallback(async () => {
     const step = currentStepRef.current
@@ -200,7 +200,7 @@ export function useStepNavigation({
     if (prevStep >= 0) {
       const currentStepInfo = sortedStepsRef.current[step]
 
-      // Вызываем onLeave callback если есть (может отменить переход)
+      // Call onLeave callback if exists (can cancel transition)
       if (currentStepInfo?.onLeave) {
         const canLeave = await currentStepInfo.onLeave('backward')
         if (!canLeave) {
@@ -214,7 +214,7 @@ export function useStepNavigation({
       }
       onStepChangeRef.current?.(prevStep)
 
-      // Вызываем onEnter callback предыдущего шага
+      // Call onEnter callback of previous step
       const prevStepInfo = sortedStepsRef.current[prevStep]
       if (prevStepInfo?.onEnter) {
         prevStepInfo.onEnter()
@@ -222,7 +222,7 @@ export function useStepNavigation({
     }
   }, [setInternalStep])
 
-  // Переход к конкретному шагу
+  // Go to specific step
 
   const goToStep = useCallback(
     (step: number) => {
@@ -237,18 +237,18 @@ export function useStepNavigation({
     [setInternalStep]
   )
 
-  // Пропустить до конца (без валидации)
+  // Skip to end (without validation)
 
   const skipToEnd = useCallback(() => {
     const count = stepCountRef.current
     setDirection('forward')
     if (controlledStepRef.current === undefined) {
-      setInternalStep(count) // За последний шаг — состояние completed
+      setInternalStep(count) // Past last step — completed state
     }
     onStepChangeRef.current?.(count)
   }, [setInternalStep])
 
-  // Программный запуск отправки формы
+  // Programmatic form submission
   const triggerSubmit = useCallback(() => {
     form.handleSubmit()
   }, [form])

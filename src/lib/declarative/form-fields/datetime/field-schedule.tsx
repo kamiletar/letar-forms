@@ -7,7 +7,7 @@ import type { BaseFieldProps, FieldTooltipMeta } from '../../types'
 import { FieldError, FieldLabel, getFieldErrors, useResolvedFieldProps } from '../base'
 
 /**
- * Временной слот
+ * Time slot
  */
 export interface TimeSlot {
   open: string
@@ -15,12 +15,12 @@ export interface TimeSlot {
 }
 
 /**
- * Расписание на день (null = выходной)
+ * Day schedule (null = day off)
  */
 export type DaySchedule = TimeSlot | null
 
 /**
- * Недельное расписание
+ * Weekly schedule
  */
 export interface WeeklySchedule {
   monday: DaySchedule
@@ -33,23 +33,23 @@ export interface WeeklySchedule {
 }
 
 /**
- * День недели
+ * Day of week
  */
 export type DayOfWeek = keyof WeeklySchedule
 
 /**
- * Конфигурация дней
+ * Days configuration
  */
 const DAYS_OF_WEEK: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 const DEFAULT_DAY_NAMES: Record<DayOfWeek, string> = {
-  monday: 'Понедельник',
-  tuesday: 'Вторник',
-  wednesday: 'Среда',
-  thursday: 'Четверг',
-  friday: 'Пятница',
-  saturday: 'Суббота',
-  sunday: 'Воскресенье',
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
 }
 
 const DEFAULT_WORKING_HOURS: WeeklySchedule = {
@@ -63,24 +63,24 @@ const DEFAULT_WORKING_HOURS: WeeklySchedule = {
 }
 
 /**
- * Константы для стилизации кастомного switch
- * Используется нативный checkbox вместо Chakra Switch для совместимости с RHF
+ * Constants for custom switch styling
+ * Native checkbox used instead of Chakra Switch for RHF compatibility
  */
 const SWITCH_STYLES = {
-  /** Ширина трека switch */
+  /** Switch track width */
   trackWidth: '36px',
-  /** Высота трека switch */
+  /** Switch track height */
   trackHeight: '20px',
-  /** Размер круглого индикатора (thumb) */
+  /** Round indicator (thumb) size */
   thumbSize: '16px',
-  /** Отступ thumb от края (2px с каждой стороны для центрирования в 20px треке) */
+  /** Thumb offset from edge (2px each side for centering in 20px track) */
   thumbOffset: '2px',
-  /** Позиция thumb во включённом состоянии (trackWidth - thumbSize - thumbOffset = 36 - 16 - 2 = 18) */
+  /** Thumb position in enabled state (trackWidth - thumbSize - thumbOffset = 36 - 16 - 2 = 18) */
   thumbEnabledLeft: '18px',
 } as const
 
 /**
- * Проверяет что время окончания после времени начала
+ * Checks that end time is after start time
  */
 function isValidTimeRange(open: string, close: string): boolean {
   const [openH, openM] = open.split(':').map(Number)
@@ -91,8 +91,8 @@ function isValidTimeRange(open: string, close: string): boolean {
 }
 
 /**
- * Внутренний компонент для рендеринга расписания.
- * Вынесен отдельно для соблюдения правил React хуков.
+ * Internal component for rendering the schedule.
+ * Extracted separately to comply with React hooks rules.
  */
 interface ScheduleContentProps {
   field: AnyFieldApi
@@ -134,7 +134,7 @@ const ScheduleContent = memo(function ScheduleContent({
 }: ScheduleContentProps) {
   const { hasError, errorMessage } = getFieldErrors(field)
 
-  // Проверка невалидных временных диапазонов
+  // Check for invalid time ranges
   const invalidDays = useMemo(() => {
     const invalid: DayOfWeek[] = []
     for (const day of days) {
@@ -199,20 +199,20 @@ const ScheduleContent = memo(function ScheduleContent({
       <FieldLabel label={resolvedLabel} tooltip={resolvedTooltip} required={resolvedRequired} />
 
       <Stack gap={3}>
-        {/* Предупреждение о невалидных диапазонах */}
+        {/* Warning about invalid ranges */}
         {invalidDays.length > 0 && (
           <Box p={3} bg="red.50" borderWidth="1px" borderColor="red.200" borderRadius="md">
             <Text color="red.600" fontSize="sm" fontWeight="medium">
-              Время окончания должно быть позже времени начала: {invalidDays.map((d) => mergedDayNames[d]).join(', ')}
+              End time must be after start time: {invalidDays.map((d) => mergedDayNames[d]).join(', ')}
             </Text>
           </Box>
         )}
 
-        {/* Быстрые действия */}
+        {/* Quick actions */}
         {showCopyToWeekdays && days.includes('monday') && (
           <HStack gap={2} flexWrap="wrap">
             <Text fontSize="sm" color="fg.muted">
-              Быстрые действия:
+              Quick actions:
             </Text>
             <Button
               type="button"
@@ -227,7 +227,7 @@ const ScheduleContent = memo(function ScheduleContent({
           </HStack>
         )}
 
-        {/* Список дней */}
+        {/* Day list */}
         {days.map((day) => {
           const daySchedule = schedule[day]
           const isEnabled = daySchedule !== null && daySchedule !== undefined
@@ -244,9 +244,9 @@ const ScheduleContent = memo(function ScheduleContent({
               borderColor={dayHasError ? 'red.300' : 'border.muted'}
             >
               <HStack justify="space-between" flexWrap="wrap" gap={3}>
-                {/* День и переключатель */}
+                {/* Day and toggle */}
                 <HStack gap={3} minW="140px">
-                  {/* Нативный чекбокс стилизованный как switch */}
+                  {/* Native checkbox styled as switch */}
                   <Box
                     as="label"
                     display="inline-flex"
@@ -294,7 +294,7 @@ const ScheduleContent = memo(function ScheduleContent({
                   </Text>
                 </HStack>
 
-                {/* Поля времени */}
+                {/* Time fields */}
                 {isEnabled ? (
                   <HStack gap={2}>
                     <Input
@@ -332,86 +332,86 @@ const ScheduleContent = memo(function ScheduleContent({
 })
 
 /**
- * Props для Schedule поля
+ * Props for Schedule field
  */
 export interface ScheduleFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Tooltip для label поля */
+  /** Tooltip for field label */
   tooltip?: FieldTooltipMeta
 
   /**
-   * Кастомные названия дней (для локализации)
+   * Custom day names (for localization)
    */
   dayNames?: Partial<Record<DayOfWeek, string>>
 
   /**
-   * Расписание по умолчанию при пустом значении
+   * Default schedule when empty
    */
   defaultSchedule?: WeeklySchedule
 
   /**
-   * Дни для отображения (подмножество всех дней)
-   * @default все дни
+   * Days to display (subset of all days)
+   * @default all days
    */
   days?: DayOfWeek[]
 
   /**
-   * Показывать кнопку "скопировать на будни"
+   * Show "copy to weekdays" button
    * @default true
    */
   showCopyToWeekdays?: boolean
 
   /**
-   * Текст для состояния "выходной"
-   * @default 'Выходной'
+   * Text for "day off" state
+   * @default 'Day off'
    */
   offLabel?: string
 
   /**
-   * Текст кнопки копирования на будни
-   * @default 'Скопировать Пн на будни'
+   * Copy to weekdays button text
+   * @default 'Copy Mon to weekdays'
    */
   copyToWeekdaysLabel?: string
 
   /**
-   * Время открытия по умолчанию при включении дня
+   * Default opening time when enabling a day
    */
   defaultOpenTime?: string
 
   /**
-   * Время закрытия по умолчанию при включении дня
+   * Default closing time when enabling a day
    */
   defaultCloseTime?: string
 }
 
 /**
- * Form.Field.Schedule - Редактор недельного расписания
+ * Form.Field.Schedule - Weekly schedule editor
  *
- * Рендерит редактор расписания рабочих часов с переключателями
- * и полями времени для каждого дня недели.
+ * Renders working hours schedule editor with toggles
+ * and time fields for each day of the week.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.Schedule
  *   name="workingHours"
- *   label="Рабочие часы"
+ *   label="Working hours"
  * />
  * ```
  *
- * @example С кастомными названиями дней
+ * @example With custom day names
  * ```tsx
  * <Form.Field.Schedule
  *   name="schedule"
  *   dayNames={{
- *     monday: 'Пн',
- *     tuesday: 'Вт',
+ *     monday: 'Mon',
+ *     tuesday: 'Tue',
  *     // ...
  *   }}
- *   offLabel="Выходной"
- *   copyToWeekdaysLabel="Скопировать Пн на будни"
+ *   offLabel="Day off"
+ *   copyToWeekdaysLabel="Copy Mon to weekdays"
  * />
  * ```
  *
- * @example Только будние дни
+ * @example Weekdays only
  * ```tsx
  * <Form.Field.Schedule
  *   name="hours"
@@ -431,8 +431,8 @@ export function FieldSchedule({
   defaultSchedule = DEFAULT_WORKING_HOURS,
   days = DAYS_OF_WEEK,
   showCopyToWeekdays = true,
-  offLabel = 'Выходной',
-  copyToWeekdaysLabel = 'Скопировать Пн на будни',
+  offLabel = 'Day off',
+  copyToWeekdaysLabel = 'Copy Mon to weekdays',
   defaultOpenTime = '09:00',
   defaultCloseTime = '18:00',
 }: ScheduleFieldProps): ReactElement {
@@ -447,7 +447,7 @@ export function FieldSchedule({
     readOnly: resolvedReadOnly,
   } = useResolvedFieldProps(name, { label, helperText, required, disabled, readOnly, tooltip })
 
-  // Объединение названий дней
+  // Merge day names
   const mergedDayNames = { ...DEFAULT_DAY_NAMES, ...dayNames }
 
   return (

@@ -1,7 +1,7 @@
 'use client'
 
 import { createFormHookContexts } from '@tanstack/react-form'
-import { useMemo, type ReactNode } from 'react'
+import { type ReactNode, useMemo } from 'react'
 
 /**
  * Form hook contexts for the application
@@ -32,11 +32,11 @@ import { useMemo, type ReactNode } from 'react'
 export const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
 
 /**
- * Типизированная обёртка над useFormContext.
+ * Typed wrapper around useFormContext.
  *
- * Решает проблему типизации: стандартный useFormContext() не принимает type argument,
- * поэтому для доступа к типизированным values нужен workaround `as unknown as T`.
- * Этот хук делает это автоматически.
+ * Solves the typing problem: standard useFormContext() does not accept a type argument,
+ * so accessing typed values requires a workaround `as unknown as T`.
+ * This hook does it automatically.
  *
  * @example
  * ```tsx
@@ -51,7 +51,7 @@ export const { fieldContext, formContext, useFieldContext, useFormContext } = cr
  *   return (
  *     <form.Subscribe selector={(s) => values(s)}>
  *       {(settings) => (
- *         // settings имеет тип Settings
+ *         // settings has type Settings
  *         <div style={{ fontSize: settings.fontSize }}>...</div>
  *       )}
  *     </form.Subscribe>
@@ -65,15 +65,15 @@ export function useTypedFormContext<TFormData extends object>() {
   return useMemo(
     () => ({
       /**
-       * Оригинальный form API из TanStack Form.
-       * Используйте form.store для useStore подписок.
+       * Original form API from TanStack Form.
+       * Use form.store for useStore subscriptions.
        */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       form: rawForm as any,
 
       /**
-       * Типизированный setFieldValue.
-       * Используйте вместо form.setFieldValue для правильной типизации.
+       * Typed setFieldValue.
+       * Use instead of form.setFieldValue for proper typing.
        */
       setFieldValue: <K extends keyof TFormData & string>(name: K, value: TFormData[K]) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,42 +81,39 @@ export function useTypedFormContext<TFormData extends object>() {
       },
 
       /**
-       * Типизированный селектор для values.
-       * Используйте внутри form.Subscribe: `selector={(s) => values(s)}`
+       * Typed selector for values.
+       * Use inside form.Subscribe: `selector={(s) => values(s)}`
        */
       values: (state: { values: unknown }) => state.values as TFormData,
 
       /**
-       * Получить текущие значения формы (snapshot).
-       * Внимание: это не реактивно! Для реактивного доступа используйте form.Subscribe.
+       * Get current form values (snapshot).
+       * Note: this is not reactive! For reactive access use form.Subscribe.
        */
       getValues: () => rawForm.state.values as unknown as TFormData,
 
       /**
-       * Подписаться на конкретное поле.
-       * Возвращает селектор для использования в form.Subscribe.
+       * Subscribe to a specific field.
+       * Returns a selector for use in form.Subscribe.
        */
-      field:
-        <K extends keyof TFormData>(name: K) =>
-        (state: { values: unknown }) =>
-          (state.values as TFormData)[name],
+      field: <K extends keyof TFormData>(name: K) => (state: { values: unknown }) => (state.values as TFormData)[name],
     }),
-    [rawForm]
+    [rawForm],
   )
 }
 
 /**
- * Типы для TypedFormSubscribe компонента
+ * Types for TypedFormSubscribe component
  */
 interface TypedFormSubscribeProps<TFormData extends object, TSelected> {
-  /** Селектор для выбора данных из состояния формы */
+  /** Selector for choosing data from form state */
   selector: (values: TFormData) => TSelected
-  /** Render функция, получающая выбранные данные */
+  /** Render function receiving selected data */
   children: (selected: TSelected) => ReactNode
 }
 
 /**
- * Типизированный Subscribe компонент для удобной подписки на значения формы.
+ * Typed Subscribe component for convenient form value subscriptions.
  *
  * @example
  * ```tsx
@@ -135,7 +132,7 @@ export function useTypedFormSubscribe<TFormData extends object>() {
   const form = useFormContext()
 
   const TypedSubscribe = useMemo(() => {
-    return function TypedFormSubscribe<TSelected>({
+    return function TypedFormSubscribe<TSelected,>({
       selector,
       children,
     }: TypedFormSubscribeProps<TFormData, TSelected>) {

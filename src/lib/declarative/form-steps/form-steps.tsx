@@ -31,11 +31,11 @@ export interface FormStepsProps {
   variant?: 'solid' | 'subtle'
   /** Color palette */
   colorPalette?: string
-  /** Включить slide анимации при переходе между шагами */
+  /** Enable slide animations when transitioning between steps */
   animated?: boolean
-  /** Длительность анимации в секундах (по умолчанию 0.3) */
+  /** Animation duration in seconds (default 0.3) */
   animationDuration?: number
-  /** Callback при успешном завершении шага (вызывается после валидации, перед переходом) */
+  /** Callback on successful step completion (called after validation, before transition) */
   onStepComplete?: (stepIndex: number, values: unknown) => Promise<void> | void
   /**
    * Enable localStorage persistence for step progress.
@@ -102,17 +102,17 @@ export function FormSteps({
 }: FormStepsProps) {
   const { form } = useDeclarativeForm()
 
-  // Persistence хук
+  // Persistence hook
   const { getPersistedStep, clearPersistence } = useStepPersistence(0, stepPersistence)
 
-  // Step state (использует сохранённое значение если доступно)
+  // Step state (uses persisted value if available)
   const [internalStep, setInternalStep] = useState(() => {
     const persisted = getPersistedStep()
     return persisted ?? defaultStep
   })
   const currentStep = controlledStep ?? internalStep
 
-  // Step state хук (регистрация шагов, скрытые поля)
+  // Step state hook (step registration, hidden fields)
   const {
     sortedSteps,
     stepCount,
@@ -123,10 +123,10 @@ export function FormSteps({
     showFieldsForValidation,
   } = useStepState()
 
-  // Persistence: сохранение изменений шага
+  // Persistence: save step changes
   useStepPersistence(currentStep, stepPersistence)
 
-  // Navigation хук
+  // Navigation hook
   const { direction, goToNext, goToPrev, goToStep, skipToEnd, triggerSubmit } = useStepNavigation({
     form,
     currentStep,
@@ -140,8 +140,8 @@ export function FormSteps({
     setInternalStep,
   })
 
-  // Refs для нестабильных значений — предотвращает пересоздание contextValue
-  // при каждой регистрации шага (sortedSteps и hiddenFields меняются при регистрации)
+  // Refs for unstable values — prevents contextValue recreation
+  // on each step registration (sortedSteps and hiddenFields change on registration)
   const sortedStepsRef = useRef(sortedSteps)
   sortedStepsRef.current = sortedSteps
 
@@ -151,13 +151,13 @@ export function FormSteps({
   const onStepCompleteRef = useRef(onStepComplete)
   onStepCompleteRef.current = onStepComplete
 
-  // Context value — зависит только от стабильных значений
-  // sortedSteps, hiddenFields и onStepComplete через refs
+  // Context value — depends only on stable values
+  // sortedSteps, hiddenFields and onStepComplete via refs
   const contextValue: FormStepsContextValue = useMemo(
     () => ({
       currentStep,
       stepCount,
-      // Геттер для steps — возвращает актуальное значение через ref
+      // Getter for steps — returns current value via ref
       get steps() {
         return sortedStepsRef.current
       },
@@ -192,8 +192,8 @@ export function FormSteps({
       },
       clearStepPersistence: clearPersistence,
     }),
-    // ВАЖНО: sortedSteps, hiddenFields, onStepComplete НЕ в deps —
-    // доступны через refs/getters, предотвращает бесконечный цикл
+    // IMPORTANT: sortedSteps, hiddenFields, onStepComplete NOT in deps —
+    // accessed via refs/getters, prevents infinite loop
 
     [
       currentStep,

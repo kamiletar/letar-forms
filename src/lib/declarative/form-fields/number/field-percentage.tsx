@@ -6,29 +6,29 @@ import type { PercentageFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'
 
 /**
- * Form.Field.Percentage - Поле ввода процентов
+ * Form.Field.Percentage - Percentage input field
  *
- * Рендерит NumberInput с форматированием процентов и символом %.
- * Значение хранится как есть (50 = 50%), а не как десятичная дробь (0.5).
+ * Renders NumberInput with percentage formatting and % symbol.
+ * Value is stored as-is (50 = 50%), not as decimal fraction (0.5).
  *
- * @example Базовое использование (0-100%)
+ * @example Basic usage (0-100%)
  * ```tsx
- * <Form.Field.Percentage name="discount" label="Скидка" />
+ * <Form.Field.Percentage name="discount" label="Discount" />
  * ```
  *
- * @example С кастомным диапазоном
+ * @example With custom range
  * ```tsx
- * <Form.Field.Percentage name="margin" label="Маржа" min={0} max={50} />
+ * <Form.Field.Percentage name="margin" label="Margin" min={0} max={50} />
  * ```
  *
- * @example С десятичными
+ * @example With decimals
  * ```tsx
- * <Form.Field.Percentage name="rate" label="Ставка" decimalScale={2} step={0.1} />
+ * <Form.Field.Percentage name="rate" label="Rate" decimalScale={2} step={0.1} />
  * ```
  */
-/** Состояние поля процентов */
+/** Percentage field state */
 interface PercentageFieldState {
-  /** Мемоизированные опции форматирования */
+  /** Memoized format options */
   formatOptions: Intl.NumberFormatOptions
 }
 
@@ -38,8 +38,8 @@ export const FieldPercentage = createField<PercentageFieldProps, number | undefi
   useFieldState: (props) => {
     const { decimalScale = 0 } = props
 
-    // Используем 'unit' стиль с percent, чтобы хранить целые числа (50 = 50%)
-    // Стиль 'percent' от Chakra ожидает десятичные (0.5 = 50%)
+    // Use 'unit' style with percent to store whole numbers (50 = 50%)
+    // Chakra's 'percent' style expects decimals (0.5 = 50%)
     const formatOptions = useMemo(
       () => ({
         style: 'unit' as const,

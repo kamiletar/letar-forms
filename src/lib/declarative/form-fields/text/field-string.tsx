@@ -10,25 +10,25 @@ import { createField, FieldWrapper } from '../base'
  *
  * Renders a Chakra Input with automatic form integration and error display.
  *
- * Автоматически извлекает из Zod схемы:
- * - `type` из `z.string().email()` → type="email", `z.string().url()` → type="url"
- * - `maxLength` из `z.string().max(100)` → maxLength={100}
- * - `minLength` из `z.string().min(2)` → minLength={2}
- * - `pattern` из `z.string().regex(/.../)` → pattern="..."
- * - `helperText` автоматически генерируется из constraints ("Максимум 100 символов")
+ * Automatically extracts from Zod schema:
+ * - `type` from `z.string().email()` → type="email", `z.string().url()` → type="url"
+ * - `maxLength` from `z.string().max(100)` → maxLength={100}
+ * - `minLength` from `z.string().min(2)` → minLength={2}
+ * - `pattern` from `z.string().regex(/.../)` → pattern="..."
+ * - `helperText` automatically generated from constraints ("Maximum 100 characters")
  *
- * Props всегда имеют приоритет над автоматическими значениями из схемы.
+ * Props always take priority over automatic values from schema.
  *
  * @example
  * ```tsx
  * <Form.Field.String name="title" label="Title" required />
  * ```
  *
- * @example С автоматическими constraints из Zod
+ * @example With automatic constraints from Zod
  * ```tsx
- * // В схеме: z.object({ email: z.string().email().max(255) })
+ * // In schema: z.object({ email: z.string().email().max(255) })
  * <Form.Field.String name="email" />
- * // Автоматически: type="email", maxLength={255}
+ * // Automatically: type="email", maxLength={255}
  * ```
  *
  * @example In primitive array (no name)
@@ -39,7 +39,7 @@ import { createField, FieldWrapper } from '../base'
  * ```
  */
 /**
- * Автоматический inputMode по типу поля для мобильных клавиатур
+ * Automatic inputMode based on field type for mobile keyboards
  */
 function getInputModeFromType(type: string): StringFieldProps['inputMode'] {
   switch (type) {
@@ -59,12 +59,12 @@ export const FieldString = createField<StringFieldProps, string>({
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
     const { constraints } = resolved
 
-    // Props имеют приоритет над constraints
+    // Props take priority over constraints
     const type = componentProps.type ?? constraints.string?.inputType ?? 'text'
     const maxLength = componentProps.maxLength ?? constraints.string?.maxLength
     const minLength = componentProps.minLength ?? constraints.string?.minLength
     const pattern = componentProps.pattern ?? constraints.string?.pattern
-    // inputMode: явный prop > авто из type
+    // inputMode: explicit prop > auto from type
     const inputMode = componentProps.inputMode ?? getInputModeFromType(type)
 
     return (

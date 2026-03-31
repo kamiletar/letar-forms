@@ -27,6 +27,7 @@ export type {
   AddressValue,
   BaseFieldProps,
   CheckboxFieldProps,
+  CityFieldProps,
   CurrencyFieldProps,
   DaDataSuggestion,
   DateFieldProps,

@@ -1,73 +1,73 @@
 'use client'
 
 import { createListCollection, Field, Portal, Select, Spinner } from '@chakra-ui/react'
-import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
+import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react'
 import { useFormGroup } from '../../../form-group'
 import { useDeclarativeForm } from '../../form-context'
 import type { BaseFieldProps, BaseOption, FieldSize } from '../../types'
-import { FieldError, getFieldErrors, getOptionLabel, SelectionFieldLabel, type ResolvedFieldProps } from '../base'
+import { FieldError, getFieldErrors, getOptionLabel, type ResolvedFieldProps, SelectionFieldLabel } from '../base'
 import { useResolvedFieldProps } from '../base/use-resolved-field-props'
 
 /**
- * Результат загрузки опций
+ * Options loading result
  */
 export interface CascadingSelectLoadResult<T = string> {
-  /** Загруженные опции */
+  /** Loaded options */
   options: BaseOption<T>[]
 }
 
 /**
- * Props для CascadingSelect поля
+ * Props for CascadingSelect field
  */
 export interface CascadingSelectFieldProps<TParent = string, TValue = string> extends BaseFieldProps {
   /**
-   * Имя родительского поля, от которого зависит этот select
-   * @example "country" - загрузить города при изменении страны
+   * Parent field name that this select depends on
+   * @example "country" - load cities on country change
    */
   dependsOn: string
   /**
-   * Функция загрузки опций при изменении родительского поля
-   * @param parentValue - Текущее значение родительского поля
-   * @returns Promise с массивом опций или объект с опциями
+   * Function to load options when parent field changes
+   * @param parentValue - Current value of the parent field
+   * @returns Promise with options array or object with options
    */
   loadOptions: (
     parentValue: TParent | undefined
   ) => Promise<BaseOption<TValue>[]> | Promise<CascadingSelectLoadResult<TValue>>
   /**
-   * Начальные опции (показываются до выбора родительского значения)
+   * Initial options (shown before parent value is selected)
    * @default []
    */
   initialOptions?: BaseOption<TValue>[]
   /**
-   * Автоматически очищать значение при изменении родителя
+   * Automatically clear value when parent changes
    * @default true
    */
   clearOnParentChange?: boolean
   /**
-   * Отключить поле пока родитель пустой
+   * Disable field while parent is empty
    * @default true
    */
   disableWhenParentEmpty?: boolean
   /**
-   * Показывать кнопку очистки (автоопределение: true если optional, false если required)
+   * Show clear button (auto-determined: true if optional, false if required)
    */
   clearable?: boolean
   /**
-   * Размер компонента
+   * Component size
    */
   size?: FieldSize
   /**
-   * Визуальный вариант
+   * Visual variant
    */
   variant?: 'outline' | 'subtle'
   /**
-   * Placeholder для пустого родительского значения
+   * Placeholder when parent value is empty
    */
   placeholderWhenDisabled?: string
 }
 
 /**
- * Внутренний компонент для рендеринга Select с загруженными опциями
+ * Internal component for rendering Select with loaded options
  */
 interface CascadingSelectContentProps<TParent, TValue> {
   parentValue: TParent | undefined
@@ -98,20 +98,20 @@ function CascadingSelectContent<TParent = string, TValue = string>({
   variant,
   placeholderWhenDisabled,
 }: CascadingSelectContentProps<TParent, TValue>): ReactElement {
-  // Состояние опций и загрузки
+  // Options state and loading
   const [options, setOptions] = useState<BaseOption<TValue>[]>(initialOptions)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Ref для отслеживания предыдущего значения родителя
+  // Ref for tracking previous parent value
   const prevParentValueRef = useRef<TParent | undefined>(parentValue)
 
-  // Ref для стабильной ссылки на loadOptions (избегаем бесконечных циклов при inline функциях)
+  // Ref for stable loadOptions reference (avoid infinite loops with inline functions)
   const loadOptionsRef = useRef(loadOptions)
   loadOptionsRef.current = loadOptions
 
-  // Эффект для загрузки опций при изменении parentValue
+  // Effect for loading options when parentValue changes
   useEffect(() => {
-    // Функция загрузки
+    // Loading function
     const doLoad = async () => {
       if (parentValue === undefined || parentValue === null || parentValue === '') {
         setOptions(initialOptions)
@@ -121,11 +121,11 @@ function CascadingSelectContent<TParent = string, TValue = string>({
       setIsLoading(true)
       try {
         const result = await loadOptionsRef.current(parentValue)
-        // Поддержка обоих форматов: массив или объект с options
+        // Support both formats: array or object with options
         const newOptions = Array.isArray(result) ? result : result.options
         setOptions(newOptions)
       } catch (error) {
-        console.error('Ошибка загрузки опций каскадного select:', error)
+        console.error('Error loading cascading select options:', error)
         setOptions([])
       } finally {
         setIsLoading(false)
@@ -135,10 +135,10 @@ function CascadingSelectContent<TParent = string, TValue = string>({
     void doLoad()
   }, [parentValue, initialOptions])
 
-  // Эффект для очистки значения при изменении родителя
+  // Effect for clearing value when parent changes
   useEffect(() => {
     if (clearOnParentChange && prevParentValueRef.current !== parentValue) {
-      // Очищаем значение поля если родитель изменился (не при первом рендере)
+      // Clear field value if parent changed (not on first render)
       if (prevParentValueRef.current !== undefined) {
         form.setFieldValue(fullPath, '' as unknown)
       }
@@ -146,17 +146,17 @@ function CascadingSelectContent<TParent = string, TValue = string>({
     }
   }, [parentValue, clearOnParentChange, form, fullPath])
 
-  // Определяем, нужно ли отключить поле
+  // Determine if the field should be disabled
   const isParentEmpty = parentValue === undefined || parentValue === null || parentValue === ''
   const isDisabled = resolved.disabled || (disableWhenParentEmpty && isParentEmpty)
 
-  // Определяем placeholder
+  // Determine placeholder
   const effectivePlaceholder = isParentEmpty && placeholderWhenDisabled ? placeholderWhenDisabled : resolved.placeholder
 
-  // Автоопределение clearable
+  // Auto-determine clearable
   const resolvedClearable = clearable ?? !resolved.required
 
-  // Создаём коллекцию из опций
+  // Create collection from options
   const collection = useMemo(
     () =>
       createListCollection({
@@ -230,36 +230,36 @@ function CascadingSelectContent<TParent = string, TValue = string>({
 }
 
 /**
- * Form.Field.CascadingSelect - Каскадный select с зависимостью от другого поля
+ * Form.Field.CascadingSelect - Cascading select depending on another field
  *
- * Загружает опции динамически на основе значения другого поля.
- * Полезен для связанных списков типа Страна → Город, Категория → Подкатегория.
+ * Loads options dynamically based on another field's value.
+ * Useful for linked lists like Country -> City, Category -> Subcategory.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
  * <Form.Field.Select
  *   name="country"
- *   label="Страна"
+ *   label="Country"
  *   options={countries}
  * />
  * <Form.Field.CascadingSelect
  *   name="city"
- *   label="Город"
+ *   label="City"
  *   dependsOn="country"
  *   loadOptions={async (countryCode) => {
  *     if (!countryCode) return []
  *     const cities = await fetchCities(countryCode)
  *     return cities.map(c => ({ label: c.name, value: c.id }))
  *   }}
- *   placeholderWhenDisabled="Сначала выберите страну"
+ *   placeholderWhenDisabled="Select country first"
  * />
  * ```
  *
- * @example Вложенные поля
+ * @example Nested fields
  * ```tsx
  * <Form.Field.CascadingSelect
  *   name="address.region"
- *   label="Регион"
+ *   label="Region"
  *   dependsOn="address.country"
  *   loadOptions={loadRegions}
  * />
@@ -298,10 +298,10 @@ export function FieldCascadingSelect<TParent = string, TValue = string>(
     options: resolvedRest.options,
   }
 
-  // Строим полный путь к родительскому полю
+  // Build full path to parent field
   const fullDependsOnPath = parentGroup ? `${parentGroup.name}.${dependsOn}` : dependsOn
 
-  // Создаём селектор для значения родительского поля (inline, как в FormWhen)
+  // Create selector for parent field value (inline, like in FormWhen)
   const parentSelector = (state: { values: Record<string, unknown> }): TParent | undefined => {
     const parts = fullDependsOnPath.split('.')
     let value: unknown = state.values
@@ -316,7 +316,7 @@ export function FieldCascadingSelect<TParent = string, TValue = string>(
     return value as TParent | undefined
   }
 
-  // Используем form.Subscribe для подписки на изменения родительского поля
+  // Use form.Subscribe to subscribe to parent field changes
   return (
     <form.Subscribe selector={parentSelector}>
       {(parentValue: TParent | undefined) => (

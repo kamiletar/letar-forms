@@ -10,9 +10,9 @@ type AnyComponent = ComponentType<any>
 type LazyImportFn<T> = () => Promise<{ default: T } | T>
 
 /**
- * Создаёт ленивый компонент с встроенным Suspense и Skeleton fallback
+ * Creates ленивый component с встроенным Suspense и Skeleton fallback
  *
- * Поддерживает как default export, так и named export (объект модуля)
+ * Supports как default export, так и named export (object модуля)
  *
  * @example
  * ```tsx
@@ -22,7 +22,7 @@ type LazyImportFn<T> = () => Promise<{ default: T } | T>
  * )
  *
  * // Использование
- * <LazySelect name="type" label="Тип" />
+ * <LazySelect name="type" label="Type" />
  * ```
  */
 export function createLazyComponent<T extends AnyComponent>(
@@ -35,7 +35,7 @@ export function createLazyComponent<T extends AnyComponent>(
     if (module && typeof module === 'object' && 'default' in module) {
       return module as { default: T }
     }
-    // Если вернули сам компонент (named export)
+    // Если вернули сам component (named export)
     return { default: module as T }
   })
 
@@ -54,7 +54,7 @@ export function createLazyComponent<T extends AnyComponent>(
 }
 
 /**
- * Преобразует объект с функциями динамического импорта в объект с lazy компонентами
+ * Преобразует object с функциями динамического импорта в object с lazy компоненthereи
  *
  * @example
  * ```tsx
@@ -63,7 +63,7 @@ export function createLazyComponent<T extends AnyComponent>(
  *   Status: () => import('./select-status').then(m => m.SelectStatus),
  * })
  *
- * // Результат:
+ * // Result:
  * lazySelects.Type // LazyWrapper с встроенным Suspense
  * lazySelects.Status // LazyWrapper с встроенным Suspense
  * ```
@@ -81,5 +81,5 @@ export function createLazyComponents<T extends Record<string, LazyImportFn<AnyCo
   )
 }
 
-/** Тип для функции ленивого импорта */
+/** Type for lazy import function */
 export type LazyComponentImport<T extends AnyComponent = AnyComponent> = LazyImportFn<T>

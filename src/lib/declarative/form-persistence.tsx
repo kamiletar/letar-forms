@@ -1,144 +1,144 @@
 'use client'
 
 import { Button, CloseButton, Dialog, Portal, Text } from '@chakra-ui/react'
-import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react'
+import { type ReactElement, useCallback, useEffect, useRef, useState } from 'react'
 
 /**
- * Конфигурация сохранения формы
+ * Form persistence configuration
  */
 export interface FormPersistenceConfig {
   /**
-   * Уникальный ключ для localStorage
-   * Должен быть уникальным для каждой формы во избежание конфликтов
+   * Unique key for localStorage
+   * Must be unique per form to avoid conflicts
    */
   key: string
 
   /**
-   * Задержка debounce в миллисекундах для сохранения
+   * Debounce delay in milliseconds for saving
    * @default 500
    */
   debounceMs?: number
 
   /**
-   * Время жизни черновика в миллисекундах (TTL)
-   * После истечения TTL черновик считается протухшим и автоматически удаляется
-   * @example 24 * 60 * 60 * 1000 // 24 часа
-   * @default undefined — без ограничения по времени
+   * Draft time-to-live in milliseconds (TTL)
+   * After TTL expires the draft is considered stale and automatically removed
+   * @example 24 * 60 * 60 * 1000 // 24 hours
+   * @default undefined — no time limit
    */
   ttl?: number
 
   /**
-   * Заголовок диалога
-   * @default 'Восстановить сохранённые данные?'
+   * Dialog title
+   * @default 'Restore saved data?'
    */
   dialogTitle?: string
 
   /**
-   * Описание диалога
-   * @default 'У вас есть несохранённые изменения с предыдущей сессии.'
+   * Dialog description
+   * @default 'You have unsaved changes from a previous session.'
    */
   dialogDescription?: string
 
   /**
-   * Текст кнопки восстановления
-   * @default 'Восстановить'
+   * Restore button text
+   * @default 'Restore'
    */
   restoreButtonText?: string
 
   /**
-   * Текст кнопки отмены
-   * @default 'Начать заново'
+   * Discard button text
+   * @default 'Start fresh'
    */
   discardButtonText?: string
 
   /**
-   * Текст кнопки очистки черновика (для ClearDraftButton)
-   * @default 'Очистить черновик'
+   * Clear draft button text (for ClearDraftButton)
+   * @default 'Clear draft'
    */
   clearDraftButtonText?: string
 }
 
 /**
- * Формат хранения данных в localStorage (с metadata)
+ * Storage format for localStorage data (with metadata)
  * @internal
  */
 interface StoredData<TData> {
-  /** Сохранённые данные формы */
+  /** Saved form data */
   data: TData
-  /** Время сохранения (timestamp) */
+  /** Save timestamp */
   savedAt: number
-  /** Версия формата (для будущей миграции) */
+  /** Format version (for future migration) */
   version: 1
 }
 
 /**
- * Результат хука useFormPersistence
+ * Result of useFormPersistence hook
  */
 export interface FormPersistenceResult<TData> {
   /**
-   * Есть ли сохранённые данные
+   * Whether saved data exists
    */
   hasSavedData: boolean
 
   /**
-   * Сохранённые данные (если есть)
+   * Saved data (if any)
    */
   savedData: TData | null
 
   /**
-   * Время сохранения черновика (timestamp)
-   * Используется для отображения "Черновик от 15:30"
+   * Draft save timestamp
+   * Used for displaying "Draft from 15:30"
    */
   savedAt: number | null
 
   /**
-   * Открыт ли диалог восстановления
+   * Whether restore dialog is open
    */
   isDialogOpen: boolean
 
   /**
-   * Выбрал ли пользователь восстановление
+   * Whether user chose to restore
    */
   shouldRestore: boolean
 
   /**
-   * Сохранить текущие значения формы в localStorage
+   * Save current form values to localStorage
    */
   saveValues: (values: TData) => void
 
   /**
-   * Очистить сохранённые данные из localStorage
+   * Clear saved data from localStorage
    */
   clearSavedData: () => void
 
   /**
-   * Принять и восстановить сохранённые данные
+   * Accept and restore saved data
    */
   acceptRestore: () => TData | null
 
   /**
-   * Отклонить восстановление и начать заново
+   * Reject restore and start fresh
    */
   rejectRestore: () => void
 
   /**
-   * Закрыть диалог без действия
+   * Close dialog without action
    */
   closeDialog: () => void
 
   /**
-   * Отметить восстановление как завершённое (вызывается после form.reset)
+   * Mark restore as complete (called after form.reset)
    */
   markRestoreComplete: () => void
 
   /**
-   * Компонент диалога для рендеринга
+   * Dialog component for rendering
    */
   RestoreDialog: () => ReactElement | null
 
   /**
-   * Компонент кнопки очистки черновика
-   * Показывается только если есть сохранённые данные
+   * Clear draft button component
+   * Shown only when saved data exists
    */
   ClearDraftButton: () => ReactElement | null
 }
@@ -146,10 +146,10 @@ export interface FormPersistenceResult<TData> {
 const STORAGE_PREFIX = 'form-persistence:'
 
 /**
- * Хук для сохранения данных формы в localStorage
+ * Hook for persisting form data in localStorage
  *
- * Автоматически сохраняет состояние формы и показывает диалог
- * для восстановления сохранённых данных при загрузке формы.
+ * Automatically saves form state and shows a dialog
+ * to restore saved data when the form loads.
  *
  * @example
  * ```tsx
@@ -158,13 +158,13 @@ const STORAGE_PREFIX = 'form-persistence:'
  *   debounceMs: 500,
  * })
  *
- * // В onSubmit формы:
+ * // In form onSubmit:
  * const handleSubmit = (data) => {
  *   await saveToServer(data)
- *   persistence.clearSavedData() // Очищаем при успехе
+ *   persistence.clearSavedData() // Clear on success
  * }
  *
- * // Подписка на изменения формы:
+ * // Subscribe to form changes:
  * useEffect(() => {
  *   return form.store.subscribe(() => {
  *     persistence.saveValues(form.state.values)
@@ -186,17 +186,17 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
 
   const storageKey = `${STORAGE_PREFIX}${key}`
 
-  // Состояние
+  // State
   const [savedData, setSavedData] = useState<TData | null>(null)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [hasSavedData, setHasSavedData] = useState(false)
   const [shouldRestore, setShouldRestore] = useState(false)
 
-  // Рефы для debounce
+  // Refs for debounce
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Загружаем сохранённые данные при монтировании
+  // Load saved data on mount
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -207,29 +207,29 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
       if (stored) {
         const parsed = JSON.parse(stored) as TData | StoredData<TData>
 
-        // Проверяем формат данных (новый с version или старый без)
+        // Check data format (new with version or old without)
         let data: TData
         let timestamp: number
 
         if (parsed && typeof parsed === 'object' && 'version' in parsed && parsed.version === 1) {
-          // Новый формат с метаданными
+          // New format with metadata
           const storedData = parsed as StoredData<TData>
           data = storedData.data
           timestamp = storedData.savedAt
 
-          // Проверяем TTL
+          // Check TTL
           if (ttl !== undefined) {
             const age = Date.now() - timestamp
             if (age > ttl) {
-              // Данные протухли — удаляем
+              // Data expired — remove
               localStorage.removeItem(storageKey)
               return
             }
           }
         } else {
-          // Старый формат (для обратной совместимости)
+          // Old format (for backward compatibility)
           data = parsed as TData
-          timestamp = Date.now() // Не знаем точное время, ставим текущее
+          timestamp = Date.now() // Unknown exact time, use current
         }
 
         setSavedData(data)
@@ -238,25 +238,25 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
         setIsDialogOpen(true)
       }
     } catch {
-      // Невалидный JSON или ошибка localStorage — игнорируем
+      // Invalid JSON or localStorage error — ignore
       localStorage.removeItem(storageKey)
     }
   }, [storageKey, ttl])
 
-  // Сохраняем значения (с debounce)
+  // Save values (with debounce)
   const saveValues = useCallback(
     (values: TData) => {
-      // Не сохраняем, если ещё показываем диалог восстановления
+      // Don't save while restore dialog is still showing
       if (isDialogOpen) {
         return
       }
 
-      // Очищаем предыдущий таймер
+      // Clear previous timer
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current)
       }
 
-      // Устанавливаем новое отложенное сохранение
+      // Set new deferred save
       debounceTimerRef.current = setTimeout(() => {
         try {
           const now = Date.now()
@@ -269,14 +269,14 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
           setSavedAt(now)
           setHasSavedData(true)
         } catch {
-          // localStorage может быть заполнен или отключён
+          // localStorage may be full or disabled
         }
       }, debounceMs)
     },
     [storageKey, debounceMs, isDialogOpen]
   )
 
-  // Очищаем сохранённые данные
+  // Clear saved data
   const clearSavedData = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
@@ -284,39 +284,39 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
     try {
       localStorage.removeItem(storageKey)
     } catch {
-      // Игнорируем ошибки
+      // Ignore errors
     }
     setSavedData(null)
     setSavedAt(null)
     setHasSavedData(false)
   }, [storageKey])
 
-  // Принимаем восстановление
+  // Accept restore
   const acceptRestore = useCallback(() => {
     setShouldRestore(true)
     setIsDialogOpen(false)
-    // Сохраняем savedData, чтобы вызывающий код мог его использовать
+    // Keep savedData so the caller can use it
     return savedData
   }, [savedData])
 
-  // Отмечаем восстановление как завершённое (вызывается после form.reset)
+  // Mark restore as complete (called after form.reset)
   const markRestoreComplete = useCallback(() => {
     setShouldRestore(false)
     clearSavedData()
   }, [clearSavedData])
 
-  // Отклоняем восстановление
+  // Reject restore
   const rejectRestore = useCallback(() => {
     clearSavedData()
     setIsDialogOpen(false)
   }, [clearSavedData])
 
-  // Закрываем диалог
+  // Close dialog
   const closeDialog = useCallback(() => {
     setIsDialogOpen(false)
   }, [])
 
-  // Компонент диалога
+  // Dialog component
   const RestoreDialog = useCallback((): ReactElement | null => {
     if (!hasSavedData) {
       return null
@@ -369,9 +369,9 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
     acceptRestore,
   ])
 
-  // Компонент кнопки очистки черновика
+  // Clear draft button component
   const ClearDraftButton = useCallback((): ReactElement | null => {
-    // Не показываем, если нет сохранённых данных или открыт диалог восстановления
+    // Don't show if no saved data or restore dialog is open
     if (!hasSavedData || isDialogOpen) {
       return null
     }
@@ -383,7 +383,7 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
     )
   }, [hasSavedData, isDialogOpen, clearSavedData, clearDraftButtonText])
 
-  // Очистка при размонтировании
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
@@ -410,11 +410,11 @@ export function useFormPersistence<TData extends object>(config: FormPersistence
 }
 
 /**
- * Пропсы для компонента FormWithPersistence
+ * Props for FormWithPersistence component
  */
 export interface FormPersistenceProps {
   /**
-   * Конфигурация сохранения
+   * Persistence configuration
    */
   persistence?: FormPersistenceConfig
 }

@@ -5,6 +5,8 @@ Declarative form components for React with **40+ field types**, powered by [TanS
 [![npm version](https://img.shields.io/npm/v/@letar/forms)](https://www.npmjs.com/package/@letar/forms)
 [![license](https://img.shields.io/npm/l/@letar/forms)](./LICENSE)
 
+[Документация на русском](./README.ru.md)
+
 ## Quick Start
 
 ```bash
@@ -16,8 +18,15 @@ import { Form } from '@letar/forms'
 import { z } from 'zod/v4'
 
 const Schema = z.object({
-  title: z.string().min(2).meta({ ui: { title: 'Title', placeholder: 'Enter...' } }),
-  rating: z.number().min(0).max(10).meta({ ui: { title: 'Rating' } }),
+  title: z
+    .string()
+    .min(2)
+    .meta({ ui: { title: 'Title', placeholder: 'Enter...' } }),
+  rating: z
+    .number()
+    .min(0)
+    .max(10)
+    .meta({ ui: { title: 'Rating' } }),
 })
 
 function MyForm() {
@@ -157,6 +166,67 @@ const Schema = z.object({
 </Form>
 ```
 
+### Address Provider
+
+Address and city fields support pluggable geocoding providers. DaData (Russia) is built-in:
+
+```tsx
+import { createDaDataProvider, createForm } from '@letar/forms'
+
+// Option 1: Set once via createForm (recommended)
+const AppForm = createForm({
+  addressProvider: createDaDataProvider({ token: process.env.DADATA_TOKEN }),
+})
+
+<AppForm.Field.Address name="address" />
+<AppForm.Field.City name="city" />
+
+// Option 2: Per-field provider
+<Form.Field.Address name="address" provider={myProvider} />
+
+// Option 3: Backward compatible token prop
+<Form.Field.Address name="address" token="dadata-token" />
+```
+
+Custom provider — implement the `AddressProvider` interface:
+
+```typescript
+import type { AddressProvider } from '@letar/forms'
+
+const googlePlaces: AddressProvider = {
+  async getSuggestions(query, options) {
+    const res = await fetch(`/api/places?q=${query}&limit=${options?.count ?? 10}`)
+    const data = await res.json()
+    return data.map((item) => ({
+      label: item.description,
+      value: item.description,
+      data: item.structured,
+    }))
+  },
+}
+```
+
+### createForm — App-Level Customization
+
+Create an extended Form with app-specific fields, selects, and address provider:
+
+```tsx
+import { createForm, createDaDataProvider } from '@letar/forms'
+import { SelectCategory } from './selects/select-category'
+
+const AppForm = createForm({
+  addressProvider: createDaDataProvider({ token: '...' }),
+  extraSelects: { Category: SelectCategory },
+})
+
+// Usage — all customizations applied automatically
+<AppForm initialValue={data} onSubmit={save}>
+  <AppForm.Field.Address name="address" />
+  <AppForm.Select.Category name="categoryId" />
+  <AppForm.Button.Submit />
+</AppForm>
+```
+
 ## Subpath Exports
 
 ```tsx
@@ -186,3 +256,7 @@ Full documentation and live examples: **[forms.letar.best](https://forms.letar.b
 ## License
 
 [MIT](./LICENSE)
+
+---
+
+**Version:** 0.58.0

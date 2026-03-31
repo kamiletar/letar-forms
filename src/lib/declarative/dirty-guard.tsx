@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react'
+import { type ReactElement, useCallback, useEffect, useRef, useState } from 'react'
 import { useDeclarativeForm } from './form-context'
 
 /**
@@ -15,22 +15,22 @@ export interface DirtyGuardProps {
   message?: string
   /**
    * Title for the confirmation dialog
-   * @default "Несохранённые изменения"
+   * @default "Unsaved changes"
    */
   dialogTitle?: string
   /**
    * Description for the confirmation dialog
-   * @default "У вас есть несохранённые изменения. Вы уверены, что хотите покинуть страницу?"
+   * @default "You have unsaved changes. Are you sure you want to leave this page?"
    */
   dialogDescription?: string
   /**
    * Text for the confirm button
-   * @default "Покинуть"
+   * @default "Leave"
    */
   confirmText?: string
   /**
    * Text for the cancel button
-   * @default "Остаться"
+   * @default "Stay"
    */
   cancelText?: string
   /**
@@ -68,19 +68,19 @@ export interface DirtyGuardProps {
  * @example With custom messages
  * ```tsx
  * <Form.DirtyGuard
- *   dialogTitle="Уходите?"
- *   dialogDescription="Данные будут потеряны!"
- *   confirmText="Да, уйти"
- *   cancelText="Нет, остаться"
+ *   dialogTitle="Leaving?"
+ *   dialogDescription="Data will be lost!"
+ *   confirmText="Yes, leave"
+ *   cancelText="No, stay"
  * />
  * ```
  */
 export function DirtyGuard({
   message = 'You have unsaved changes. Are you sure you want to leave?',
-  dialogTitle = 'Несохранённые изменения',
-  dialogDescription = 'У вас есть несохранённые изменения. Вы уверены, что хотите покинуть страницу?',
-  confirmText = 'Покинуть',
-  cancelText = 'Остаться',
+  dialogTitle = 'Unsaved changes',
+  dialogDescription = 'You have unsaved changes. Are you sure you want to leave this page?',
+  confirmText = 'Leave',
+  cancelText = 'Stay',
   enabled = true,
   onBlock,
 }: DirtyGuardProps): ReactElement | null {
@@ -89,13 +89,13 @@ export function DirtyGuard({
   const [showDialog, setShowDialog] = useState(false)
   const pendingHref = useRef<string | null>(null)
 
-  // Проверка isDirty
+  // Check isDirty
   const checkIsDirty = useCallback(() => {
     const state = form.state
     return state.isDirty
   }, [form])
 
-  // Обработчик beforeunload (закрытие вкладки, refresh)
+  // Handler for beforeunload (tab close, refresh)
   useEffect(() => {
     if (!enabled) {
       return
@@ -119,19 +119,19 @@ export function DirtyGuard({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [enabled, message, onBlock, checkIsDirty])
 
-  // Перехват кликов на внутренние ссылки
+  // Intercept clicks on internal links
   useEffect(() => {
     if (!enabled) {
       return
     }
 
     const handleClick = (event: MouseEvent) => {
-      // Проверяем что форма dirty
+      // Check if form is dirty
       if (!checkIsDirty()) {
         return
       }
 
-      // Находим ближайший anchor или element с data-href
+      // Find closest anchor or element with data-href
       const target = event.target as HTMLElement
       const anchor = target.closest('a')
 
@@ -144,7 +144,7 @@ export function DirtyGuard({
         return
       }
 
-      // Пропускаем внешние ссылки и специальные протоколы
+      // Skip external links and special protocols
       if (
         href.startsWith('http://') ||
         href.startsWith('https://') ||
@@ -155,57 +155,57 @@ export function DirtyGuard({
         return
       }
 
-      // Пропускаем если есть target="_blank"
+      // Skip if target="_blank"
       if (anchor.target === '_blank') {
         return
       }
 
-      // Пропускаем если зажат Ctrl/Cmd (открытие в новой вкладке)
+      // Skip if Ctrl/Cmd is held (open in new tab)
       if (event.ctrlKey || event.metaKey) {
         return
       }
 
-      // Вызываем onBlock callback
+      // Call onBlock callback
       const shouldBlock = onBlock?.()
       if (shouldBlock === false) {
         return
       }
 
-      // Предотвращаем навигацию и показываем диалог
+      // Prevent navigation and show dialog
       event.preventDefault()
       event.stopPropagation()
       pendingHref.current = href
       setShowDialog(true)
     }
 
-    // Используем capture чтобы перехватить до Next.js
+    // Use capture to intercept before Next.js
     document.addEventListener('click', handleClick, { capture: true })
     return () => document.removeEventListener('click', handleClick, { capture: true })
   }, [enabled, onBlock, checkIsDirty])
 
-  // Подтверждение навигации
+  // Confirm navigation
   const handleConfirm = useCallback(() => {
     setShowDialog(false)
     if (pendingHref.current) {
-      // Сбрасываем dirty state перед навигацией чтобы избежать повторного срабатывания
+      // Reset dirty state before navigation to avoid re-triggering
       form.reset()
       router.push(pendingHref.current)
       pendingHref.current = null
     }
   }, [form, router])
 
-  // Отмена навигации
+  // Cancel navigation
   const handleCancel = useCallback(() => {
     setShowDialog(false)
     pendingHref.current = null
   }, [])
 
-  // Рендерим диалог подтверждения
+  // Render confirmation dialog
   if (!showDialog) {
     return null
   }
 
-  // Простой встроенный диалог (без зависимости от Chakra Dialog)
+  // Simple inline dialog (no dependency on Chakra Dialog)
   return (
     <div
       style={{

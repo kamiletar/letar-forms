@@ -8,20 +8,20 @@ import { FormGroupDeclarative } from '../form-group/form-group-declarative'
 import { type StepInfo, useFormStepsContext } from './form-steps-context'
 
 /**
- * Условие отображения шага
+ * Step display condition
  */
 export interface StepWhenCondition<TValue = unknown> {
-  /** Поле для отслеживания */
+  /** Field to watch */
   field: string
-  /** Показывать шаг когда значение равно */
+  /** Show step when value equals */
   is?: TValue
-  /** Показывать шаг когда значение НЕ равно */
+  /** Show step when value is NOT equal */
   isNot?: TValue
-  /** Показывать шаг когда значение в массиве */
+  /** Show step when value is in array */
   in?: TValue[]
-  /** Показывать шаг когда значение НЕ в массиве */
+  /** Show step when value is NOT in array */
   notIn?: TValue[]
-  /** Кастомная функция условия */
+  /** Custom condition function */
   condition?: (value: TValue) => boolean
 }
 
@@ -34,11 +34,11 @@ export interface FormStepsStepProps {
   icon?: ReactNode
   /** Step content (form fields) */
   children: ReactNode
-  /** Callback при входе на шаг */
+  /** Callback when entering the step */
   onEnter?: () => void
-  /** Callback при уходе с шага (может отменить переход возвращая false) */
+  /** Callback when leaving the step (can cancel transition by returning false) */
   onLeave?: (direction: 'forward' | 'backward') => Promise<boolean> | boolean
-  /** Условие отображения шага (шаг показывается только если условие истинно) */
+  /** Step display condition (step is shown only if condition is true) */
   when?: StepWhenCondition
   /**
    * Segment name for automatic Form.Group wrapping.
@@ -93,15 +93,15 @@ function extractFieldNames(children: ReactNode, parentPath = ''): string[] {
   return names
 }
 
-/** Смещение для slide анимации в пикселях */
+/** Offset for slide animation in pixels */
 const SLIDE_OFFSET = 50
 
 /**
- * Вычисляет значение условия when
+ * Evaluates the when condition value
  */
 function evaluateWhenCondition(when: StepWhenCondition | undefined, fieldValue: unknown): boolean {
   if (!when) {
-    return true // Нет условия — всегда показываем
+    return true // No condition — always show
   }
 
   if (when.condition !== undefined) {
@@ -120,12 +120,12 @@ function evaluateWhenCondition(when: StepWhenCondition | undefined, fieldValue: 
     return !when.notIn.includes(fieldValue as never)
   }
 
-  // По умолчанию — truthy проверка
+  // Default — truthy check
   return Boolean(fieldValue)
 }
 
 /**
- * Получает значение вложенного поля по dot-notation пути
+ * Gets nested field value by dot-notation path
  */
 function getNestedValue(values: Record<string, unknown>, path: string): unknown {
   const parts = path.split('.')
@@ -155,7 +155,7 @@ function getNestedValue(values: Record<string, unknown>, path: string): unknown 
  * </Form.Steps.Step>
  * ```
  *
- * @example Conditional step (показывается только для определённой роли)
+ * @example Conditional step (shown only for a specific role)
  * ```tsx
  * <Form.Steps.Step
  *   title="Company Info"
@@ -185,7 +185,7 @@ export function FormStepsStep({
   // Parent path for field extraction (accounts for segment)
   const fieldExtractionPath = segment ?? ''
 
-  // Отслеживаем видимость шага на основе when условия
+  // Track step visibility based on when condition
   const [isVisible, setIsVisible] = useState(() => {
     if (!when) {
       return true
@@ -199,13 +199,13 @@ export function FormStepsStep({
   const indexRef = useRef<number>(-1)
   const wasVisibleRef = useRef(isVisible)
 
-  // Подписка на изменения поля when
+  // Subscribe to when field changes
   useEffect(() => {
     if (!when) {
       return
     }
 
-    const unsubscribe = form.store.subscribe(() => {
+    const subscription = form.store.subscribe(() => {
       const fieldValue = getNestedValue(form.state.values as Record<string, unknown>, when.field)
       const newIsVisible = evaluateWhenCondition(when, fieldValue)
       if (newIsVisible !== wasVisibleRef.current) {
@@ -214,19 +214,20 @@ export function FormStepsStep({
       }
     })
 
-    return unsubscribe
+    // TanStack Store v0.9+ returns an object { unsubscribe }, not a function
+    return () => subscription.unsubscribe()
   }, [form, when])
 
-  // Assign index on mount (только если шаг видим)
-  // ВАЖНО: steps НЕ должен быть в dependency array — иначе бесконечный цикл!
-  // registerStep обновляет steps, что вызовет effect снова.
-  // Используем stepsRef для доступа к актуальному значению без зависимости.
+  // Assign index on mount (only if step is visible)
+  // IMPORTANT: steps must NOT be in dependency array — otherwise infinite loop!
+  // registerStep updates steps, which would trigger the effect again.
+  // Use stepsRef to access current value without dependency.
   const stepsRef = useRef(steps)
   stepsRef.current = steps
 
   useEffect(() => {
     if (!isVisible) {
-      // Шаг скрыт — не регистрируем
+      // Step is hidden — don't register
       if (indexRef.current >= 0) {
         unregisterStep(indexRef.current)
         indexRef.current = -1
@@ -234,20 +235,20 @@ export function FormStepsStep({
       return
     }
 
-    // Find next available index (используем ref чтобы избежать dependency на steps)
+    // Find next available index (use ref to avoid dependency on steps)
     const existingIndices = stepsRef.current.map((s) => s.index)
     let nextIndex = 0
     while (existingIndices.includes(nextIndex)) {
       nextIndex++
     }
 
-    // Если индекс уже назначен — используем его
+    // If index already assigned — use it
     if (indexRef.current < 0) {
       indexRef.current = nextIndex
     }
 
-    // ВАЖНО: fieldNames извлекаются ОДИН РАЗ при монтировании
-    // children НЕ включены в deps — они меняются каждый рендер
+    // IMPORTANT: fieldNames are extracted ONCE on mount
+    // children NOT included in deps — they change every render
     const fieldNames = extractFieldNames(children, fieldExtractionPath)
 
     const stepInfo: StepInfo = {
@@ -267,22 +268,22 @@ export function FormStepsStep({
         unregisterStep(indexRef.current)
       }
     }
-    // ВАЖНО: steps, children и icon намеренно НЕ включены — вызывают бесконечный цикл
-    // icon — JSX элемент, создаётся заново каждый рендер
+    // IMPORTANT: steps, children and icon intentionally NOT included — cause infinite loop
+    // icon — JSX element, recreated every render
   }, [description, registerStep, title, unregisterStep, onEnter, onLeave, isVisible, fieldExtractionPath])
 
-  // Извлекаем fieldNames и мемоизируем их строковое представление
-  // для использования в dependency array вместо children
+  // Extract fieldNames and memoize their string representation
+  // for use in dependency array instead of children
   const fieldNamesRef = useRef<string[]>([])
   const currentFieldNames = useMemo(
     () => extractFieldNames(children, fieldExtractionPath),
-    // Используем segment path как proxy для определения когда структура может измениться
-    // children НЕ включаем — они меняются на каждый рендер
+    // Use segment path as proxy to determine when structure may change
+    // children NOT included — they change every render
 
     [fieldExtractionPath]
   )
 
-  // Обновляем ref только если fieldNames реально изменились
+  // Update ref only if fieldNames actually changed
   const fieldNamesChanged =
     currentFieldNames.length !== fieldNamesRef.current.length ||
     currentFieldNames.some((name, i) => name !== fieldNamesRef.current[i])
@@ -291,8 +292,8 @@ export function FormStepsStep({
   }
 
   // Update step info if props change (but keep same index)
-  // ВАЖНО: children и icon НЕ включены в deps — они меняются каждый рендер и вызовут бесконечный цикл
-  // icon — JSX элемент, который создаётся заново при каждом рендере
+  // IMPORTANT: children and icon NOT included in deps — they change every render and cause infinite loop
+  // icon — JSX element, recreated on every render
   const iconRef = useRef(icon)
   iconRef.current = icon
 
@@ -313,20 +314,20 @@ export function FormStepsStep({
 
   const index = indexRef.current
 
-  // Варианты анимации для slide эффекта
+  // Animation variants for slide effect
   const slideVariants: Variants = useMemo(
     () => ({
-      // Начальное состояние: элемент появляется с нужной стороны
+      // Initial state: element appears from the appropriate side
       initial: {
         opacity: 0,
         x: direction === 'forward' ? SLIDE_OFFSET : -SLIDE_OFFSET,
       },
-      // Финальное состояние: элемент на месте
+      // Final state: element in place
       animate: {
         opacity: 1,
         x: 0,
       },
-      // Состояние выхода: элемент уходит в противоположную сторону
+      // Exit state: element leaves to the opposite side
       exit: {
         opacity: 0,
         x: direction === 'forward' ? -SLIDE_OFFSET : SLIDE_OFFSET,
@@ -335,7 +336,7 @@ export function FormStepsStep({
     [direction]
   )
 
-  // Шаг скрыт через when условие — не рендерим
+  // Step hidden via when condition — don't render
   if (!isVisible) {
     return null
   }
@@ -345,15 +346,15 @@ export function FormStepsStep({
     return null
   }
 
-  // Проверяем, является ли этот шаг текущим
+  // Check if this step is the current one
   const isActive = index === currentStep
 
-  // Если анимации отключены — рендерим обычный Steps.Content
+  // If animations are disabled — render regular Steps.Content
   if (!animated) {
     return <Steps.Content index={index}>{wrappedChildren}</Steps.Content>
   }
 
-  // С анимациями — оборачиваем в AnimatePresence + motion.div
+  // With animations — wrap in AnimatePresence + motion.div
   return (
     <Steps.Content index={index}>
       <AnimatePresence mode="wait" initial={false}>

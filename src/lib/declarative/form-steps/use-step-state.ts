@@ -4,32 +4,32 @@ import { useCallback, useMemo, useState } from 'react'
 import type { StepInfo } from './form-steps-context'
 
 /**
- * Результат хука useStepState
+ * Result of useStepState hook
  */
 export interface UseStepStateResult {
-  /** Зарегистрированные шаги, отсортированные по индексу */
+  /** Registered steps, sorted by index */
   sortedSteps: StepInfo[]
-  /** Количество шагов */
+  /** Number of steps */
   stepCount: number
-  /** Регистрация шага */
+  /** Register a step */
   registerStep: (step: StepInfo) => void
-  /** Удаление регистрации шага */
+  /** Unregister a step */
   unregisterStep: (index: number) => void
-  /** Скрытые поля (исключаются из валидации) */
+  /** Hidden fields (excluded from validation) */
   hiddenFields: Set<string>
-  /** Скрыть поля от валидации */
+  /** Hide fields from validation */
   hideFieldsFromValidation: (fieldNames: string[]) => void
-  /** Показать поля для валидации */
+  /** Show fields for validation */
   showFieldsForValidation: (fieldNames: string[]) => void
 }
 
 /**
- * Хук для управления состоянием шагов
+ * Hook for managing step state
  *
- * Управляет:
- * - Регистрацией/удалением шагов
- * - Сортировкой шагов по индексу
- * - Скрытыми полями (для Form.When интеграции)
+ * Manages:
+ * - Step registration/unregistration
+ * - Sorting steps by index
+ * - Hidden fields (for Form.When integration)
  *
  * @example
  * ```tsx
@@ -45,31 +45,31 @@ export interface UseStepStateResult {
  * ```
  */
 export function useStepState(): UseStepStateResult {
-  // Зарегистрированные шаги
+  // Registered steps
   const [steps, setSteps] = useState<StepInfo[]>([])
 
-  // Скрытые поля (исключаются из валидации через Form.When)
+  // Hidden fields (excluded from validation via Form.When)
   const [hiddenFields, setHiddenFields] = useState<Set<string>>(new Set())
 
-  // Сортировка шагов по индексу
+  // Sort steps by index
   const sortedSteps = useMemo(() => [...steps].sort((a, b) => a.index - b.index), [steps])
 
   const stepCount = sortedSteps.length
 
-  // Регистрация шага (с проверкой изменений — предотвращает лишние ре-рендеры)
+  // Register step (with change detection — prevents unnecessary re-renders)
   const registerStep = useCallback((step: StepInfo) => {
     setSteps((prev) => {
       const existing = prev.findIndex((s) => s.index === step.index)
       if (existing >= 0) {
         const old = prev[existing]
-        // Сравниваем значимые поля — если не изменились, не обновляем state
+        // Compare significant fields — if unchanged, don't update state
         if (
           old.title === step.title &&
           old.description === step.description &&
           old.fieldNames.length === step.fieldNames.length &&
           old.fieldNames.every((f, i) => f === step.fieldNames[i])
         ) {
-          return prev // Без изменений — возвращаем тот же объект
+          return prev // No changes — return the same object
         }
         const next = [...prev]
         next[existing] = step
@@ -79,12 +79,12 @@ export function useStepState(): UseStepStateResult {
     })
   }, [])
 
-  // Удаление регистрации шага
+  // Unregister step
   const unregisterStep = useCallback((index: number) => {
     setSteps((prev) => prev.filter((s) => s.index !== index))
   }, [])
 
-  // Скрыть поля от валидации (вызывается из Form.When при скрытии)
+  // Hide fields from validation (called from Form.When when hiding)
   const hideFieldsFromValidation = useCallback((fieldNames: string[]) => {
     setHiddenFields((prev) => {
       const next = new Set(prev)
@@ -95,7 +95,7 @@ export function useStepState(): UseStepStateResult {
     })
   }, [])
 
-  // Показать поля для валидации (вызывается из Form.When при показе)
+  // Show fields for validation (called from Form.When when showing)
   const showFieldsForValidation = useCallback((fieldNames: string[]) => {
     setHiddenFields((prev) => {
       const next = new Set(prev)

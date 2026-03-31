@@ -47,20 +47,20 @@ import type {
 } from '../types'
 
 /**
- * Типы компонентов для кнопок Form.Group.List
+ * Typeы componentов для кнопок Form.Group.List
  * (Add, Remove, DragHandle)
  */
 export interface ListButtonComponents {
-  /** Добавить новый элемент в массив */
+  /** Add new element to array */
   Add: (props: { children?: ReactNode; defaultValue?: unknown }) => ReactElement
-  /** Удалить текущий элемент из массива */
+  /** Remove текущий element из arrayа */
   Remove: (props: { children?: ReactNode }) => ReactElement
   /** Ручка для drag-and-drop сортировки */
   DragHandle: (props: { children?: ReactNode }) => ReactElement
 }
 
 /**
- * Compound component для работы с массивами (Form.Group.List)
+ * Compound component for working with arrayами (Form.Group.List)
  */
 export interface FormGroupListComponent {
   (props: {
@@ -73,7 +73,7 @@ export interface FormGroupListComponent {
 }
 
 /**
- * Compound component для группировки полей (Form.Group)
+ * Compound component for grouping fields (Form.Group)
  */
 export interface FormGroupComponent {
   (props: { name: string; children: ReactNode }): ReactElement
@@ -81,7 +81,7 @@ export interface FormGroupComponent {
 }
 
 /**
- * Типы всех Field компонентов (Form.Field.*)
+ * Typeы всех Field componentов (Form.Field.*)
  */
 export interface FormFieldComponents {
   // Текстовые поля
@@ -98,7 +98,7 @@ export interface FormFieldComponents {
   RichText: (props: RichTextFieldProps) => ReactElement
   MaskedInput: (props: { name?: string; label?: string; mask: string; placeholder?: string }) => ReactElement
 
-  // Числовые поля
+  // Numberвые поля
   Number: (props: NumberFieldProps) => ReactElement
   NumberInput: (props: NumberInputFieldProps) => ReactElement
   Slider: (props: SliderFieldProps) => ReactElement
@@ -106,7 +106,7 @@ export interface FormFieldComponents {
   Currency: (props: { name?: string; label?: string; currency?: string; decimalScale?: number }) => ReactElement
   Percentage: (props: { name?: string; label?: string; min?: number; max?: number }) => ReactElement
 
-  // Дата и время
+  // Date и time
   Date: (props: DateFieldProps) => ReactElement
   Time: (props: TimeFieldProps) => ReactElement
   DateRange: (props: DateRangeFieldProps) => ReactElement
@@ -131,7 +131,7 @@ export interface FormFieldComponents {
   }) => ReactElement
   Tags: (props: TagsFieldProps) => ReactElement
 
-  // Чекбоксы и переключатели
+  // Чекбоксы и переkeyатели
   Checkbox: (props: CheckboxFieldProps) => ReactElement
   CheckboxCard: <T extends string = string>(props: CheckboxCardFieldProps<T>) => ReactElement
   Switch: (props: SwitchFieldProps) => ReactElement
@@ -154,53 +154,56 @@ export interface FormFieldComponents {
 }
 
 /**
- * Типы кнопок формы (Form.Button.*)
+ * Typeы кнопок form (Form.Button.*)
  */
 export interface FormButtonComponents {
-  /** Кнопка отправки формы */
+  /** Submit button form */
   Submit: (props: SubmitButtonProps) => ReactElement
-  /** Кнопка сброса формы к начальным значениям */
+  /** Кнопка сброса form к начальным значениям */
   Reset: (props: { children?: ReactNode; colorPalette?: string; variant?: string }) => ReactElement
 }
 
 /**
- * Compound component для шагов формы (Form.Steps)
+ * Compound component для stepов form (Form.Steps)
  */
 export interface FormStepsComponent {
   (props: FormStepsProps): ReactElement
-  /** Отдельный шаг формы */
+  /** Отдельный step form */
   Step: (props: FormStepsStepProps) => ReactElement
-  /** Индикатор текущего шага */
+  /** Индикатор текущего stepа */
   Indicator: (props: FormStepsIndicatorProps) => ReactElement
-  /** Кнопки навигации между шагами */
+  /** Buttons navigation between steps */
   Navigation: (props: FormStepsNavigationProps) => ReactElement
-  /** Контент после завершения всех шагов */
+  /** Контент after завершения всех stepов */
   CompletedContent: (props: FormStepsCompletedContentProps) => ReactElement
 }
 
 /**
- * Главный compound component Form со всеми подкомпонентами
+ * Главный compound component Form со всеми подкомпоненthereи
  */
 export interface FormComponent {
-  /** Корневой компонент формы */
+  /** Корневой component form */
   <TData extends object>(props: FormPropsWithApi<TData>): ReactElement
 
-  /** Группировка полей (namespace) */
+  /** Grouping fields (namespace) */
   Group: FormGroupComponent
 
-  /** Компоненты полей */
+  /** Componentы fields */
   Field: FormFieldComponents
 
-  /** Кнопки формы */
+  /** Buttons form */
   Button: FormButtonComponents
 
-  /** Отображение всех ошибок формы */
+  /** Отображение всех ошибок form */
   Errors: (props: { title?: ReactNode }) => ReactElement | null
+
+  /** Интерактивный JSON-инспектор значений form (скрыт в production) */
+  DebugValues: (props: { title?: string; collapsed?: number; showInProduction?: boolean }) => ReactElement | null
 
   /** Защита от потери несохранённых данных */
   DirtyGuard: (props: { message?: string; enabled?: boolean; onBlock?: () => boolean | void }) => ReactElement | null
 
-  /** Условный рендеринг на основе значения поля */
+  /** Условный рендеринг based on значения поля */
   When: <TValue = unknown>(props: {
     field: string
     is?: TValue
@@ -212,7 +215,7 @@ export interface FormComponent {
     fallback?: ReactNode
   }) => ReactNode
 
-  /** Компоненты для мульти-шаговых форм */
+  /** Componentы for multi-step forms */
   Steps: FormStepsComponent
 
   /** Индикатор оффлайн-режима */
@@ -221,12 +224,12 @@ export interface FormComponent {
   /** Статус синхронизации оффлайн-данных */
   SyncStatus: (props: SyncStatusProps) => ReactElement | null
 
-  /** Генерация формы из JSON-конфига */
+  /** Генерация form из JSON-конфига */
   Builder: (props: { config: unknown; children?: ReactNode }) => ReactElement
 
-  /** Автоматическая генерация полей из Zod схемы */
+  /** Автоматическая генерация fields from Zod schema */
   AutoFields: (props: AutoFieldsProps) => ReactElement
 
-  /** Полностью автоматическая форма из Zod схемы */
+  /** Полностью автоматическая form from Zod schema */
   FromSchema: <TData extends object>(props: FormFromSchemaProps<TData>) => ReactElement
 }

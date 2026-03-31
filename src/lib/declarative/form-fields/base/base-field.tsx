@@ -18,11 +18,11 @@ export function useDeclarativeField(name?: string): {
   meta: FieldUIMeta | undefined
   /** Whether field is required (from Zod schema - not optional/nullable) */
   required: boolean
-  /** Глобальное disabled состояние из Form */
+  /** Global disabled state from Form */
   formDisabled: boolean
-  /** Глобальное readOnly состояние из Form */
+  /** Global readOnly state from Form */
   formReadOnly: boolean
-  /** Автоматические constraints из Zod схемы (min, max, minLength, maxLength и т.д.) */
+  /** Automatic constraints from Zod schema (min, max, minLength, maxLength etc.) */
   constraints: ZodConstraints
 } {
   const { form, schema, primitiveArrayIndex, disabled, readOnly } = useDeclarativeForm()

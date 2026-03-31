@@ -1,6 +1,6 @@
 {
   "name": "@letar/forms",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Declarative form components for React with 40+ field types, powered by TanStack Form and Chakra UI v3",
   "license": "MIT",
   "type": "module",
@@ -28,6 +28,7 @@
     "**/*.d.ts",
     "**/*.d.ts.map",
     "README.md",
+    "README.ru.md",
     "CHANGELOG.md",
     "LICENSE"
   ],

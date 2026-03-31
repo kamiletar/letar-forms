@@ -5,9 +5,9 @@ import type { ReactElement, ReactNode } from 'react'
 import { useDeclarativeForm } from './form-context'
 
 interface FormErrorsProps {
-  /** Заголовок секции ошибок */
+  /** Section title ошибок */
   title?: ReactNode
-  /** Показывать ошибки до первой попытки сабмита (по умолчанию false) */
+  /** Show errors before first submit attempt (by default false) */
   showBeforeSubmit?: boolean
 }
 
@@ -21,8 +21,8 @@ interface ZodIssue {
 type FieldErrors = Record<string, ZodIssue[]>
 
 /**
- * Извлекает все сообщения об ошибках из структуры TanStack Form + Zod
- * Формат: { "field.path": [{ message: "...", code: "...", path: [...] }] }
+ * Extracts all error messages from TanStack Form + Zod structure
+ * Format: { "field.path": [{ message: "...", code: "...", path: [...] }] }
  */
 function extractAllErrors(errors: unknown[]): string[] {
   const messages: string[] = []
@@ -41,7 +41,7 @@ function extractAllErrors(errors: unknown[]): string[] {
     }
 
     if (typeof error === 'object') {
-      // Обрабатываем объект ошибок полей: { "field.path": [{ message: "..." }] }
+      // Process field errors object: { "field.path": [{ message: "..." }] }
       const fieldErrors = error as FieldErrors
       for (const [fieldPath, issues] of Object.entries(fieldErrors)) {
         if (Array.isArray(issues)) {
@@ -59,10 +59,10 @@ function extractAllErrors(errors: unknown[]): string[] {
 }
 
 /**
- * Form.Errors - Отображает все ошибки валидации формы
+ * Form.Errors - Displays all form validation errors
  *
- * Показывает сводку всех ошибок валидации по всем полям.
- * Рендерится только при наличии ошибок.
+ * Shows summary of all validation errors across all fields.
+ * Only renders when errors are present.
  *
  * @example
  * ```tsx
@@ -74,16 +74,16 @@ function extractAllErrors(errors: unknown[]): string[] {
  * ```
  */
 export function FormErrors({
-  title = 'Исправьте следующие ошибки:',
+  title = 'Please fix the following errors:',
   showBeforeSubmit = false,
 }: FormErrorsProps): ReactElement | null {
   const { form, apiState } = useDeclarativeForm()
 
-  // Извлекаем сообщение об ошибке сервера, если есть
+  // Extract server error message if available
   const serverError = apiState?.mutationError
-  // Некоторые библиотеки (например, ZenStack) добавляют info к Error
+  // Some libraries (e.g., ZenStack) add info to Error
   const errorInfo = serverError && 'info' in serverError ? (serverError as { info?: { message?: string } }).info : null
-  const serverErrorMessage = serverError ? serverError.message || errorInfo?.message || 'Ошибка сервера' : null
+  const serverErrorMessage = serverError ? serverError.message || errorInfo?.message || 'Server error' : null
 
   return (
     <form.Subscribe
@@ -93,7 +93,7 @@ export function FormErrors({
       })}
     >
       {({ errors, submissionAttempts }: { errors: unknown[]; submissionAttempts: number }) => {
-        // Не показываем ошибки валидации до первой попытки сабмита (если не указано иное)
+        // Do not show validation errors before first submit attempt (unless specified otherwise)
         const showValidationErrors = showBeforeSubmit || submissionAttempts > 0
         const validErrors = showValidationErrors ? extractAllErrors(errors) : []
         const hasErrors = validErrors.length > 0 || serverErrorMessage

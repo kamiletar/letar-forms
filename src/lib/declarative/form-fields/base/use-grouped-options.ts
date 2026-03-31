@@ -6,25 +6,25 @@ import { useMemo } from 'react'
 import type { GroupableOption } from '../../types'
 
 /**
- * Результат хука useGroupedOptions
+ * Result of useGroupedOptions hook
  */
 export interface GroupedOptionsResult<T = string> {
-  /** Коллекция для Chakra компонентов (Select, Combobox, Listbox) */
+  /** Collection for Chakra components (Select, Combobox, Listbox) */
   collection: ReturnType<typeof createListCollection<GroupableOption<T>>>
-  /** Map групп с опциями (null если группировки нет) */
+  /** Map groups with options (null if no grouping) */
   groups: Map<string, GroupableOption<T>[]> | null
 }
 
 /**
- * Функция получения label из опции
- * Используется для itemToString в коллекции и рендеринга текста
+ * Function to get label from an option
+ * Used for itemToString in collection and text rendering
  *
  * @example
  * ```tsx
- * // В itemToString коллекции
+ * // In collection itemToString
  * createListCollection({ items, itemToString: getOptionLabel })
  *
- * // В рендеринге
+ * // In rendering
  * <Select.ItemText>{getOptionLabel(option)}</Select.ItemText>
  * ```
  */
@@ -33,14 +33,14 @@ export function getOptionLabel<T>(item: { label?: string | ReactNode; value: T }
 }
 
 /**
- * Хук для создания коллекции с опциональной группировкой
+ * Hook for creating a collection with optional grouping
  *
- * Инкапсулирует общую логику:
- * - Создание Chakra ListCollection из опций
- * - Определение наличия групп
- * - Группировка опций в Map для рендеринга
+ * Encapsulates common logic:
+ * - Creating Chakra ListCollection from options
+ * - Determining group presence
+ * - Grouping options into a Map for rendering
  *
- * @example Использование в Listbox
+ * @example Usage in Listbox
  * ```tsx
  * const { collection, groups } = useGroupedOptions(options)
  *
@@ -60,7 +60,7 @@ export function getOptionLabel<T>(item: { label?: string | ReactNode; value: T }
  * ```
  */
 export function useGroupedOptions<T = string>(options: GroupableOption<T>[]): GroupedOptionsResult<T> {
-  // Создаём коллекцию с опциональной группировкой
+  // Create collection with optional grouping
   const collection = useMemo(() => {
     const hasGroups = options.some((opt) => opt.group)
 
@@ -75,7 +75,7 @@ export function useGroupedOptions<T = string>(options: GroupableOption<T>[]): Gr
     })
   }, [options])
 
-  // Проверяем наличие групп и создаём Map
+  // Check for groups and create Map
   const groups = useMemo(() => {
     const hasGroups = options.some((opt) => opt.group)
     if (!hasGroups) {

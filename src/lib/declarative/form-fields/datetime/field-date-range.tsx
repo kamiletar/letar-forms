@@ -7,7 +7,7 @@ import type { BaseFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
 /**
- * Тип значения диапазона дат
+ * Date range value type
  */
 export interface DateRangeValue {
   start: string
@@ -15,36 +15,36 @@ export interface DateRangeValue {
 }
 
 /**
- * Типы пресетов для быстрого выбора диапазона дат
+ * Preset types for quick date range selection
  */
 export type DateRangePreset = 'today' | 'yesterday' | 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'thisYear'
 
 /**
- * Props для Form.Field.DateRange
+ * Props for Form.Field.DateRange
  */
 export interface DateRangeFieldProps extends BaseFieldProps {
-  /** Label для начальной даты */
+  /** Label for start date */
   startLabel?: string
-  /** Label для конечной даты */
+  /** Label for end date */
   endLabel?: string
-  /** Placeholder для начальной даты */
+  /** Placeholder for start date */
   startPlaceholder?: string
-  /** Placeholder для конечной даты */
+  /** Placeholder for end date */
   endPlaceholder?: string
-  /** Минимальная дата (формат YYYY-MM-DD) */
+  /** Minimum date (format YYYY-MM-DD) */
   min?: string
-  /** Максимальная дата (формат YYYY-MM-DD) */
+  /** Maximum date (format YYYY-MM-DD) */
   max?: string
-  /** Включить кнопки пресетов */
+  /** Enable preset buttons */
   presets?: DateRangePreset[]
-  /** Ориентация полей даты */
+  /** Date fields orientation */
   orientation?: 'horizontal' | 'vertical'
-  /** Размер */
+  /** Size */
   size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 /**
- * Получить диапазон дат для пресета
+ * Get date range for preset
  */
 function getPresetRange(preset: DateRangePreset): DateRangeValue {
   const today = new Date()
@@ -60,16 +60,16 @@ function getPresetRange(preset: DateRangePreset): DateRangeValue {
     }
     case 'thisWeek': {
       const startOfWeek = new Date(today)
-      startOfWeek.setDate(today.getDate() - today.getDay() + 1) // Понедельник
+      startOfWeek.setDate(today.getDate() - today.getDay() + 1) // Monday
       const endOfWeek = new Date(startOfWeek)
-      endOfWeek.setDate(startOfWeek.getDate() + 6) // Воскресенье
+      endOfWeek.setDate(startOfWeek.getDate() + 6) // Sunday
       return { start: formatDate(startOfWeek), end: formatDate(endOfWeek) }
     }
     case 'lastWeek': {
       const startOfLastWeek = new Date(today)
-      startOfLastWeek.setDate(today.getDate() - today.getDay() - 6) // Прошлый понедельник
+      startOfLastWeek.setDate(today.getDate() - today.getDay() - 6) // Last Monday
       const endOfLastWeek = new Date(startOfLastWeek)
-      endOfLastWeek.setDate(startOfLastWeek.getDate() + 6) // Прошлое воскресенье
+      endOfLastWeek.setDate(startOfLastWeek.getDate() + 6) // Last Sunday
       return { start: formatDate(startOfLastWeek), end: formatDate(endOfLastWeek) }
     }
     case 'thisMonth': {
@@ -91,49 +91,49 @@ function getPresetRange(preset: DateRangePreset): DateRangeValue {
 }
 
 /**
- * Получить label для пресета
+ * Get label for preset
  */
 function getPresetLabel(preset: DateRangePreset): string {
   switch (preset) {
     case 'today':
-      return 'Сегодня'
+      return 'Today'
     case 'yesterday':
-      return 'Вчера'
+      return 'Yesterday'
     case 'thisWeek':
-      return 'Эта неделя'
+      return 'This week'
     case 'lastWeek':
-      return 'Прошлая неделя'
+      return 'Last week'
     case 'thisMonth':
-      return 'Этот месяц'
+      return 'This month'
     case 'lastMonth':
-      return 'Прошлый месяц'
+      return 'Last month'
     case 'thisYear':
-      return 'Этот год'
+      return 'This year'
   }
 }
 
 /**
- * Form.Field.DateRange - Выбор диапазона дат с двумя полями
+ * Form.Field.DateRange - Date range selection with two fields
  *
- * Рендерит два поля даты для выбора диапазона с опциональными пресетами.
+ * Renders two date fields for range selection with optional presets.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.DateRange name="period" label="Период" />
+ * <Form.Field.DateRange name="period" label="Period" />
  * ```
  *
- * @example С пресетами
+ * @example With presets
  * ```tsx
  * <Form.Field.DateRange
  *   name="period"
- *   label="Период"
- *   startLabel="С"
- *   endLabel="По"
+ *   label="Period"
+ *   startLabel="From"
+ *   endLabel="To"
  *   presets={['today', 'thisWeek', 'thisMonth']}
  * />
  * ```
  *
- * @example Вертикальная ориентация
+ * @example Vertical orientation
  * ```tsx
  * <Form.Field.DateRange
  *   name="period"
@@ -146,8 +146,8 @@ export const FieldDateRange = createField<DateRangeFieldProps, DateRangeValue>({
 
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
     const {
-      startLabel = 'Начало',
-      endLabel = 'Конец',
+      startLabel = 'Start',
+      endLabel = 'End',
       startPlaceholder,
       endPlaceholder,
       min,
@@ -184,7 +184,7 @@ export const FieldDateRange = createField<DateRangeFieldProps, DateRangeValue>({
 
         <Flex gap={2} direction={orientation === 'horizontal' ? 'row' : 'column'} align="stretch" width="full">
           <Container gap={2} flex={1} alignItems="flex-end">
-            {/* Начальная дата */}
+            {/* Start date */}
             <Box flex={1}>
               <Field.Root disabled={resolved.disabled} readOnly={resolved.readOnly}>
                 <Field.Label fontSize="sm" color="fg.muted">
@@ -204,7 +204,7 @@ export const FieldDateRange = createField<DateRangeFieldProps, DateRangeValue>({
               </Field.Root>
             </Box>
 
-            {/* Конечная дата */}
+            {/* End date */}
             <Box flex={1}>
               <Field.Root disabled={resolved.disabled} readOnly={resolved.readOnly}>
                 <Field.Label fontSize="sm" color="fg.muted">
@@ -225,13 +225,13 @@ export const FieldDateRange = createField<DateRangeFieldProps, DateRangeValue>({
             </Box>
           </Container>
 
-          {/* Меню пресетов */}
+          {/* Presets menu */}
           {presets && presets.length > 0 && !resolved.readOnly && (
             <Menu.Root>
               <Menu.Trigger asChild>
                 <Button variant="outline" size={size} disabled={resolved.disabled}>
                   <LuCalendar />
-                  Пресеты
+                  Presets
                   <LuChevronDown />
                 </Button>
               </Menu.Trigger>

@@ -6,7 +6,7 @@ import { useDeclarativeForm } from './form-context'
 import { FormStepsContext } from './form-steps/form-steps-context'
 
 /**
- * Извлекаем имена полей из children рекурсивно (для интеграции с валидацией шагов)
+ * Extract field names from children recursively (for step validation integration)
  */
 function extractFieldNames(children: ReactNode, parentPath = ''): string[] {
   const names: string[] = []
@@ -18,20 +18,20 @@ function extractFieldNames(children: ReactNode, parentPath = ''): string[] {
 
     const props = child.props as Record<string, unknown>
 
-    // Проверяем наличие name prop у компонента поля
+    // Check if component has a name prop
     if (typeof props.name === 'string') {
       const fullName = parentPath ? `${parentPath}.${props.name}` : props.name
       names.push(fullName)
     }
 
-    // Проверяем Form.Group — он создаёт namespace
+    // Check for Form.Group — it creates a namespace
     const displayName = (child.type as { displayName?: string })?.displayName
     if (displayName === 'FormGroupDeclarative' && typeof props.name === 'string') {
       const groupPath = parentPath ? `${parentPath}.${props.name}` : props.name
       if (props.children) {
         names.push(...extractFieldNames(props.children as ReactNode, groupPath))
       }
-    } // Рекурсивно обходим children (кроме Form.Group.List — массивы обрабатываются отдельно)
+    } // Recurse into children (except Form.Group.List — arrays are handled separately)
     else if (props.children && displayName !== 'FormGroupListDeclarative') {
       names.push(...extractFieldNames(props.children as ReactNode, parentPath))
     }
@@ -117,8 +117,8 @@ export interface FormWhenProps<TValue = unknown> {
  * ```
  */
 /**
- * Внутренний компонент для обработки показа/скрытия полей
- * Интегрируется с FormStepsContext для исключения скрытых полей из валидации
+ * Internal component for handling field show/hide
+ * Integrates with FormStepsContext to exclude hidden fields from validation
  */
 function FormWhenContent({
   shouldRender,
@@ -134,12 +134,12 @@ function FormWhenContent({
   const stepsContext = useContext(FormStepsContext)
   const prevShouldRender = useRef<boolean | null>(null)
 
-  // Мемоизируем имена полей — пересчитываем только при изменении children
+  // Memoize field names — recalculate only when children change
   const fieldNames = useMemo(() => extractFieldNames(children, parentPath), [children, parentPath])
 
-  // Единый useEffect для управления видимостью полей в валидации
+  // Single useEffect for managing field visibility in validation
   useEffect(() => {
-    // Нет контекста шагов или полей — ничего не делаем
+    // No steps context or fields — nothing to do
     if (!stepsContext || fieldNames.length === 0) {
       return
     }
@@ -147,21 +147,21 @@ function FormWhenContent({
     const isFirstMount = prevShouldRender.current === null
 
     if (isFirstMount) {
-      // Первый mount: если скрыто — сразу исключаем из валидации
+      // First mount: if hidden — immediately exclude from validation
       if (!shouldRender) {
         stepsContext.hideFieldsFromValidation(fieldNames)
       }
     } else if (shouldRender && !prevShouldRender.current) {
-      // Поля стали видимыми — показываем для валидации
+      // Fields became visible — show for validation
       stepsContext.showFieldsForValidation(fieldNames)
     } else if (!shouldRender && prevShouldRender.current) {
-      // Поля скрылись — исключаем из валидации
+      // Fields became hidden — exclude from validation
       stepsContext.hideFieldsFromValidation(fieldNames)
     }
 
     prevShouldRender.current = shouldRender
 
-    // Cleanup: при размонтировании показываем поля обратно
+    // Cleanup: on unmount restore fields back
     return () => {
       if (!shouldRender && fieldNames.length > 0) {
         stepsContext.showFieldsForValidation(fieldNames)

@@ -8,36 +8,36 @@ import { useDeclarativeForm } from './form-context'
 import { FormGroupDeclarative } from './form-group/form-group-declarative'
 import { ListButtonAdd, ListButtonRemove } from './form-group/form-group-list-buttons'
 import { FormGroupListDeclarative } from './form-group/form-group-list-declarative'
-import { filterFields, traverseSchema, type SchemaFieldInfo } from './schema-traversal'
+import { filterFields, type SchemaFieldInfo, traverseSchema } from './schema-traversal'
 
 /**
- * Props для Form.AutoFields
+ * Props for Form.AutoFields
  */
 export interface AutoFieldsProps {
   /**
-   * Включить только указанные поля (по имени)
+   * Include only specified fields (by name)
    * @example include={['firstName', 'lastName']}
    */
   include?: string[]
   /**
-   * Исключить указанные поля (по имени)
+   * Exclude specified fields (by name)
    * @example exclude={['id', 'createdAt']}
    */
   exclude?: string[]
   /**
-   * Рекурсивно генерировать вложенные объекты
+   * Recursively generate nested objects
    * @default true
    */
   recursive?: boolean
   /**
-   * Кастомный wrapper для каждого поля
+   * Custom wrapper for each field
    * @example fieldWrapper={({ name, children }) => <Box key={name} mb={4}>{children}</Box>}
    */
   fieldWrapper?: (props: { name: string; children: ReactNode }) => ReactElement
 }
 
 /**
- * Рендерить поле или группу на основе SchemaFieldInfo
+ * Render a field or group based on SchemaFieldInfo
  */
 function renderField(
   field: SchemaFieldInfo,
@@ -46,7 +46,7 @@ function renderField(
 ): ReactElement {
   const { name, zodType, ui } = field
 
-  // Обработка вложенных объектов
+  // Handle nested objects
   if (zodType === 'object' && field.children && recursive) {
     const content = (
       <FormGroupDeclarative key={name} name={name}>
@@ -56,7 +56,7 @@ function renderField(
     return fieldWrapper ? fieldWrapper({ name, children: content }) : content
   }
 
-  // Обработка массивов объектов
+  // Handle object arrays
   if (zodType === 'array' && field.element?.zodType === 'object' && field.element.children) {
     const elementChildren = field.element.children
     const content = (
@@ -67,20 +67,20 @@ function renderField(
         wrapper={({ children }) => (
           <VStack align="stretch" gap={2}>
             {children}
-            <ListButtonAdd defaultValue={createDefaultValue(elementChildren)}>Добавить</ListButtonAdd>
+            <ListButtonAdd defaultValue={createDefaultValue(elementChildren)}>Add</ListButtonAdd>
           </VStack>
         )}
       >
         <VStack align="stretch" gap={2} p={2} borderWidth={1} borderRadius="md">
           {elementChildren.map((child) => renderField(child, recursive, fieldWrapper))}
-          <ListButtonRemove>Удалить</ListButtonRemove>
+          <ListButtonRemove>Remove</ListButtonRemove>
         </VStack>
       </FormGroupListDeclarative>
     )
     return fieldWrapper ? fieldWrapper({ name, children: content }) : content
   }
 
-  // Обработка примитивных массивов → Tags
+  // Handle primitive arrays -> Tags
   if (zodType === 'array' && field.element?.zodType === 'string') {
     const fieldType = resolveFieldType(field)
     if (fieldType === 'tags') {
@@ -89,24 +89,24 @@ function renderField(
     }
   }
 
-  // Обычное поле (с поддержкой relation options из RelationFieldProvider)
+  // Regular field (with relation options support from RelationFieldProvider)
   const content = <SchemaFieldWithRelations key={name} field={field} />
   return fieldWrapper ? fieldWrapper({ name, children: content }) : content
 }
 
 /**
- * Компонент для пустого массива
+ * Component for empty array
  */
 function EmptyArrayContent({ label }: { label: string }): ReactElement {
   return (
     <VStack py={4} color="fg.muted">
-      Нет элементов в &quot;{label}&quot;
+      No items in &quot;{label}&quot;
     </VStack>
   )
 }
 
 /**
- * Создать дефолтное значение для элемента массива объектов
+ * Create default value for an object array element
  */
 function createDefaultValue(children: SchemaFieldInfo[]): Record<string, unknown> {
   const result: Record<string, unknown> = {}
@@ -144,20 +144,20 @@ function createDefaultValue(children: SchemaFieldInfo[]): Record<string, unknown
 }
 
 /**
- * Form.AutoFields — автоматическая генерация полей из Zod схемы
+ * Form.AutoFields — automatic field generation from Zod schema
  *
- * Компонент читает Zod схему из контекста Form и автоматически генерирует
- * поля на основе типов и метаданных схемы.
+ * The component reads the Zod schema from Form context and automatically generates
+ * fields based on schema types and metadata.
  *
- * @example Все поля
+ * @example All fields
  * ```tsx
  * <Form schema={Schema} initialValue={data} onSubmit={save}>
  *   <Form.AutoFields />
- *   <Form.Button.Submit>Сохранить</Form.Button.Submit>
+ *   <Form.Button.Submit>Save</Form.Button.Submit>
  * </Form>
  * ```
  *
- * @example С фильтрацией
+ * @example With filtering
  * ```tsx
  * <Form schema={Schema} initialValue={data} onSubmit={save}>
  *   <HStack>
@@ -168,7 +168,7 @@ function createDefaultValue(children: SchemaFieldInfo[]): Record<string, unknown
  * </Form>
  * ```
  *
- * @example С кастомным wrapper
+ * @example With custom wrapper
  * ```tsx
  * <Form.AutoFields fieldWrapper={({ name, children }) => (
  *   <Box key={name} mb={4}>{children}</Box>
@@ -179,13 +179,13 @@ export function FormAutoFields({ include, exclude, recursive = true, fieldWrappe
   const { schema } = useDeclarativeForm()
 
   if (!schema) {
-    throw new Error('Form.AutoFields требует schema prop на Form компоненте')
+    throw new Error('Form.AutoFields requires schema prop on Form component')
   }
 
-  // Обойти схему и получить информацию о полях
+  // Traverse schema and get field information
   const allFields = traverseSchema(schema)
 
-  // Отфильтровать поля
+  // Filter fields
   const fields = filterFields(allFields, { include, exclude })
 
   return <Fragment>{fields.map((field) => renderField(field, recursive, fieldWrapper))}</Fragment>

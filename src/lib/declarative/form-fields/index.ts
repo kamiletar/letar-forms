@@ -1,6 +1,6 @@
 // Auto field
-export { camelCaseToLabel, FieldAuto, type AutoFieldConfig, type AutoFieldProps } from './auto'
-// Базовые утилиты из base/
+export { type AutoFieldConfig, type AutoFieldProps, camelCaseToLabel, FieldAuto } from './auto'
+// Base utilities from base/
 export {
   createField,
   FieldError,
@@ -18,17 +18,17 @@ export { FieldCheckbox } from './boolean/field-checkbox'
 export { FieldSwitch } from './boolean/field-switch'
 export { FieldDate } from './datetime/field-date'
 export {
-  FieldDateRange,
   type DateRangeFieldProps,
   type DateRangePreset,
   type DateRangeValue,
+  FieldDateRange,
 } from './datetime/field-date-range'
 export { FieldDateTimePicker } from './datetime/field-datetime-picker'
 export { FieldDuration } from './datetime/field-duration'
 export {
-  FieldSchedule,
   type DayOfWeek,
   type DaySchedule,
+  FieldSchedule,
   type ScheduleFieldProps,
   type TimeSlot,
   type WeeklySchedule,
@@ -40,14 +40,14 @@ export { FieldNumberInput } from './number/field-number-input'
 export { FieldPercentage } from './number/field-percentage'
 export { FieldRating, type RatingFieldProps } from './number/field-rating'
 export { FieldSlider, type SliderFieldProps, type SliderMark } from './number/field-slider'
-export { FieldAutocomplete, type AutocompleteFieldProps } from './selection/field-autocomplete'
+export { type AutocompleteFieldProps, FieldAutocomplete } from './selection/field-autocomplete'
 export {
-  FieldCascadingSelect,
   type CascadingSelectFieldProps,
   type CascadingSelectLoadResult,
+  FieldCascadingSelect,
 } from './selection/field-cascading-select'
-export { FieldCheckboxCard, type CheckboxCardFieldProps } from './selection/field-checkbox-card'
-export { FieldCombobox, type ComboboxFieldProps } from './selection/field-combobox'
+export { type CheckboxCardFieldProps, FieldCheckboxCard } from './selection/field-checkbox-card'
+export { type ComboboxFieldProps, FieldCombobox } from './selection/field-combobox'
 export { FieldListbox, type ListboxFieldProps } from './selection/field-listbox'
 export {
   FieldNativeSelect,
@@ -60,13 +60,13 @@ export { FieldSegmentedGroup, type SegmentedGroupFieldProps } from './selection/
 export { FieldSelect, type SelectFieldProps } from './selection/field-select'
 export { FieldTags, type TagsFieldProps } from './selection/field-tags'
 export { FieldAddress } from './specialized/field-address'
-export { FieldCity, type CityFieldProps } from './specialized/field-city'
-export { FieldColorPicker, type ColorPickerFieldProps } from './specialized/field-color-picker'
+export { FieldCity } from './specialized/field-city'
+export { type ColorPickerFieldProps, FieldColorPicker } from './specialized/field-color-picker'
 export { FieldFileUpload, type FileUploadFieldProps } from './specialized/field-file-upload'
 export { FieldOTPInput } from './specialized/field-otp-input'
 export { FieldPhone } from './specialized/field-phone'
 export { FieldPinInput, type PinInputFieldProps } from './specialized/field-pin-input'
-export { FieldEditable, type EditableFieldProps } from './text/field-editable'
+export { type EditableFieldProps, FieldEditable } from './text/field-editable'
 export { FieldMaskedInput } from './text/field-masked-input'
 export { FieldPassword } from './text/field-password'
 export { FieldPasswordStrength } from './text/field-password-strength'
@@ -80,8 +80,8 @@ export {
   type ToolbarButtonConfig,
 } from './text/toolbar-config'
 
-// Deprecated type aliases — для обратной совместимости
-// @deprecated Используй базовые типы: BaseOption, GroupableOption, RichOption
+// Deprecated type aliases - for backward compatibility
+// @deprecated Use base types: BaseOption, GroupableOption, RichOption
 import type {
   CheckboxCardOption as _CheckboxCardOption,
   ComboboxOption as _ComboboxOption,
@@ -92,17 +92,17 @@ import type {
   SelectOption as _SelectOption,
 } from '../types'
 
-/** @deprecated Используй RichOption */
+/** @deprecated Use RichOption */
 export type CheckboxCardOption<T = string> = _CheckboxCardOption<T>
-/** @deprecated Используй GroupableOption */
+/** @deprecated Use GroupableOption */
 export type ComboboxOption<T = string> = _ComboboxOption<T>
-/** @deprecated Используй GroupableOption */
+/** @deprecated Use GroupableOption */
 export type ListboxOption<T = string> = _ListboxOption<T>
-/** @deprecated Используй RichOption */
+/** @deprecated Use RichOption */
 export type RadioCardOption<T = string> = _RadioCardOption<T>
-/** @deprecated Используй BaseOption */
+/** @deprecated Use BaseOption */
 export type RadioOption<T = string> = _RadioOption<T>
-/** @deprecated Используй BaseOption */
+/** @deprecated Use BaseOption */
 export type SegmentedGroupOption<T = string> = _SegmentedGroupOption<T>
-/** @deprecated Используй BaseOption */
+/** @deprecated Use BaseOption */
 export type SelectOption<T = string> = _SelectOption<T>

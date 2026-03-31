@@ -10,22 +10,22 @@ import { createField, FieldWrapper } from '../base'
  *
  * Renders a Chakra Textarea with automatic form integration and error display.
  *
- * Автоматически извлекает из Zod схемы:
- * - `maxLength` из `z.string().max(500)` → maxLength={500}
- * - `helperText` автоматически генерируется из constraints ("Максимум 500 символов")
+ * Automatically extracts from Zod schema:
+ * - `maxLength` from `z.string().max(500)` → maxLength={500}
+ * - `helperText` automatically is generated from constraints ("Maximum 500 characters")
  *
- * Props всегда имеют приоритет над автоматическими значениями из схемы.
+ * Props always take priority over automatic values from schema.
  *
  * @example
  * ```tsx
  * <Form.Field.Textarea name="description" label="Description" rows={4} />
  * ```
  *
- * @example С автоматическими constraints из Zod
+ * @example With automatic constraints from Zod
  * ```tsx
- * // В схеме: z.object({ bio: z.string().max(500) })
+ * // In schema: z.object({ bio: z.string().max(500) })
  * <Form.Field.Textarea name="bio" label="Bio" autoresize />
- * // Автоматически: maxLength={500} helperText="Максимум 500 символов"
+ * // Automatically: maxLength={500} helperText="Maximum 500 characters"
  * ```
  */
 export const FieldTextarea = createField<TextareaFieldProps, string>({
@@ -33,7 +33,7 @@ export const FieldTextarea = createField<TextareaFieldProps, string>({
   render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
     const { constraints } = resolved
 
-    // Props имеют приоритет над constraints
+    // Props take priority over constraints
     const maxLength = componentProps.maxLength ?? constraints.string?.maxLength
 
     return (

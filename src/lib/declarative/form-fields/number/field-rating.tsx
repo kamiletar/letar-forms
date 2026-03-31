@@ -8,49 +8,49 @@ import { createField, FieldError } from '../base'
 import { FieldTooltip } from '../base/field-tooltip'
 
 /**
- * Props для Rating поля
+ * Props for Rating field
  */
 export interface RatingFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Количество элементов рейтинга (по умолчанию: 5) */
+  /** Number of rating elements (by default: 5) */
   count?: number
-  /** Разрешить половинные значения (по умолчанию: false) */
+  /** Allow half values (by default: false) */
   allowHalf?: boolean
-  /** Размер: xs, sm, md, lg (по умолчанию: md) */
+  /** Size: xs, sm, md, lg (by default: md) */
   size?: 'xs' | 'sm' | 'md' | 'lg'
-  /** Цветовая палитра (по умолчанию: gray) */
+  /** Color palette (by default: gray) */
   colorPalette?: 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'teal' | 'blue' | 'cyan' | 'purple' | 'pink'
-  /** Кастомная иконка (по умолчанию: звезда) */
+  /** Custom icon (by default: star) */
   icon?: ReactNode
-  /** Callback при изменении значения */
+  /** Callback on value change */
   onValueChange?: (value: number) => void
 }
 
 /**
- * Form.Field.Rating - Поле ввода рейтинга со звёздами
+ * Form.Field.Rating - Star rating input field
  *
- * Рендерит Chakra RatingGroup с автоматической интеграцией с формой.
- * Значение формы хранится как число.
+ * Renders Chakra RatingGroup with automatic form integration.
+ * Form value is stored as number.
  *
- * @example Базовое использование
+ * @example Basic usage
  * ```tsx
- * <Form.Field.Rating name="rating" label="Рейтинг" />
+ * <Form.Field.Rating name="rating" label="Rating" />
  * ```
  *
- * @example С кастомным количеством и цветом
+ * @example With custom count and color
  * ```tsx
  * <Form.Field.Rating
  *   name="quality"
- *   label="Качество"
+ *   label="Quality"
  *   count={10}
  *   colorPalette="orange"
  * />
  * ```
  *
- * @example С половинными значениями
+ * @example With half values
  * ```tsx
  * <Form.Field.Rating
  *   name="score"
- *   label="Оценка"
+ *   label="Score"
  *   allowHalf
  *   size="lg"
  * />

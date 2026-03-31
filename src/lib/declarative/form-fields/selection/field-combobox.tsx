@@ -16,17 +16,17 @@ import {
 } from '../base'
 
 /**
- * Props для Form.Field.Combobox
+ * Props for Form.Field.Combobox
  */
 export interface ComboboxFieldProps<T = string, TData = unknown> extends BaseFieldProps {
   /**
-   * Статические опции (взаимоисключающе с useQuery)
+   * Static options (mutually exclusive with useQuery)
    */
   options?: GroupableOption<T>[]
 
   /**
-   * Async функция запроса для загрузки опций
-   * Должна возвращать { data, isLoading, error } аналогично TanStack Query
+   * Async function for loading options
+   * Should return { data, isLoading, error } similar to TanStack Query
    *
    * @example
    * ```tsx
@@ -39,76 +39,76 @@ export interface ComboboxFieldProps<T = string, TData = unknown> extends BaseFie
   useQuery?: AsyncQueryFn<TData>
 
   /**
-   * Получить label из элемента данных
-   * Обязательно при использовании useQuery
+   * Get label from data element
+   * Required when using useQuery
    */
   getLabel?: (item: TData) => ReactNode
 
   /**
-   * Получить value из элемента данных
-   * Обязательно при использовании useQuery
+   * Get value from data element
+   * Required when using useQuery
    */
   getValue?: (item: TData) => T
 
   /**
-   * Получить ключ группы из элемента данных
-   * Опционально, для группировки результатов
+   * Get group key from data element
+   * Optional, for grouping results
    */
   getGroup?: (item: TData) => string | undefined
 
   /**
-   * Проверить, отключён ли элемент
+   * Check if element is disabled
    */
   getDisabled?: (item: TData) => boolean
 
   /**
-   * Задержка debounce в миллисекундах
+   * Debounce delay in milliseconds
    * @default 300
    */
   debounce?: number
 
   /**
-   * Минимум символов для запуска поиска
+   * Minimum characters to trigger search
    * @default 1
    */
   minChars?: number
 
   /**
-   * Показывать кнопку очистки
-   * Автоопределяется из схемы если не указано
+   * Show clear button
+   * Auto-determined from schema if not specified
    */
   clearable?: boolean
 
   /**
-   * Разрешить кастомные значения не из списка
+   * Allow custom values not from the list
    * @default false
    */
   allowCustomValue?: boolean
 
   /**
-   * Размер компонента
+   * Component size
    */
   size?: FieldSize
 
   /**
-   * Визуальный вариант
+   * Visual variant
    */
   variant?: 'outline' | 'subtle' | 'flushed'
 
   /**
-   * Сообщение при пустом результате
-   * @default "Ничего не найдено"
+   * Message for empty result
+   * @default "Nothing found"
    */
   emptyMessage?: string
 
   /**
-   * Сообщение при загрузке
-   * @default "Загрузка..."
+   * Message on loading
+   * @default "Loading..."
    */
   loadingMessage?: string
 }
 
-/** Тип состояния для useFieldState */
+/** State type for useFieldState */
 interface ComboboxFieldState extends GroupedOptionsResult {
   inputValue: string
   setInputValue: (value: string) => void
@@ -118,15 +118,15 @@ interface ComboboxFieldState extends GroupedOptionsResult {
 }
 
 /**
- * Form.Field.Combobox - Async поисковый select с debounce и группировкой
+ * Form.Field.Combobox - Async search select with debounce and grouping
  *
- * Поддерживает как статические опции, так и async загрузку через TanStack Query хуки.
+ * Supports both static options and async loading via TanStack Query hooks.
  *
- * @example Статические опции
+ * @example Static options
  * ```tsx
  * <Form.Field.Combobox
  *   name="framework"
- *   label="Фреймворк"
+ *   label="Framework"
  *   options={[
  *     { label: 'React', value: 'react' },
  *     { label: 'Vue', value: 'vue', group: 'Frontend' },
@@ -134,11 +134,11 @@ interface ComboboxFieldState extends GroupedOptionsResult {
  * />
  * ```
  *
- * @example Async с ZenStack хуками
+ * @example Async with ZenStack hooks
  * ```tsx
  * <Form.Field.Combobox
  *   name="userId"
- *   label="Пользователь"
+ *   label="User"
  *   useQuery={(search) => useFindManyUser({
  *     where: { name: { contains: search, mode: 'insensitive' } },
  *     take: 20,
@@ -157,7 +157,7 @@ export const FieldCombobox = createField<ComboboxFieldProps, string, ComboboxFie
     componentProps: Omit<ComboboxFieldProps, keyof BaseFieldProps>,
     resolved: ResolvedFieldProps
   ): ComboboxFieldState => {
-    // Async поиск с debounce через общий хук
+    // Async search with debounce via shared hook
     const {
       inputValue,
       setInputValue,
@@ -169,13 +169,13 @@ export const FieldCombobox = createField<ComboboxFieldProps, string, ComboboxFie
       minChars: componentProps.minChars ?? 1,
     })
 
-    // Фильтр для статических опций
+    // Filter for static options
     const { contains } = useFilter({ sensitivity: 'base' })
 
-    // Формирование опций из статического или async источника
+    // Build options from static or async source
     const options = useMemo((): GroupableOption[] => {
       if (componentProps.options) {
-        // Фильтрация статических опций по значению ввода
+        // Filtering static options by input value
         if (!inputValue) {
           return componentProps.options
         }
@@ -207,10 +207,10 @@ export const FieldCombobox = createField<ComboboxFieldProps, string, ComboboxFie
       contains,
     ])
 
-    // Создание коллекции с группировкой через общий хук
+    // Create collection with grouping via shared hook
     const { collection, groups } = useGroupedOptions(options)
 
-    // Автоопределение clearable
+    // Auto-determine clearable
     const resolvedClearable = componentProps.clearable ?? !resolved.required
 
     return {
@@ -253,7 +253,7 @@ export const FieldCombobox = createField<ComboboxFieldProps, string, ComboboxFie
           )}
 
           <Combobox.Control>
-            <Combobox.Input placeholder={resolved.placeholder ?? 'Поиск...'} />
+            <Combobox.Input placeholder={resolved.placeholder ?? 'Search...'} />
             <Combobox.IndicatorGroup>
               {fieldState.isLoading && <Spinner size="xs" />}
               {fieldState.resolvedClearable && <Combobox.ClearTrigger />}
@@ -264,27 +264,27 @@ export const FieldCombobox = createField<ComboboxFieldProps, string, ComboboxFie
           <Portal>
             <Combobox.Positioner>
               <Combobox.Content>
-                {/* Состояние загрузки */}
+                {/* Loading state */}
                 {fieldState.isLoading && fieldState.options.length === 0 && (
-                  <Combobox.Empty>{componentProps.loadingMessage ?? 'Загрузка...'}</Combobox.Empty>
+                  <Combobox.Empty>{componentProps.loadingMessage ?? 'Loading...'}</Combobox.Empty>
                 )}
 
-                {/* Пустой результат */}
+                {/* Empty result */}
                 {!fieldState.isLoading &&
                   fieldState.options.length === 0 &&
                   fieldState.inputValue.length >= minChars && (
-                    <Combobox.Empty>{componentProps.emptyMessage ?? 'Ничего не найдено'}</Combobox.Empty>
+                    <Combobox.Empty>{componentProps.emptyMessage ?? 'Nothing found'}</Combobox.Empty>
                   )}
 
-                {/* Подсказка о минимуме символов */}
+                {/* Hint about minimum characters */}
                 {!fieldState.isLoading &&
                   fieldState.options.length === 0 &&
                   fieldState.inputValue.length < minChars &&
                   fieldState.inputValue.length > 0 && (
-                    <Combobox.Empty>Введите минимум {minChars} символов</Combobox.Empty>
+                    <Combobox.Empty>Enter at least {minChars} characters</Combobox.Empty>
                   )}
 
-                {/* Сгруппированные опции */}
+                {/* Grouped options */}
                 {fieldState.groups
                   ? Array.from(fieldState.groups.entries()).map(([groupName, groupOptions]) => (
                       <Combobox.ItemGroup key={groupName}>
@@ -297,7 +297,7 @@ export const FieldCombobox = createField<ComboboxFieldProps, string, ComboboxFie
                         ))}
                       </Combobox.ItemGroup>
                     ))
-                  : /* Плоские опции */
+                  : /* Flat options */
                     fieldState.options.map((opt) => (
                       <Combobox.Item item={opt} key={opt.value}>
                         <Combobox.ItemText>{getOptionLabel(opt)}</Combobox.ItemText>

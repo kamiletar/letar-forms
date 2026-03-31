@@ -5,7 +5,7 @@ import type { ZodConstraints } from './schema-constraints'
 import type { SchemaFieldInfo } from './schema-traversal'
 import type { FieldComponentType } from './types/meta-types'
 
-// Импорт всех Field компонентов
+// Import all Field components
 import { FieldEditable } from './form-fields/text/field-editable'
 import { FieldPassword } from './form-fields/text/field-password'
 import { FieldPasswordStrength } from './form-fields/text/field-password-strength'
@@ -50,73 +50,73 @@ import { FieldPinInput } from './form-fields/specialized/field-pin-input'
 import { FieldMaskedInput } from './form-fields/text/field-masked-input'
 
 import { camelCaseToLabel } from './form-fields/auto/field-auto'
-import { useRelationFieldContext, type RelationOption } from './relation-field-provider'
+import { type RelationOption, useRelationFieldContext } from './relation-field-provider'
 
 /**
- * Конфигурация relation в fieldProps
+ * Relation configuration in fieldProps
  */
 export interface RelationFieldConfig {
-  /** Имя модели (должно совпадать с model в RelationFieldProvider) */
+  /** Model name (must match model in RelationFieldProvider) */
   model: string
-  /** Поле для отображения label */
+  /** Field to display as label */
   labelField: string
-  /** Поле для значения (по умолчанию 'id') */
+  /** Field for value (default 'id') */
   valueField?: string
 }
 
 /**
- * Props для рендеринга поля
+ * Props for field rendering
  */
 export interface FieldRenderProps {
-  /** Имя поля */
+  /** Field name */
   name: string
-  /** Label (если не указан, генерируется из name) */
+  /** Label (if not specified, generated from name) */
   label?: ReactNode
   /** Placeholder */
   placeholder?: string
   /** Helper text */
   helperText?: ReactNode
-  /** Обязательное поле */
+  /** Required field */
   required?: boolean
-  /** Отключено */
+  /** Disabled */
   disabled?: boolean
-  /** Только для чтения */
+  /** Read only */
   readOnly?: boolean
-  /** Enum значения для select/radio */
+  /** Enum values for select/radio */
   enumValues?: string[]
-  /** Constraints из схемы */
+  /** Constraints from schema */
   constraints?: ZodConstraints
-  /** Дополнительные props из fieldProps */
+  /** Additional props from fieldProps */
   fieldProps?: Record<string, unknown>
   /**
-   * Options из RelationFieldProvider (если поле имеет relation config)
-   * Устанавливается автоматически через SchemaFieldWithRelations
+   * Options from RelationFieldProvider (if field has relation config)
+   * Set automatically via SchemaFieldWithRelations
    */
   relationOptions?: RelationOption[]
 }
 
 /**
- * Определить тип компонента на основе:
- * 1. Явного fieldType из meta (приоритет)
- * 2. Zod типа (fallback)
+ * Determine component type based on:
+ * 1. Explicit fieldType from meta (priority)
+ * 2. Zod type (fallback)
  */
 export function resolveFieldType(field: SchemaFieldInfo): FieldComponentType {
-  // Приоритет: явный fieldType из meta
+  // Priority: explicit fieldType from meta
   if (field.ui?.fieldType) {
     return field.ui.fieldType
   }
 
-  // Fallback на Zod тип
+  // Fallback to Zod type
   switch (field.zodType) {
     case 'string':
-      // Проверить email/url через constraints
+      // Check email/url via constraints
       if (field.constraints?.string?.inputType === 'email') {
         return 'string'
       }
       if (field.constraints?.string?.inputType === 'url') {
         return 'string'
       }
-      // Проверить длинную строку → textarea
+      // Check long string -> textarea
       if (field.constraints?.string?.maxLength && field.constraints.string.maxLength > 200) {
         return 'textarea'
       }
@@ -139,11 +139,11 @@ export function resolveFieldType(field: SchemaFieldInfo): FieldComponentType {
       return 'nativeSelect'
 
     case 'array':
-      // Примитивные массивы → tags
+      // Primitive arrays -> tags
       if (field.element?.zodType === 'string') {
         return 'tags'
       }
-      // Объектные массивы обрабатываются отдельно
+      // Object arrays are handled separately
       return 'string' // fallback
 
     default:
@@ -152,7 +152,7 @@ export function resolveFieldType(field: SchemaFieldInfo): FieldComponentType {
 }
 
 /**
- * Тип опции для компонентов выбора
+ * Option type for selection components
  */
 interface SelectOptionResolved {
   value: string
@@ -161,7 +161,7 @@ interface SelectOptionResolved {
 }
 
 /**
- * Тип опции для NativeSelect (использует title вместо label)
+ * Option type for NativeSelect (uses title instead of label)
  */
 interface NativeSelectOptionResolved {
   value: string
@@ -170,20 +170,20 @@ interface NativeSelectOptionResolved {
 }
 
 /**
- * Получить options для поля выбора с учётом relationOptions
- * Приоритет: fieldProps.options > relationOptions > enumValues
+ * Get options for a selection field considering relationOptions
+ * Priority: fieldProps.options > relationOptions > enumValues
  */
 function resolveSelectOptions(
   fieldProps: Record<string, unknown>,
   relationOptions?: RelationOption[],
   enumValues?: string[]
 ): SelectOptionResolved[] | undefined {
-  // 1. Явные options в fieldProps (высший приоритет)
+  // 1. Explicit options in fieldProps (highest priority)
   if (fieldProps.options && Array.isArray(fieldProps.options)) {
     return fieldProps.options as SelectOptionResolved[]
   }
 
-  // 2. Options из RelationFieldProvider
+  // 2. Options from RelationFieldProvider
   if (relationOptions && relationOptions.length > 0) {
     return relationOptions.map((opt) => ({
       value: opt.value,
@@ -192,7 +192,7 @@ function resolveSelectOptions(
     }))
   }
 
-  // 3. Enum значения (fallback)
+  // 3. Enum values (fallback)
   if (enumValues && enumValues.length > 0) {
     return enumValues.map((v) => ({ label: camelCaseToLabel(v), value: v }))
   }
@@ -201,19 +201,19 @@ function resolveSelectOptions(
 }
 
 /**
- * Получить options для NativeSelect (использует title вместо label)
+ * Get options for NativeSelect (uses title instead of label)
  */
 function resolveNativeSelectOptions(
   fieldProps: Record<string, unknown>,
   relationOptions?: RelationOption[],
   enumValues?: string[]
 ): NativeSelectOptionResolved[] | undefined {
-  // 1. Явные options в fieldProps (высший приоритет)
+  // 1. Explicit options in fieldProps (highest priority)
   if (fieldProps.options && Array.isArray(fieldProps.options)) {
     return fieldProps.options as NativeSelectOptionResolved[]
   }
 
-  // 2. Options из RelationFieldProvider
+  // 2. Options from RelationFieldProvider
   if (relationOptions && relationOptions.length > 0) {
     return relationOptions.map((opt) => ({
       value: opt.value,
@@ -222,7 +222,7 @@ function resolveNativeSelectOptions(
     }))
   }
 
-  // 3. Enum значения (fallback)
+  // 3. Enum values (fallback)
   if (enumValues && enumValues.length > 0) {
     return enumValues.map((v) => ({ title: camelCaseToLabel(v), value: v }))
   }
@@ -231,7 +231,7 @@ function resolveNativeSelectOptions(
 }
 
 /**
- * Рендерить компонент поля по типу
+ * Render a field component by type
  */
 export function renderFieldByType(type: FieldComponentType, props: FieldRenderProps): ReactElement {
   const {
@@ -248,10 +248,10 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     relationOptions,
   } = props
 
-  // Генерировать label если не указан
+  // Generate label if not specified
   const label = labelProp ?? camelCaseToLabel(name)
 
-  // Базовые props для всех полей
+  // Base props for all fields
   const baseProps = {
     name,
     label,
@@ -262,16 +262,16 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     readOnly,
   }
 
-  // Применить constraints к props
+  // Apply constraints to props
   const stringConstraints = constraints?.string || {}
   const numberConstraints = constraints?.number || {}
 
-  // Предварительно вычислить options для полей выбора
+  // Pre-compute options for selection fields
   const selectOptions = resolveSelectOptions(fieldProps, relationOptions, enumValues)
   const nativeSelectOptions = resolveNativeSelectOptions(fieldProps, relationOptions, enumValues)
 
   switch (type) {
-    // Текстовые поля
+    // Text fields
     case 'string':
       return (
         <FieldString
@@ -295,7 +295,7 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     case 'richText':
       return <FieldRichText key={name} {...baseProps} {...fieldProps} />
 
-    // Числовые поля
+    // Number fields
     case 'number':
       return (
         <FieldNumber
@@ -336,7 +336,7 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     case 'percentage':
       return <FieldPercentage key={name} {...baseProps} {...fieldProps} />
 
-    // Дата и время
+    // Date and time
     case 'date':
       return (
         <FieldDate
@@ -358,14 +358,14 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     case 'schedule':
       return <FieldSchedule key={name} {...baseProps} {...fieldProps} />
 
-    // Булевые поля
+    // Boolean fields
     case 'checkbox':
       return <FieldCheckbox key={name} {...baseProps} {...fieldProps} />
     case 'switch':
       return <FieldSwitch key={name} {...baseProps} {...fieldProps} />
 
-    // Выбор из списка
-    // Options разрешаются с приоритетом: fieldProps.options > relationOptions > enumValues
+    // Selection from list
+    // Options resolved with priority: fieldProps.options > relationOptions > enumValues
     case 'select':
       return <FieldSelect key={name} {...baseProps} options={selectOptions ?? []} {...fieldProps} />
     case 'nativeSelect':
@@ -387,11 +387,11 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     case 'tags':
       return <FieldTags key={name} {...baseProps} {...fieldProps} />
 
-    // Специализированные поля
+    // Specialized fields
     case 'phone':
       return <FieldPhone key={name} {...baseProps} {...fieldProps} />
     case 'address': {
-      // FieldAddress требует token из fieldProps
+      // FieldAddress requires token from fieldProps
       const token = fieldProps.token as string | undefined
       if (!token) {
         console.warn(`Form.Field.Address "${name}" requires token in fieldProps`)
@@ -405,7 +405,7 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
     case 'colorPicker':
       return <FieldColorPicker key={name} {...baseProps} {...fieldProps} />
     case 'fileUpload': {
-      // FieldFileUpload требует label и helperText как string
+      // FieldFileUpload requires label and helperText as string
       const labelStr = typeof label === 'string' ? label : String(label ?? '')
       const helperStr = typeof helperText === 'string' ? helperText : undefined
       return (
@@ -422,15 +422,15 @@ export function renderFieldByType(type: FieldComponentType, props: FieldRenderPr
       return <FieldMaskedInput key={name} {...baseProps} {...fieldProps} />
 
     default:
-      // Fallback на string
+      // Fallback to string
       return <FieldString key={name} {...baseProps} {...fieldProps} />
   }
 }
 
 /**
- * Рендерить поле из SchemaFieldInfo
- * @param field - информация о поле из схемы
- * @param relationOptions - опции из RelationFieldProvider (если есть)
+ * Render a field from SchemaFieldInfo
+ * @param field - field information from schema
+ * @param relationOptions - options from RelationFieldProvider (if available)
  */
 export function renderSchemaField(field: SchemaFieldInfo, relationOptions?: RelationOption[]): ReactElement {
   const fieldType = resolveFieldType(field)
@@ -449,10 +449,10 @@ export function renderSchemaField(field: SchemaFieldInfo, relationOptions?: Rela
 }
 
 /**
- * Компонент для рендеринга поля с автозагрузкой relation options
+ * Component for rendering a field with auto-loading relation options
  *
- * Использует RelationFieldProvider контекст для автоматической загрузки
- * options для полей с `relationMeta()`.
+ * Uses RelationFieldProvider context for automatic loading of
+ * options for fields with `relationMeta()`.
  *
  * @example
  * ```tsx
@@ -464,10 +464,10 @@ export function renderSchemaField(field: SchemaFieldInfo, relationOptions?: Rela
 export function SchemaFieldWithRelations({ field }: { field: SchemaFieldInfo }): ReactElement {
   const relationContext = useRelationFieldContext()
 
-  // Проверяем есть ли relation config в fieldProps
+  // Check if relation config exists in fieldProps
   const relationConfig = field.ui?.fieldProps?.relation as RelationFieldConfig | undefined
 
-  // Если есть relation config и есть контекст — получаем options
+  // If relation config and context exist - get options
   let relationOptions: RelationOption[] | undefined
   if (relationConfig && relationContext) {
     const state = relationContext.getState(relationConfig.model)

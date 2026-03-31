@@ -6,31 +6,31 @@ import type { FieldUIMeta } from './types/meta-types'
 import { unwrapSchema } from './zod-utils'
 
 /**
- * Информация о поле схемы для автогенерации форм
+ * Schema field information for form auto-generation
  */
 export interface SchemaFieldInfo {
-  /** Полный путь к полю (например, "user.address.city") */
+  /** Full path to the field (e.g. "user.address.city") */
   path: string
-  /** Имя поля (последний сегмент пути) */
+  /** Field name (last path segment) */
   name: string
-  /** Zod тип: string, number, boolean, date, enum, object, array */
+  /** Zod type: string, number, boolean, date, enum, object, array */
   zodType: string
-  /** UI метаданные из .meta({ ui: {...} }) */
+  /** UI metadata from .meta({ ui: {...} }) */
   ui?: FieldUIMeta
-  /** Обязательное поле (не optional/nullable) */
+  /** Required field (not optional/nullable) */
   required: boolean
-  /** Constraints (min, max, minLength, maxLength и т.д.) */
+  /** Constraints (min, max, minLength, maxLength etc.) */
   constraints: ZodConstraints
-  /** Вложенные поля для object */
+  /** Nested fields for object type */
   children?: SchemaFieldInfo[]
-  /** Информация об элементе для array */
+  /** Element information for array type */
   element?: SchemaFieldInfo
-  /** Enum значения для enum типа */
+  /** Enum values for enum type */
   enumValues?: string[]
 }
 
 /**
- * Получить Zod тип из схемы
+ * Get Zod type from schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getZodType(schema: any): string {
@@ -39,7 +39,7 @@ function getZodType(schema: any): string {
 }
 
 /**
- * Проверить, является ли поле обязательным (не optional/nullable)
+ * Check if the field is required (not optional/nullable)
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isRequired(schema: any): boolean {
@@ -52,7 +52,7 @@ function isRequired(schema: any): boolean {
     return false
   }
   if (type === 'default') {
-    // default всегда имеет значение, считаем не обязательным для UI
+    // default always has a value, considered not required for UI
     return false
   }
 
@@ -60,7 +60,7 @@ function isRequired(schema: any): boolean {
 }
 
 /**
- * Получить UI метаданные из схемы
+ * Get UI metadata from schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getUIMeta(schema: any): FieldUIMeta | undefined {
@@ -77,8 +77,8 @@ function getUIMeta(schema: any): FieldUIMeta | undefined {
 }
 
 /**
- * Получить enum значения из схемы
- * В Zod v4 используем schema.enum или schema.def.entries
+ * Get enum values from schema
+ * In Zod v4 we use schema.enum or schema.def.entries
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getEnumValues(schema: any): string[] | undefined {
@@ -90,16 +90,16 @@ function getEnumValues(schema: any): string[] | undefined {
   const type = unwrapped._zod.def.type
 
   if (type === 'enum') {
-    // Zod v4: используем .enum для получения значений
-    // schema.enum возвращает объект { value: "value", ... }
+    // Zod v4: use .enum for getting values
+    // schema.enum returns object { value: "value", ... }
     if (unwrapped.enum && typeof unwrapped.enum === 'object') {
       return Object.values(unwrapped.enum) as string[]
     }
-    // Fallback на внутреннюю структуру (для совместимости)
+    // Fallback to internal structure (for compatibility)
     if (unwrapped._zod.def.values) {
       return unwrapped._zod.def.values
     }
-    // Zod v4 также имеет def.entries
+    // Zod v4 also has def.entries
     if (unwrapped._zod.def.entries) {
       return Object.values(unwrapped._zod.def.entries) as string[]
     }
@@ -115,26 +115,26 @@ function getEnumValues(schema: any): string[] | undefined {
 }
 
 // =============================================================================
-// Защита от циклических ссылок
+// Circular reference protection
 // =============================================================================
 
-/** Максимальная глубина рекурсии для защиты от бесконечных циклов */
+/** Maximum recursion depth for infinite loop protection */
 const MAX_TRAVERSAL_DEPTH = 20
 
 /**
- * Контекст обхода схемы
- * Хранит посещённые схемы и текущую глубину для защиты от циклов
+ * Schema traversal context
+ * Stores visited schemas and current depth for cycle protection
  */
 interface TraversalContext {
-  /** Set посещённых схем (для обнаружения циклов) */
+  /** Set of visited schemas (for cycle detection) */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   visited: WeakSet<any>
-  /** Текущая глубина рекурсии */
+  /** Current recursion depth */
   depth: number
 }
 
 /**
- * Создать новый контекст обхода
+ * Create a new traversal context
  */
 function createTraversalContext(): TraversalContext {
   return {
@@ -144,18 +144,18 @@ function createTraversalContext(): TraversalContext {
 }
 
 /**
- * Проверить, можно ли продолжать обход
- * Возвращает false если схема уже посещена или достигнута максимальная глубина
+ * Check if traversal can continue
+ * Returns false if schema was already visited or maximum depth is reached
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function canTraverse(schema: any, ctx: TraversalContext): boolean {
-  // Проверка глубины
+  // Depth check
   if (ctx.depth >= MAX_TRAVERSAL_DEPTH) {
     console.warn(`schema-traversal: Maximum depth (${MAX_TRAVERSAL_DEPTH}) exceeded, stopping recursion`)
     return false
   }
 
-  // Проверка циклической ссылки
+  // Circular reference check
   if (schema && typeof schema === 'object' && ctx.visited.has(schema)) {
     console.warn('schema-traversal: Circular reference detected, stopping recursion')
     return false
@@ -165,7 +165,7 @@ function canTraverse(schema: any, ctx: TraversalContext): boolean {
 }
 
 /**
- * Отметить схему как посещённую
+ * Mark schema as visited
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function markVisited(schema: any, ctx: TraversalContext): void {
@@ -175,11 +175,11 @@ function markVisited(schema: any, ctx: TraversalContext): void {
 }
 
 // =============================================================================
-// Функции обхода схемы
+// Schema traversal functions
 // =============================================================================
 
 /**
- * Анализировать элемент массива
+ * Analyze an array element
  */
 
 function analyzeArrayElement(
@@ -195,7 +195,7 @@ function analyzeArrayElement(
 
   const unwrapped = unwrapSchema(elementSchema)
   const zodType = getZodType(unwrapped)
-  // Для элементов массива путь — это путь родителя + [*]
+  // For array elements the path is parent path + [*]
   const path = `${parentPath}[*]`
 
   const fieldInfo: SchemaFieldInfo = {
@@ -204,10 +204,10 @@ function analyzeArrayElement(
     zodType,
     ui: getUIMeta(elementSchema),
     required: isRequired(elementSchema),
-    constraints: {}, // Constraints для элементов определяются отдельно
+    constraints: {}, // Constraints for elements are determined separately
   }
 
-  // Если элемент — объект, рекурсивно обходим его поля
+  // If element is an object, recursively traverse its fields
   if (zodType === 'object' && unwrapped._zod?.def?.shape) {
     const children = traverseSchemaShape(unwrapped._zod.def.shape, path, { ...ctx, depth: ctx.depth + 1 })
     if (children.length > 0) {
@@ -215,7 +215,7 @@ function analyzeArrayElement(
     }
   }
 
-  // Если элемент — enum
+  // If element is an enum
   if (zodType === 'enum' || zodType === 'literal') {
     fieldInfo.enumValues = getEnumValues(elementSchema)
   }
@@ -224,7 +224,7 @@ function analyzeArrayElement(
 }
 
 /**
- * Обойти shape объекта и вернуть информацию о полях
+ * Traverse object shape and return field information
  */
 
 function traverseSchemaShape(
@@ -254,7 +254,7 @@ function traverseSchemaShape(
       constraints: getZodConstraints(fieldSchema, ''),
     }
 
-    // Обработка вложенных объектов
+    // Handle nested objects
     if (zodType === 'object' && unwrapped._zod?.def?.shape) {
       const children = traverseSchemaShape(unwrapped._zod.def.shape, path, { ...ctx, depth: ctx.depth + 1 })
       if (children.length > 0) {
@@ -262,7 +262,7 @@ function traverseSchemaShape(
       }
     }
 
-    // Обработка массивов
+    // Handle arrays
     if (zodType === 'array' && unwrapped._zod?.def?.element) {
       const element = analyzeArrayElement(unwrapped._zod.def.element, path, { ...ctx, depth: ctx.depth + 1 })
       if (element) {
@@ -270,7 +270,7 @@ function traverseSchemaShape(
       }
     }
 
-    // Обработка enum
+    // Handle enum
     if (zodType === 'enum' || zodType === 'literal') {
       fieldInfo.enumValues = getEnumValues(fieldSchema)
     }
@@ -282,12 +282,12 @@ function traverseSchemaShape(
 }
 
 /**
- * Обойти Zod схему и вернуть информацию о всех полях
+ * Traverse Zod schema and return information about all fields
  *
  * @example
  * ```ts
  * const schema = z.object({
- *   firstName: z.string().meta({ ui: { title: 'Имя' } }),
+ *   firstName: z.string().meta({ ui: { title: 'Name' } }),
  *   address: z.object({
  *     city: z.string(),
  *     zip: z.string(),
@@ -297,7 +297,7 @@ function traverseSchemaShape(
  *
  * const fields = traverseSchema(schema)
  * // [
- * //   { path: 'firstName', zodType: 'string', ui: { title: 'Имя' }, ... },
+ * //   { path: 'firstName', zodType: 'string', ui: { title: 'Name' }, ... },
  * //   { path: 'address', zodType: 'object', children: [...] },
  * //   { path: 'tags', zodType: 'array', element: { zodType: 'string' } },
  * // ]
@@ -312,7 +312,7 @@ export function traverseSchema(schema: any): SchemaFieldInfo[] {
   const unwrapped = unwrapSchema(schema)
   const type = unwrapped._zod?.def?.type
 
-  // Поддерживаем только object на верхнем уровне
+  // Only support object at the top level
   if (type !== 'object' || !unwrapped._zod?.def?.shape) {
     return []
   }
@@ -321,7 +321,7 @@ export function traverseSchema(schema: any): SchemaFieldInfo[] {
 }
 
 /**
- * Получить плоский список всех путей полей (для include/exclude фильтрации)
+ * Get flat list of all field paths (for include/exclude filtering)
  */
 export function getFieldPaths(fields: SchemaFieldInfo[], recursive = true): string[] {
   const paths: string[] = []
@@ -338,7 +338,7 @@ export function getFieldPaths(fields: SchemaFieldInfo[], recursive = true): stri
 }
 
 /**
- * Отфильтровать поля по include/exclude
+ * Filter fields by include/exclude
  */
 export function filterFields(
   fields: SchemaFieldInfo[],
@@ -347,7 +347,7 @@ export function filterFields(
   const { include, exclude } = options
 
   return fields.filter((field) => {
-    // Проверяем по имени поля (name) для топ-левел фильтрации
+    // Check by field name for top-level filtering
     if (include && !include.includes(field.name)) {
       return false
     }

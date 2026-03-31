@@ -4,301 +4,304 @@ import type { ReactNode } from 'react'
 import type { FieldTooltipMeta } from './meta-types'
 
 /**
- * Базовые пропсы для всех Field компонентов
+ * Base props for all Field components
  */
 export interface BaseFieldProps {
-  /** Имя поля (опционально для примитивных массивов) */
+  /** Field name (optional for primitive arrays) */
   name?: string
-  /** Метка поля (может быть строкой или ReactNode для сложных меток со ссылками) */
+  /** Field label (can be a string or ReactNode for complex labels with links) */
   label?: ReactNode
-  /** Текст-заполнитель */
+  /** Placeholder text */
   placeholder?: string
-  /** Вспомогательный текст под полем (может быть строкой или ReactNode) */
+  /** Helper text below the field (can be a string or ReactNode) */
   helperText?: ReactNode
-  /** Обязательное ли поле */
+  /** Whether the field is required */
   required?: boolean
-  /** Отключено ли поле */
+  /** Whether the field is disabled */
   disabled?: boolean
-  /** Режим только для чтения */
+  /** Read-only mode */
   readOnly?: boolean
-  /** Tooltip для подсказки рядом с label (переопределяет значение из schema) */
+  /** Tooltip for hint next to label (overrides value from schema) */
   tooltip?: FieldTooltipMeta
 }
 
 // ============================================================================
-// Текстовые поля
+// Text fields
 // ============================================================================
 
 /**
- * Пропсы для строкового поля
+ * Props for string field
  */
 export interface StringFieldProps extends BaseFieldProps {
-  /** Тип input (text, email, password и т.д.). Автоматически из z.string().email()/url() */
+  /** Input type (text, email, password, etc.). Auto-detected from z.string().email()/url() */
   type?: 'text' | 'email' | 'password' | 'url' | 'tel'
-  /** Максимальная длина. Автоматически из z.string().max() */
+  /** Maximum length. Auto-detected from z.string().max() */
   maxLength?: number
-  /** Минимальная длина. Автоматически из z.string().min() */
+  /** Minimum length. Auto-detected from z.string().min() */
   minLength?: number
-  /** HTML pattern для валидации. Автоматически из z.string().regex() */
+  /** HTML pattern for validation. Auto-detected from z.string().regex() */
   pattern?: string
-  /** HTML атрибут autocomplete */
+  /** HTML autocomplete attribute */
   autoComplete?: string
-  /** HTML атрибут inputMode для мобильной клавиатуры. Автоматически из type. */
+  /** HTML inputMode attribute for mobile keyboard. Auto-detected from type. */
   inputMode?: 'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'
 }
 
 /**
- * Пропсы для многострочного поля
+ * Props for textarea field
  */
 export interface TextareaFieldProps extends BaseFieldProps {
-  /** Количество видимых строк */
+  /** Number of visible rows */
   rows?: number
-  /** Включить авторазмер */
+  /** Enable auto-resize */
   autoresize?: boolean
-  /** Поведение изменения размера */
+  /** Resize behavior */
   resize?: 'none' | 'vertical' | 'horizontal' | 'both'
-  /** Максимальная длина */
+  /** Maximum length */
   maxLength?: number
 }
 
 /**
- * Пропсы для поля пароля
+ * Props for password field
  */
 export interface PasswordFieldProps extends BaseFieldProps {
-  /** Максимальная длина */
+  /** Maximum length */
   maxLength?: number
-  /** Видимость по умолчанию */
+  /** Default visibility */
   defaultVisible?: boolean
-  /** HTML атрибут autocomplete */
+  /** HTML autocomplete attribute */
   autoComplete?: string
 }
 
 /**
- * Требование к сложности пароля
+ * Password complexity requirement
  */
 export type PasswordRequirement = 'minLength:8' | 'uppercase' | 'lowercase' | 'number' | 'special'
 
 /**
- * Пропсы для поля пароля с индикатором сложности
+ * Props for password field with strength indicator
  */
 export interface PasswordStrengthFieldProps extends BaseFieldProps {
-  /** Требования к паролю */
+  /** Password requirements */
   requirements?: PasswordRequirement[]
-  /** Показывать чек-лист требований */
+  /** Show requirements checklist */
   showRequirements?: boolean
-  /** Видимость по умолчанию */
+  /** Default visibility */
   defaultVisible?: boolean
 }
 
 // ============================================================================
-// Числовые поля
+// Number fields
 // ============================================================================
 
 /**
- * Пропсы для числового поля (базовые)
+ * Props for number field (basic)
  */
 export interface NumberFieldProps extends BaseFieldProps {
-  /** Минимальное значение */
+  /** Minimum value */
   min?: number
-  /** Максимальное значение */
+  /** Maximum value */
   max?: number
-  /** Шаг изменения */
+  /** Change step */
   step?: number
 }
 
 /**
- * Опции Intl.NumberFormat для форматирования
+ * Intl.NumberFormat options for formatting
  */
 export interface NumberInputFormatOptions {
-  /** Стиль форматирования */
+  /** Formatting style */
   style?: 'decimal' | 'currency' | 'percent' | 'unit'
-  /** Код валюты (например, 'RUB', 'USD', 'EUR') */
+  /** Currency code (e.g., 'RUB', 'USD', 'EUR') */
   currency?: string
-  /** Стиль отображения валюты */
+  /** Currency display style */
   currencyDisplay?: 'symbol' | 'narrowSymbol' | 'code' | 'name'
-  /** Тип единицы измерения (например, 'inch', 'kilogram') */
+  /** Unit type (e.g., 'inch', 'kilogram') */
   unit?: string
-  /** Стиль отображения единицы измерения */
+  /** Unit display style */
   unitDisplay?: 'short' | 'long' | 'narrow'
-  /** Минимум дробных цифр */
+  /** Minimum fraction digits */
   minimumFractionDigits?: number
-  /** Максимум дробных цифр */
+  /** Maximum fraction digits */
   maximumFractionDigits?: number
 }
 
 /**
- * Пропсы для NumberInput поля с расширенными опциями
+ * Props for NumberInput field with extended options
  */
 export interface NumberInputFieldProps extends NumberFieldProps {
-  /** Опции Intl.NumberFormat для форматирования отображения */
+  /** Intl.NumberFormat options for display formatting */
   formatOptions?: NumberInputFormatOptions
-  /** Разрешить изменение колёсиком мыши */
+  /** Allow mouse wheel changes */
   allowMouseWheel?: boolean
-  /** Ограничивать значение min/max при потере фокуса */
+  /** Clamp value to min/max on blur */
   clampValueOnBlur?: boolean
-  /** Изменять значение при удержании кнопки */
+  /** Change value on button hold */
   spinOnPress?: boolean
-  /** Размер */
+  /** Size */
   size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 /**
- * Пропсы для поля валюты
+ * Props for currency field
  */
 export interface CurrencyFieldProps extends BaseFieldProps {
-  /** Код валюты (по умолчанию: 'RUB') */
+  /** Currency code (default: 'RUB') */
   currency?: string
-  /** Стиль отображения валюты (по умолчанию: 'symbol') */
+  /** Currency display style (default: 'symbol') */
   currencyDisplay?: 'symbol' | 'narrowSymbol' | 'code' | 'name'
-  /** Количество десятичных знаков (по умолчанию: 2) */
+  /** Number of decimal places (default: 2) */
   decimalScale?: number
-  /** Минимальное значение */
+  /** Minimum value */
   min?: number
-  /** Максимальное значение */
+  /** Maximum value */
   max?: number
-  /** Шаг изменения (по умолчанию: 0.01) */
+  /** Change step (default: 0.01) */
   step?: number
-  /** Размер */
+  /** Size */
   size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 /**
- * Пропсы для поля процентов
+ * Props for percentage field
  */
 export interface PercentageFieldProps extends BaseFieldProps {
-  /** Минимальное значение (по умолчанию: 0) */
+  /** Minimum value (default: 0) */
   min?: number
-  /** Максимальное значение (по умолчанию: 100) */
+  /** Maximum value (default: 100) */
   max?: number
-  /** Шаг изменения (по умолчанию: 1) */
+  /** Change step (default: 1) */
   step?: number
-  /** Количество десятичных знаков (по умолчанию: 0) */
+  /** Number of decimal places (default: 0) */
   decimalScale?: number
-  /** Размер */
+  /** Size */
   size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 // ============================================================================
-// Поля даты и времени
+// Date and time fields
 // ============================================================================
 
 /**
- * Пропсы для поля даты
+ * Props for date field
  */
 export interface DateFieldProps extends BaseFieldProps {
-  /** Минимальная дата (формат YYYY-MM-DD) */
+  /** Minimum date (format YYYY-MM-DD) */
   min?: string
-  /** Максимальная дата (формат YYYY-MM-DD) */
+  /** Maximum date (format YYYY-MM-DD) */
   max?: string
 }
 
 /**
- * Пропсы для поля времени
+ * Props for time field
  */
 export interface TimeFieldProps extends BaseFieldProps {
-  /** Минимальное время (формат HH:MM) */
+  /** Minimum time (format HH:MM) */
   min?: string
-  /** Максимальное время (формат HH:MM) */
+  /** Maximum time (format HH:MM) */
   max?: string
-  /** Шаг в секундах */
+  /** Step in seconds */
   step?: number
 }
 
 /**
- * Пропсы для поля длительности
+ * Props for duration field
  */
 export interface DurationFieldProps extends BaseFieldProps {
-  /** Формат: 'HH:MM' или 'minutes' (по умолчанию: 'HH:MM') */
+  /** Format: 'HH:MM' or 'minutes' (default: 'HH:MM') */
   format?: 'HH:MM' | 'minutes'
-  /** Минимальная длительность в минутах */
+  /** Minimum duration in minutes */
   min?: number
-  /** Максимальная длительность в минутах */
+  /** Maximum duration in minutes */
   max?: number
-  /** Шаг в минутах (по умолчанию: 15) */
+  /** Step in minutes (default: 15) */
   step?: number
 }
 
 /**
- * Пропсы для поля выбора даты и времени
+ * Props for date and time picker field
  */
 export interface DateTimePickerFieldProps extends BaseFieldProps {
-  /** Минимальные дата и время */
+  /** Minimum date and time */
   minDateTime?: Date | string
-  /** Максимальные дата и время */
+  /** Maximum date and time */
   maxDateTime?: Date | string
-  /** Шаг времени в минутах (по умолчанию: 15) */
+  /** Time step in minutes (default: 15) */
   timeStep?: number
 }
 
 // ============================================================================
-// Логические поля
+// Boolean fields
 // ============================================================================
 
 /**
- * Пропсы для чекбокса
+ * Props for checkbox
  */
 export interface CheckboxFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Цветовая палитра (по умолчанию: brand) */
+  /** Color palette (default: brand) */
   colorPalette?: string
-  /** Размер чекбокса (sm, md, lg) */
+  /** Checkbox size (sm, md, lg) */
   size?: 'sm' | 'md' | 'lg'
 }
 
 /**
- * Пропсы для переключателя
+ * Props for switch
  */
 export interface SwitchFieldProps extends Omit<BaseFieldProps, 'placeholder'> {
-  /** Цветовая палитра (по умолчанию: brand) */
+  /** Color palette (default: brand) */
   colorPalette?: string
-  /** Размер переключателя (xs, sm, md, lg) */
+  /** Switch size (xs, sm, md, lg) */
   size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 // ============================================================================
-// Поля с маской / телефон
+// Masked input / phone fields
 // ============================================================================
 
 /**
- * Пропсы для поля с маской ввода
+ * Props for masked input field
  */
 export interface MaskedInputFieldProps extends BaseFieldProps {
-  /** Шаблон маски (например, '99 99 999999' для паспорта) */
+  /** Mask pattern (e.g., '99 99 999999' for passport) */
   mask?: string | string[]
-  /** Символ-заполнитель для незаполненных позиций (по умолчанию: '_') */
+  /** Placeholder character for unfilled positions (default: '_') */
   placeholderChar?: string
-  /** Показывать маску при фокусе */
+  /** Show mask on focus */
   showMaskOnFocus?: boolean
-  /** Показывать маску при наведении */
+  /** Show mask on hover */
   showMaskOnHover?: boolean
-  /** Очищать неполный ввод при потере фокуса */
+  /** Clear incomplete input on blur */
   clearIncomplete?: boolean
-  /** Возвращать значение без маски (без символов маски) */
+  /** Return value without mask (without mask characters) */
   autoUnmask?: boolean
 }
 
 /**
- * Коды стран для поля телефона
+ * Country codes for phone field
  */
 export type PhoneCountry = 'RU' | 'US' | 'UK' | 'DE' | 'FR' | 'IT' | 'ES' | 'CN' | 'JP' | 'KR' | 'BY' | 'KZ' | 'UA'
 
 /**
- * Пропсы для поля телефона
+ * Props for phone field
  */
 export interface PhoneFieldProps extends BaseFieldProps {
-  /** Код страны для формата телефона (по умолчанию: 'RU') */
+  /** Country code for phone format (default: 'RU') */
   country?: PhoneCountry
-  /** Показывать флаг страны эмодзи */
+  /** Show country flag emoji */
   showFlag?: boolean
-  /** Возвращать значение без маски (без символов маски) */
+  /** Return value without mask (without mask characters) */
   autoUnmask?: boolean
 }
 
 // ============================================================================
-// Поля адреса
+// Address fields
 // ============================================================================
 
+import type { AddressProvider } from '../form-fields/specialized/providers'
+
 /**
- * Структура подсказки DaData
+ * DaData suggestion structure.
+ * @deprecated Use AddressSuggestion from providers instead.
  */
 export interface DaDataSuggestion {
   value: string
@@ -323,49 +326,65 @@ export interface DaDataSuggestion {
 }
 
 /**
- * Структура значения адреса
+ * Address value structure.
  */
 export interface AddressValue {
-  /** Полная строка адреса */
+  /** Full address string */
   value: string
-  /** Разобранные компоненты адреса */
-  data?: DaDataSuggestion['data']
+  /** Parsed address components (provider-specific) */
+  data?: Record<string, unknown>
 }
 
 /**
- * Пропсы для поля адреса
+ * Props for address field.
  */
 export interface AddressFieldProps extends BaseFieldProps {
-  /** Токен API DaData */
-  token: string
-  /** Минимум символов перед поиском (по умолчанию: 3) */
+  /** Address suggestion provider (recommended) */
+  provider?: AddressProvider
+  /** DaData API token (backward compatible — creates DaData provider internally) */
+  token?: string
+  /** Minimum characters before search (default: 3) */
   minChars?: number
-  /** Задержка debounce в мс (по умолчанию: 300) */
+  /** Debounce delay in ms (default: 300) */
   debounceMs?: number
-  /** Ограничить конкретными локациями (например, регион, город) */
+  /** Restrict to specific locations (e.g., region, city) */
   locations?: Array<{ region?: string; city?: string }>
-  /** Возвращать только строковое значение (по умолчанию: false возвращает AddressValue) */
+  /** Return string value only (default: false returns AddressValue) */
   valueOnly?: boolean
 }
 
+/**
+ * Props for city selection field.
+ */
+export interface CityFieldProps extends BaseFieldProps {
+  /** Address suggestion provider (recommended) */
+  provider?: AddressProvider
+  /** DaData API token (backward compatible — creates DaData provider internally) */
+  token?: string
+  /** Minimum characters before search (default: 2) */
+  minChars?: number
+  /** Debounce delay in ms (default: 300) */
+  debounceMs?: number
+}
+
 // ============================================================================
-// Поля OTP/PIN
+// OTP/PIN fields
 // ============================================================================
 
 /**
- * Пропсы для поля OTP
+ * Props for OTP field
  */
 export interface OTPInputFieldProps extends BaseFieldProps {
-  /** Количество полей ввода (по умолчанию: 6) */
+  /** Number of input fields (default: 6) */
   length?: number
-  /** Таймаут повторной отправки в секундах (по умолчанию: 60) */
+  /** Resend timeout in seconds (default: 60) */
   resendTimeout?: number
-  /** Колбэк при нажатии "отправить повторно" */
+  /** Callback on "resend" click */
   onResend?: () => void | Promise<void>
-  /** Авто-отправка при заполнении */
+  /** Auto-submit when complete */
   autoSubmit?: boolean
-  /** Тип ввода: numeric, alphanumeric, alphabetic */
+  /** Input type: numeric, alphanumeric, alphabetic */
   type?: 'numeric' | 'alphanumeric' | 'alphabetic'
-  /** Маскировать ввод */
+  /** Mask input */
   mask?: boolean
 }

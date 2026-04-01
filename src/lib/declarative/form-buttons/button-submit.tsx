@@ -24,6 +24,7 @@ import type { SubmitButtonProps } from '../types'
  */
 export function ButtonSubmit({
   children = 'Submit',
+  loadingText,
   disabled,
   colorPalette,
   size,
@@ -38,6 +39,7 @@ export function ButtonSubmit({
         <Button
           type="submit"
           loading={isSubmitting}
+          loadingText={loadingText}
           disabled={disabled || isSubmitting}
           colorPalette={colorPalette}
           size={size}

@@ -4,6 +4,29 @@
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [1.1.0] - 2026-04-01
+
+### Added
+
+- **size-limit** CI: bundle size проверка перед каждым npm publish (20 KB brotli full)
+- **Категорийные entry points**: `@letar/forms/fields/{text,number,datetime,selection,boolean,specialized}`
+- **Бенчмарк ре-рендеров**: 10 полей, ввод в одно → 0 лишних рендеров у остальных
+- **FieldErrorBoundary**: ErrorBoundary для каждого field-компонента (fallback при ошибке рендеринга)
+- **Type-тесты**: DeepKeys, DeepValue, useTypedFormSubscribe (vitest expectTypeOf)
+- `loadingText` prop в `Form.Button.Submit` для кастомного текста при загрузке
+- `City` и `sortable` в FormFieldComponents/FormGroupListComponent типах
+
+### Fixed
+
+- Race condition в Form.Steps — все шаги получали index=0
+- Число полей "49" → "40" во всех 12 статьях и README
+
+### Changed
+
+- tsup entry points расширены с 3 до 9 (code splitting для categories)
+- Bundle Size секция в README с актуальными метриками
+- `package.publish.json` exports map с 6 category entry points
+
 ## [0.58.0] - 2026-03-31
 
 ### Added

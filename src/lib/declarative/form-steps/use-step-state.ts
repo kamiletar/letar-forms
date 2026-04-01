@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { StepInfo } from './form-steps-context'
 
 /**
@@ -15,6 +15,8 @@ export interface UseStepStateResult {
   registerStep: (step: StepInfo) => void
   /** Unregister a step */
   unregisterStep: (index: number) => void
+  /** Shared mutable ref для атомарного назначения уникальных индексов шагам */
+  claimedIndicesRef: React.RefObject<Set<number>>
   /** Hidden fields (excluded from validation) */
   hiddenFields: Set<string>
   /** Hide fields from validation */
@@ -48,6 +50,12 @@ export function useStepState(): UseStepStateResult {
   // Registered steps
   const [steps, setSteps] = useState<StepInfo[]>([])
 
+  // Shared mutable ref для атомарного назначения индексов шагам.
+  // Решает race condition: useEffect-ы всех Step запускаются последовательно
+  // в одном коммите, но state (steps) ещё не обновлён. Ref мутируется
+  // синхронно — каждый следующий Step видит уже занятые индексы.
+  const claimedIndicesRef = useRef<Set<number>>(new Set())
+
   // Hidden fields (excluded from validation via Form.When)
   const [hiddenFields, setHiddenFields] = useState<Set<string>>(new Set())
 
@@ -64,10 +72,10 @@ export function useStepState(): UseStepStateResult {
         const old = prev[existing]
         // Compare significant fields — if unchanged, don't update state
         if (
-          old.title === step.title &&
-          old.description === step.description &&
-          old.fieldNames.length === step.fieldNames.length &&
-          old.fieldNames.every((f, i) => f === step.fieldNames[i])
+          old.title === step.title
+          && old.description === step.description
+          && old.fieldNames.length === step.fieldNames.length
+          && old.fieldNames.every((f, i) => f === step.fieldNames[i])
         ) {
           return prev // No changes — return the same object
         }
@@ -81,6 +89,7 @@ export function useStepState(): UseStepStateResult {
 
   // Unregister step
   const unregisterStep = useCallback((index: number) => {
+    claimedIndicesRef.current.delete(index)
     setSteps((prev) => prev.filter((s) => s.index !== index))
   }, [])
 
@@ -111,6 +120,7 @@ export function useStepState(): UseStepStateResult {
     stepCount,
     registerStep,
     unregisterStep,
+    claimedIndicesRef,
     hiddenFields,
     hideFieldsFromValidation,
     showFieldsForValidation,

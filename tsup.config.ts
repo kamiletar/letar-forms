@@ -5,6 +5,13 @@ export default defineConfig({
     index: 'src/index.ts',
     offline: 'src/lib/offline/index.ts',
     i18n: 'src/lib/i18n/index.ts',
+    // Категорийные entry points для tree-shaking
+    'fields/text': 'src/lib/declarative/form-fields/text/index.ts',
+    'fields/number': 'src/lib/declarative/form-fields/number/index.ts',
+    'fields/datetime': 'src/lib/declarative/form-fields/datetime/index.ts',
+    'fields/selection': 'src/lib/declarative/form-fields/selection/index.ts',
+    'fields/boolean': 'src/lib/declarative/form-fields/boolean/index.ts',
+    'fields/specialized': 'src/lib/declarative/form-fields/specialized/index.ts',
   },
   format: ['esm'],
   dts: false,

@@ -1,6 +1,6 @@
 {
   "name": "@letar/forms",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Declarative form components for React with 40+ field types, powered by TanStack Form and Chakra UI v3",
   "license": "MIT",
   "type": "module",
@@ -17,6 +17,30 @@
     "./i18n": {
       "types": "./i18n.d.ts",
       "import": "./i18n.js"
+    },
+    "./fields/text": {
+      "types": "./fields/text.d.ts",
+      "import": "./fields/text.js"
+    },
+    "./fields/number": {
+      "types": "./fields/number.d.ts",
+      "import": "./fields/number.js"
+    },
+    "./fields/datetime": {
+      "types": "./fields/datetime.d.ts",
+      "import": "./fields/datetime.js"
+    },
+    "./fields/selection": {
+      "types": "./fields/selection.d.ts",
+      "import": "./fields/selection.js"
+    },
+    "./fields/boolean": {
+      "types": "./fields/boolean.d.ts",
+      "import": "./fields/boolean.js"
+    },
+    "./fields/specialized": {
+      "types": "./fields/specialized.d.ts",
+      "import": "./fields/specialized.js"
     },
     "./package.json": "./package.json"
   },

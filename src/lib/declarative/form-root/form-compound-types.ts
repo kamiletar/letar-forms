@@ -68,6 +68,8 @@ export interface FormGroupListComponent {
     children: ReactNode
     emptyContent?: ReactNode
     wrapper?: (props: { children: ReactNode }) => ReactNode
+    /** Включить drag-and-drop сортировку элементов */
+    sortable?: boolean
   }): ReactElement
   Button: ListButtonComponents
 }
@@ -150,6 +152,7 @@ export interface FormFieldComponents {
   FileUpload: (props: FileUploadFieldProps) => ReactElement
   Phone: (props: { name?: string; label?: string; country?: string; showFlag?: boolean }) => ReactElement
   Address: (props: { name?: string; label?: string; provider?: string; apiKey?: string }) => ReactElement
+  City: (props: { name?: string; label?: string }) => ReactElement
   Auto: (props: { name: string; label?: string }) => ReactElement
 }
 

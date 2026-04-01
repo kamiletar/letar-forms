@@ -4,6 +4,9 @@
 export { FieldError, FieldLabel, createField } from './create-field'
 export type { CreateFieldOptions, FieldRenderFn, FieldRenderProps, ResolvedFieldProps } from './create-field'
 
+// ErrorBoundary для перехвата ошибок в полях
+export { FieldErrorBoundary } from './field-error-boundary'
+
 // Standard wrapper for simple fields
 export { FieldWrapper } from './field-wrapper'
 export type { FieldWrapperProps } from './field-wrapper'

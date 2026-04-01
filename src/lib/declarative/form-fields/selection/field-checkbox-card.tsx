@@ -1,9 +1,10 @@
 'use client'
 
-import { CheckboxCard, CheckboxGroup, Fieldset, Flex } from '@chakra-ui/react'
+import { CheckboxCard, CheckboxGroup, Fieldset, Flex, HStack } from '@chakra-ui/react'
 import type { ReactElement } from 'react'
 import type { BaseFieldProps, FieldSizeWithoutXs, FieldTooltipMeta, RichOption } from '../../types'
-import { createField, SelectionFieldLabel } from '../base'
+import { createField } from '../base'
+import { FieldTooltip } from '../base/field-tooltip'
 
 /**
  * Props for CheckboxCard field
@@ -75,7 +76,23 @@ export const FieldCheckboxCard = createField<CheckboxCardFieldProps, string[]>({
         >
           {resolved.label && (
             <Fieldset.Legend mb={2}>
-              <SelectionFieldLabel label={resolved.label} tooltip={resolved.tooltip} required={resolved.required} />
+              {resolved.tooltip ? (
+                <HStack gap={1}>
+                  <span>{resolved.label}</span>
+                  <FieldTooltip {...resolved.tooltip} />
+                </HStack>
+              ) : (
+                resolved.label
+              )}
+              {resolved.required && (
+                <span
+                  role="presentation"
+                  aria-hidden="true"
+                  style={{ color: 'var(--chakra-colors-fg-error)', marginInlineStart: '1px' }}
+                >
+                  *
+                </span>
+              )}
             </Fieldset.Legend>
           )}
 

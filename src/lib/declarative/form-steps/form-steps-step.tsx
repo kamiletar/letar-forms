@@ -176,7 +176,7 @@ export function FormStepsStep({
   segment,
 }: FormStepsStepProps) {
   const { form } = useDeclarativeForm()
-  const { registerStep, unregisterStep, steps, currentStep, animated, animationDuration, direction } =
+  const { registerStep, unregisterStep, claimedIndicesRef, currentStep, animated, animationDuration, direction } =
     useFormStepsContext()
 
   // Wrap children in FormGroupDeclarative if segment is provided
@@ -218,16 +218,15 @@ export function FormStepsStep({
     return () => subscription.unsubscribe()
   }, [form, when])
 
-  // Assign index on mount (only if step is visible)
-  // IMPORTANT: steps must NOT be in dependency array — otherwise infinite loop!
-  // registerStep updates steps, which would trigger the effect again.
-  // Use stepsRef to access current value without dependency.
-  const stepsRef = useRef(steps)
-  stepsRef.current = steps
-
+  // Назначение индекса и регистрация шага.
+  // Используем claimedIndicesRef (shared mutable Set) вместо stepsRef —
+  // это решает race condition, когда все useEffect-ы видели пустой stepsRef
+  // и все шаги получали index=0.
+  // Ref мутируется синхронно внутри effect-фазы — каждый следующий Step
+  // видит уже занятые индексы предыдущих.
   useEffect(() => {
     if (!isVisible) {
-      // Step is hidden — don't register
+      // Шаг скрыт — снимаем регистрацию
       if (indexRef.current >= 0) {
         unregisterStep(indexRef.current)
         indexRef.current = -1
@@ -235,20 +234,19 @@ export function FormStepsStep({
       return
     }
 
-    // Find next available index (use ref to avoid dependency on steps)
-    const existingIndices = stepsRef.current.map((s) => s.index)
-    let nextIndex = 0
-    while (existingIndices.includes(nextIndex)) {
-      nextIndex++
-    }
-
-    // If index already assigned — use it
+    // Занимаем следующий свободный индекс через shared ref
     if (indexRef.current < 0) {
+      const claimed = claimedIndicesRef.current
+      let nextIndex = 0
+      while (claimed.has(nextIndex)) {
+        nextIndex++
+      }
       indexRef.current = nextIndex
+      claimed.add(nextIndex)
     }
 
-    // IMPORTANT: fieldNames are extracted ONCE on mount
-    // children NOT included in deps — they change every render
+    // IMPORTANT: fieldNames извлекаются ОДИН раз при mount
+    // children НЕ включены в deps — они меняются каждый рендер
     const fieldNames = extractFieldNames(children, fieldExtractionPath)
 
     const stepInfo: StepInfo = {
@@ -266,11 +264,23 @@ export function FormStepsStep({
     return () => {
       if (indexRef.current >= 0) {
         unregisterStep(indexRef.current)
+        // unregisterStep уже удаляет из claimedIndicesRef
+        indexRef.current = -1
       }
     }
-    // IMPORTANT: steps, children and icon intentionally NOT included — cause infinite loop
-    // icon — JSX element, recreated every render
-  }, [description, registerStep, title, unregisterStep, onEnter, onLeave, isVisible, fieldExtractionPath])
+    // IMPORTANT: children и icon намеренно НЕ включены — вызывают infinite loop
+    // icon — JSX элемент, пересоздаётся каждый рендер
+  }, [
+    description,
+    registerStep,
+    title,
+    unregisterStep,
+    onEnter,
+    onLeave,
+    isVisible,
+    fieldExtractionPath,
+    claimedIndicesRef,
+  ])
 
   // Extract fieldNames and memoize their string representation
   // for use in dependency array instead of children
@@ -280,13 +290,12 @@ export function FormStepsStep({
     // Use segment path as proxy to determine when structure may change
     // children NOT included — they change every render
 
-    [fieldExtractionPath]
+    [fieldExtractionPath],
   )
 
   // Update ref only if fieldNames actually changed
-  const fieldNamesChanged =
-    currentFieldNames.length !== fieldNamesRef.current.length ||
-    currentFieldNames.some((name, i) => name !== fieldNamesRef.current[i])
+  const fieldNamesChanged = currentFieldNames.length !== fieldNamesRef.current.length
+    || currentFieldNames.some((name, i) => name !== fieldNamesRef.current[i])
   if (fieldNamesChanged) {
     fieldNamesRef.current = currentFieldNames
   }
@@ -333,7 +342,7 @@ export function FormStepsStep({
         x: direction === 'forward' ? -SLIDE_OFFSET : SLIDE_OFFSET,
       },
     }),
-    [direction]
+    [direction],
   )
 
   // Step hidden via when condition — don't render

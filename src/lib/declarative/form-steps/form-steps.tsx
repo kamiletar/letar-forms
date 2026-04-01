@@ -118,6 +118,7 @@ export function FormSteps({
     stepCount,
     registerStep,
     unregisterStep,
+    claimedIndicesRef,
     hiddenFields,
     hideFieldsFromValidation,
     showFieldsForValidation,
@@ -173,6 +174,7 @@ export function FormSteps({
       isFirstStep: currentStep === 0,
       registerStep,
       unregisterStep,
+      claimedIndicesRef,
       validateOnNext,
       linear,
       orientation,
@@ -217,7 +219,7 @@ export function FormSteps({
       direction,
       hideFieldsFromValidation,
       showFieldsForValidation,
-    ]
+    ],
   )
 
   // Handle step change from Chakra Steps
@@ -230,7 +232,7 @@ export function FormSteps({
       }
       goToStep(details.step)
     },
-    [linear, currentStep, goToStep]
+    [linear, currentStep, goToStep],
   )
 
   return (

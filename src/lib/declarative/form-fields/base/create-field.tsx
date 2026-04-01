@@ -5,6 +5,7 @@ import type { AnyFieldApi } from '@tanstack/react-form'
 import type { ReactElement, ReactNode } from 'react'
 import type { ZodConstraints } from '../../schema-constraints'
 import type { BaseFieldProps, FieldTooltipMeta } from '../../types'
+import { FieldErrorBoundary } from './field-error-boundary'
 import { FieldLabel } from './field-label'
 import { formatFieldErrors, hasFieldErrors } from './field-utils'
 import { useResolvedFieldProps } from './use-resolved-field-props'
@@ -199,26 +200,28 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
     const fieldState = useFieldState(componentProps as Omit<P, keyof BaseFieldProps>, resolved)
 
     return (
-      <form.Field name={fullPath}>
-        {(field: AnyFieldApi) => {
-          const errors = field.state.meta.errors
-          const isTouched = field.state.meta.isTouched
-          // Show errors only if field was touched (after blur or programmatic validation)
-          const hasError = isTouched && hasFieldErrors(errors)
-          const errorMessage = hasError ? formatFieldErrors(errors) : ''
+      <FieldErrorBoundary fieldName={fullPath}>
+        <form.Field name={fullPath}>
+          {(field: AnyFieldApi) => {
+            const errors = field.state.meta.errors
+            const isTouched = field.state.meta.isTouched
+            // Show errors only if field was touched (after blur or programmatic validation)
+            const hasError = isTouched && hasFieldErrors(errors)
+            const errorMessage = hasError ? formatFieldErrors(errors) : ''
 
-          return render({
-            field,
-            value: field.state.value as TValue,
-            fullPath,
-            resolved,
-            hasError,
-            errorMessage,
-            fieldState,
-            componentProps: componentProps as Omit<P, keyof BaseFieldProps>,
-          })
-        }}
-      </form.Field>
+            return render({
+              field,
+              value: field.state.value as TValue,
+              fullPath,
+              resolved,
+              hasError,
+              errorMessage,
+              fieldState,
+              componentProps: componentProps as Omit<P, keyof BaseFieldProps>,
+            })
+          }}
+        </form.Field>
+      </FieldErrorBoundary>
     )
   }
 

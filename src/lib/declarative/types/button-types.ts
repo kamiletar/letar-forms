@@ -6,16 +6,18 @@ import type { ReactNode } from 'react'
  * Props for submit button
  */
 export interface SubmitButtonProps {
-  /** Button text (default: "Submit") */
+  /** Содержимое кнопки (по умолчанию: "Submit") */
   children?: ReactNode
-  /** Whether button is disabled */
+  /** Текст при загрузке (заменяет children во время отправки) */
+  loadingText?: ReactNode
+  /** Отключить кнопку */
   disabled?: boolean
-  /** Color palette (e.g. 'brand', 'blue', 'red') */
+  /** Цветовая палитра (например 'brand', 'blue', 'red') */
   colorPalette?: string
-  /** Button size */
+  /** Размер кнопки */
   size?: 'xs' | 'sm' | 'md' | 'lg'
-  /** Button variant */
+  /** Вариант кнопки */
   variant?: 'solid' | 'outline' | 'ghost' | 'subtle'
-  /** Full width button */
+  /** Ширина кнопки (full width: "100%") */
   width?: string | number | Record<string, string | number>
 }

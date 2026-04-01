@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, type ReactNode, useContext } from 'react'
+import { createContext, type ReactNode, type RefObject, useContext } from 'react'
 
 /**
  * Information about a single step
@@ -59,6 +59,8 @@ export interface FormStepsContextValue {
   registerStep: (step: StepInfo) => void
   /** Unregister a step */
   unregisterStep: (index: number) => void
+  /** Shared mutable ref для атомарного назначения уникальных индексов шагам */
+  claimedIndicesRef: RefObject<Set<number>>
   /** Validate fields on current step before navigation */
   validateOnNext: boolean
   /** Linear mode (must complete steps in order) */

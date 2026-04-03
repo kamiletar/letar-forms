@@ -55,6 +55,11 @@ export default defineConfig({
     'idb-keyval',
     // i18n (optional)
     'next-intl',
+    // CAPTCHA (optional)
+    '@marsidev/react-turnstile',
+    // DataGrid (optional)
+    '@tanstack/react-table',
+    '@tanstack/react-virtual',
     // Next.js
     'next/navigation',
   ],

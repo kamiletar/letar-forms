@@ -1,9 +1,9 @@
 'use client'
 
 import { Combobox, createListCollection, Field, Portal, Spinner, useFilter } from '@chakra-ui/react'
-import { useMemo, type ReactElement } from 'react'
+import { type ReactElement, useMemo } from 'react'
 import type { BaseFieldProps, FieldSize } from '../../types'
-import { createField, FieldError, SelectionFieldLabel, useAsyncSearch, type AsyncQueryFn } from '../base'
+import { type AsyncQueryFn, createField, FieldError, SelectionFieldLabel, useAsyncSearch } from '../base'
 
 /**
  * Props for Form.Field.Autocomplete

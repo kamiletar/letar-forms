@@ -1,16 +1,19 @@
 'use client'
 
+import { CaptchaField } from '../captcha'
 import { FormOfflineIndicator, FormSyncStatus } from '../offline'
 import { DirtyGuard } from './dirty-guard'
 import { FormAutoFields } from './form-auto-fields'
 import { FormBuilder } from './form-builder'
 import { ButtonReset, ButtonSubmit } from './form-buttons'
 import { FormDebugValues } from './form-debug-values'
+import { FormDivider } from './form-divider'
 import { FormErrors } from './form-errors'
 import {
   FieldAddress,
   FieldAuto,
   FieldAutocomplete,
+  FieldCalculated,
   FieldCascadingSelect,
   FieldCheckbox,
   FieldCheckboxCard,
@@ -24,8 +27,12 @@ import {
   FieldDuration,
   FieldEditable,
   FieldFileUpload,
+  FieldHidden,
+  FieldImageChoice,
+  FieldLikert,
   FieldListbox,
   FieldMaskedInput,
+  FieldMatrixChoice,
   FieldNativeSelect,
   FieldNumber,
   FieldNumberInput,
@@ -42,27 +49,44 @@ import {
   FieldSchedule,
   FieldSegmentedGroup,
   FieldSelect,
+  FieldSignature,
   FieldSlider,
   FieldString,
   FieldSwitch,
   FieldTags,
   FieldTextarea,
   FieldTime,
+  FieldYesNo,
 } from './form-fields'
+import {
+  FieldBankAccount,
+  FieldBIK,
+  FieldCorrAccount,
+  FieldINN,
+  FieldKPP,
+  FieldOGRN,
+  FieldPassport,
+  FieldSNILS,
+} from './form-fields/document'
+import { CreditCardField } from './form-fields/specialized/credit-card'
+import { FieldDataGrid, FieldTableEditor } from './form-fields/table'
 import { FormFromSchema } from './form-from-schema'
 import { FormGroupDeclarative } from './form-group/form-group-declarative'
 import { ListButtonAdd, ListButtonRemove } from './form-group/form-group-list-buttons'
 import { FormGroupListDeclarative } from './form-group/form-group-list-declarative'
 import { DragHandle } from './form-group/form-group-list-sortable'
+import { FormInfoBlock } from './form-info-block'
 import { Form as FormRoot } from './form-root'
 import {
-  FormSteps as FormStepsRoot,
   FormStepsCompletedContent,
   FormStepsIndicator,
   FormStepsNavigation,
+  FormSteps as FormStepsRoot,
   FormStepsStep,
 } from './form-steps'
+import { FormWatch } from './form-watch'
 import { FormWhen } from './form-when'
+import { FormFromTemplate } from './templates'
 
 // List buttons compound component
 const ListButton = {
@@ -129,6 +153,31 @@ const FormField = {
   OTPInput: FieldOTPInput,
   ColorPicker: FieldColorPicker,
   FileUpload: FieldFileUpload,
+  Signature: FieldSignature,
+  // Поля для опросников
+  MatrixChoice: FieldMatrixChoice,
+  ImageChoice: FieldImageChoice,
+  Likert: FieldLikert,
+  YesNo: FieldYesNo,
+  // Утилитарные поля
+  Hidden: FieldHidden,
+  Calculated: FieldCalculated,
+  // Табличные редакторы
+  TableEditor: FieldTableEditor,
+  DataGrid: FieldDataGrid,
+  // Банковская карта
+  CreditCard: CreditCardField,
+}
+
+const FormDocument = {
+  INN: FieldINN,
+  KPP: FieldKPP,
+  OGRN: FieldOGRN,
+  BIK: FieldBIK,
+  BankAccount: FieldBankAccount,
+  CorrAccount: FieldCorrAccount,
+  SNILS: FieldSNILS,
+  Passport: FieldPassport,
 }
 
 const FormButton = {
@@ -184,15 +233,23 @@ export const Form = Object.assign(FormRoot, {
   Errors: FormErrors,
   DebugValues: FormDebugValues,
   DirtyGuard: DirtyGuard,
+  InfoBlock: FormInfoBlock,
+  Divider: FormDivider,
+  Watch: FormWatch,
   When: FormWhen,
   Steps: FormSteps,
   Builder: FormBuilder,
   // Schema-based generation
   AutoFields: FormAutoFields,
   FromSchema: FormFromSchema,
+  FromTemplate: FormFromTemplate,
   // Offline support
   OfflineIndicator: FormOfflineIndicator,
   SyncStatus: FormSyncStatus,
+  // Russian documents (ИНН, ОГРН, БИК, СНИЛС, паспорт)
+  Document: FormDocument,
+  // CAPTCHA (Turnstile / reCAPTCHA / hCaptcha)
+  Captcha: CaptchaField,
 }) as unknown as FormComponent
 
 // Export types
@@ -208,6 +265,7 @@ export type {
   DateTimePickerFieldProps,
   DeclarativeFormContextValue,
   DurationFieldProps,
+  FieldChangeApi,
   FieldTooltipMeta,
   FieldUIMeta,
   FormApiConfig,
@@ -225,6 +283,7 @@ export type {
   NumberFieldProps,
   NumberInputFieldProps,
   NumberInputFormatOptions,
+  OnFieldChangeMap,
   OTPInputFieldProps,
   PasswordFieldProps,
   PasswordRequirement,
@@ -256,23 +315,7 @@ export { ButtonReset, ButtonSubmit, type ResetButtonProps } from './form-buttons
 export { FormDebugValues, type FormDebugValuesProps } from './form-debug-values'
 export { FormErrors } from './form-errors'
 export {
-  type AutocompleteFieldProps,
-  type AutoFieldConfig,
-  type AutoFieldProps,
   camelCaseToLabel,
-  type CascadingSelectFieldProps,
-  type CascadingSelectLoadResult,
-  type CheckboxCardFieldProps,
-  type CheckboxCardOption,
-  type ColorPickerFieldProps,
-  type ComboboxFieldProps,
-  type ComboboxOption,
-  type DateRangeFieldProps,
-  type DateRangePreset,
-  type DateRangeValue,
-  type DayOfWeek,
-  type DaySchedule,
-  type EditableFieldProps,
   FieldAddress,
   FieldAuto,
   FieldAutocomplete,
@@ -307,12 +350,31 @@ export {
   FieldSchedule,
   FieldSegmentedGroup,
   FieldSelect,
+  FieldSignature,
   FieldSlider,
   FieldString,
   FieldSwitch,
   FieldTags,
   FieldTextarea,
   FieldTime,
+  useDeclarativeField,
+  type AutocompleteFieldProps,
+  type AutoFieldConfig,
+  type AutoFieldProps,
+  type CalculatedFieldProps,
+  type CascadingSelectFieldProps,
+  type CascadingSelectLoadResult,
+  type CheckboxCardFieldProps,
+  type CheckboxCardOption,
+  type ColorPickerFieldProps,
+  type ComboboxFieldProps,
+  type ComboboxOption,
+  type DateRangeFieldProps,
+  type DateRangePreset,
+  type DateRangeValue,
+  type DayOfWeek,
+  type DaySchedule,
+  type EditableFieldProps,
   type FileUploadFieldProps,
   type ListboxFieldProps,
   type ListboxOption,
@@ -330,12 +392,12 @@ export {
   type SegmentedGroupOption,
   type SelectFieldProps,
   type SelectOption,
+  type SignatureFieldProps,
   type SliderFieldProps,
   type SliderMark,
   type TagsFieldProps,
   type TimeSlot,
   type ToolbarButton,
-  useDeclarativeField,
   type WeeklySchedule,
 } from './form-fields'
 export { FormGroupDeclarative } from './form-group/form-group-declarative'
@@ -358,34 +420,47 @@ export { createLazyComponent, createLazyComponents, type LazyComponentImport } f
 export { useFormApi } from './use-form-api'
 
 // Persistence hook and types
-export { type FormPersistenceConfig, type FormPersistenceResult, useFormPersistence } from './form-persistence'
+export { useFormPersistence, type FormPersistenceConfig, type FormPersistenceResult } from './form-persistence'
 
 // DirtyGuard component
 export { DirtyGuard, type DirtyGuardProps } from './dirty-guard'
+
+// Утилитарные компоненты формы
+export { FormDivider, type FormDividerProps } from './form-divider'
+export { FormInfoBlock, type FormInfoBlockProps } from './form-info-block'
+
+// Hidden field
+export { FieldHidden, type HiddenFieldProps } from './form-fields'
+
+// Calculated field
+export { FieldCalculated } from './form-fields'
+
+// Field change watcher
+export { FormWatch, type FormWatchProps } from './form-watch'
 
 // Conditional rendering
 export { FormWhen, type FormWhenProps } from './form-when'
 
 // Multi-step forms
 export {
-  FormSteps as FormStepsRoot,
   FormStepsCompletedContent,
-  type FormStepsCompletedContentProps,
   FormStepsContext,
-  type FormStepsContextValue,
   FormStepsIndicator,
-  type FormStepsIndicatorProps,
   FormStepsNavigation,
+  FormSteps as FormStepsRoot,
+  FormStepsStep,
+  useFormStepsContext,
+  type FormStepsCompletedContentProps,
+  type FormStepsContextValue,
+  type FormStepsIndicatorProps,
   type FormStepsNavigationProps,
   type FormStepsProps,
-  FormStepsStep,
   type FormStepsStepProps,
   type StepInfo,
-  useFormStepsContext,
 } from './form-steps'
 
 // Field actions hook
-export { type FieldActionsResult, useFieldActions } from './use-field-actions'
+export { useFieldActions, type FieldActionsResult } from './use-field-actions'
 
 // Field UI components
 export { FieldLabel, type FieldLabelProps } from './form-fields/base/field-label'
@@ -393,8 +468,8 @@ export { FieldTooltip, type FieldTooltipProps } from './form-fields/base/field-t
 
 // Form Builder (JSON-based form generation)
 export {
-  type FieldConfig,
   FormBuilder,
+  type FieldConfig,
   type FormBuilderConfig,
   type FormBuilderProps,
   type FormBuilderSection,
@@ -417,20 +492,20 @@ export { useFieldConstraints, type UseFieldConstraintsResult } from './use-field
 export { generateConstraintHint } from './constraint-hints'
 
 // Schema traversal (for form generation from Zod schema)
-export { filterFields, getFieldPaths, type SchemaFieldInfo, traverseSchema } from './schema-traversal'
+export { filterFields, getFieldPaths, traverseSchema, type SchemaFieldInfo } from './schema-traversal'
 
 // Field type mapper (for mapping field types to components)
 export {
-  type FieldRenderProps,
-  type RelationFieldConfig,
   renderFieldByType,
   renderSchemaField,
   resolveFieldType,
   SchemaFieldWithRelations,
+  type FieldRenderProps,
+  type RelationFieldConfig,
 } from './field-type-mapper'
 
 // Auto-generated fields from schema
-export { type AutoFieldsProps, FormAutoFields } from './form-auto-fields'
+export { FormAutoFields, type AutoFieldsProps } from './form-auto-fields'
 
 // Complete form from schema
 export { FormFromSchema, type FormFromSchemaProps } from './form-from-schema'
@@ -439,7 +514,7 @@ export { FormFromSchema, type FormFromSchemaProps } from './form-from-schema'
 export type { FieldComponentType } from './types/meta-types'
 
 // withUIMeta - enrich Zod schemas with UI metadata (ZenStack integration)
-export { type DeepUIMetaConfig, type UIMetaConfig, withUIMeta, withUIMetaDeep } from './with-ui-meta'
+export { withUIMeta, withUIMetaDeep, type DeepUIMetaConfig, type UIMetaConfig } from './with-ui-meta'
 
 // Common meta helpers (for use with withUIMeta)
 export {
@@ -449,37 +524,95 @@ export {
   enumMeta,
   numberMeta,
   relationMeta,
-  type SelectionFieldType,
   textMeta,
+  type SelectionFieldType,
 } from './common-meta'
 
 // Relation field provider (auto-loading relation options)
 export {
-  type QueryHookResult,
-  type RelationConfig,
-  type RelationFieldContextValue,
   RelationFieldProvider,
-  type RelationOption,
-  type RelationState,
   useRelationFieldContext,
   useRelationOptions,
   withRelations,
+  type QueryHookResult,
+  type RelationConfig,
+  type RelationFieldContextValue,
+  type RelationOption,
+  type RelationState,
 } from './relation-field-provider'
 
 // Async search hook (for Combobox, Autocomplete)
 export {
+  useAsyncSearch,
+  useDebounce,
   type AsyncQueryFn,
   type AsyncQueryResult,
-  useAsyncSearch,
   type UseAsyncSearchOptions,
   type UseAsyncSearchResult,
-  useDebounce,
 } from './form-fields/base'
 
 // Address providers (pluggable geocoding)
 export {
+  createDaDataProvider,
   type AddressProvider,
   type AddressSuggestion,
-  createDaDataProvider,
   type SuggestionOptions,
 } from './form-fields/specialized/providers'
+
+// Security utilities
+export {
+  HoneypotField,
+  parseFileSize,
+  processFileWithSecurity,
+  sanitizeFileName,
+  useHoneypotCheck,
+  useRateLimit,
+  validateMimeType,
+} from './security'
+export type { FileSecurityConfig, FileSecurityResult, RateLimitConfig, RateLimitState } from './security'
+
+// TableEditor & DataGrid
+export { FieldDataGrid, FieldTableEditor, TableEditorContext, useTableEditorContext } from './form-fields/table'
+export type {
+  CellCoord,
+  CellFieldType,
+  DataGridColumnDef,
+  DataGridFieldProps,
+  ResolvedColumn,
+  TableColumnDef,
+  TableEditorContextValue,
+  TableEditorFieldProps,
+  TableFooterDef,
+  TableNavigationState,
+} from './form-fields/table'
+
+// Conversational Mode (Typeform-стиль)
+export {
+  ConversationalMode,
+  useConversationalState,
+  type ConversationalModeProps,
+  type ConversationalState,
+} from './conversational'
+
+// Autosave (серверное автосохранение)
+export { useFormAutosave } from './form-autosave'
+export type { AutosaveStatus, FormAutosaveConfig, UseFormAutosaveResult } from './form-autosave'
+export { AutosaveIndicator, type AutosaveIndicatorProps } from './form-autosave-indicator'
+
+// Form Templates (готовые шаблоны форм)
+export { FormFromTemplate, templates } from './templates'
+export type { FormFromTemplateProps, FormTemplate } from './templates'
+
+// Russian document fields (Form.Document.*)
+export {
+  createDocumentField,
+  FieldBankAccount,
+  FieldBIK,
+  FieldCorrAccount,
+  FieldINN,
+  FieldKPP,
+  FieldOGRN,
+  FieldPassport,
+  FieldSNILS,
+} from './form-fields/document'
+export type { DocumentFieldConfig, DocumentFieldProps } from './form-fields/document'

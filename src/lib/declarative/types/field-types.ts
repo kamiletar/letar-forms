@@ -23,6 +23,12 @@ export interface BaseFieldProps {
   readOnly?: boolean
   /** Tooltip for hint next to label (overrides value from schema) */
   tooltip?: FieldTooltipMeta
+  /** Async-функция валидации (серверная проверка уникальности и т.д.) */
+  asyncValidate?: (value: unknown) => Promise<string | undefined>
+  /** Задержка debounce для async-валидации (мс, по умолчанию 500) */
+  asyncDebounce?: number
+  /** Триггер async-валидации: 'onBlur' (по умолчанию) или 'onChange' */
+  asyncTrigger?: 'onBlur' | 'onChange'
 }
 
 // ============================================================================

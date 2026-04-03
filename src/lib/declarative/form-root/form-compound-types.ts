@@ -1,17 +1,24 @@
 'use client'
 
 import type { ReactElement, ReactNode } from 'react'
+import type { CaptchaFieldProps } from '../../captcha/types'
 import type { OfflineIndicatorProps, SyncStatusProps } from '../../offline'
 import type { AutoFieldsProps } from '../form-auto-fields'
+import type { FormDividerProps } from '../form-divider'
 import type {
   AutocompleteFieldProps,
+  CalculatedFieldProps,
   CheckboxCardFieldProps,
   ColorPickerFieldProps,
   ComboboxFieldProps,
   DateRangeFieldProps,
   EditableFieldProps,
   FileUploadFieldProps,
+  HiddenFieldProps,
+  ImageChoiceFieldProps,
+  LikertFieldProps,
   ListboxFieldProps,
+  MatrixChoiceFieldProps,
   NativeSelectFieldProps,
   PinInputFieldProps,
   RadioCardFieldProps,
@@ -23,8 +30,12 @@ import type {
   SelectFieldProps,
   SliderFieldProps,
   TagsFieldProps,
+  YesNoFieldProps,
 } from '../form-fields'
+import type { CreditCardFieldProps } from '../form-fields/specialized/credit-card'
+import type { DataGridFieldProps, TableEditorFieldProps } from '../form-fields/table'
 import type { FormFromSchemaProps } from '../form-from-schema'
+import type { FormInfoBlockProps } from '../form-info-block'
 import type {
   FormStepsCompletedContentProps,
   FormStepsIndicatorProps,
@@ -32,6 +43,7 @@ import type {
   FormStepsProps,
   FormStepsStepProps,
 } from '../form-steps'
+import type { FormWatchProps } from '../form-watch'
 import type {
   CheckboxFieldProps,
   DateFieldProps,
@@ -154,6 +166,23 @@ export interface FormFieldComponents {
   Address: (props: { name?: string; label?: string; provider?: string; apiKey?: string }) => ReactElement
   City: (props: { name?: string; label?: string }) => ReactElement
   Auto: (props: { name: string; label?: string }) => ReactElement
+
+  // Утилитарные
+  Hidden: (props: HiddenFieldProps) => ReactElement | null
+  Calculated: (props: CalculatedFieldProps) => ReactElement | null
+
+  // Поля для опросников
+  MatrixChoice: (props: MatrixChoiceFieldProps) => ReactElement
+  ImageChoice: (props: ImageChoiceFieldProps) => ReactElement
+  Likert: (props: LikertFieldProps) => ReactElement
+  YesNo: (props: YesNoFieldProps) => ReactElement
+
+  // Табличные редакторы
+  TableEditor: (props: TableEditorFieldProps) => ReactElement
+  DataGrid: (props: DataGridFieldProps) => ReactElement
+
+  // Банковская карта
+  CreditCard: (props: CreditCardFieldProps) => ReactElement
 }
 
 /**
@@ -206,6 +235,15 @@ export interface FormComponent {
   /** Защита от потери несохранённых данных */
   DirtyGuard: (props: { message?: string; enabled?: boolean; onBlock?: () => boolean | void }) => ReactElement | null
 
+  /** Информационный блок (info/warning/error/success/tip) */
+  InfoBlock: (props: FormInfoBlockProps) => ReactElement
+
+  /** Разделитель секций формы с опциональной меткой */
+  Divider: (props: FormDividerProps) => ReactElement
+
+  /** Отслеживание изменений поля с вызовом callback */
+  Watch: (props: FormWatchProps) => ReactElement | null
+
   /** Условный рендеринг based on значения поля */
   When: <TValue = unknown>(props: {
     field: string
@@ -235,4 +273,17 @@ export interface FormComponent {
 
   /** Полностью автоматическая form from Zod schema */
   FromSchema: <TData extends object>(props: FormFromSchemaProps<TData>) => ReactElement
+
+  /** CAPTCHA виджет (Turnstile / reCAPTCHA / hCaptcha) */
+  Captcha: (props: CaptchaFieldProps) => ReactElement | null
+
+  /** Форма из готового шаблона */
+  FromTemplate: <TData extends Record<string, unknown>>(props: {
+    template: { schema: unknown; defaultValues: TData; name: string }
+    onSubmit: (data: TData) => void | Promise<void>
+    initialValue?: Partial<TData>
+    override?: { exclude?: string[]; fields?: Record<string, { label?: string; placeholder?: string }> }
+    submitLabel?: string
+    debug?: boolean
+  }) => ReactElement
 }

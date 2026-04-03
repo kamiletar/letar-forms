@@ -2,7 +2,7 @@
 
 import { Box, Button, Field, HStack, Input, Stack, Text } from '@chakra-ui/react'
 import type { AnyFieldApi } from '@tanstack/react-form'
-import { memo, useCallback, useMemo, type ReactElement, type ReactNode } from 'react'
+import { memo, type ReactElement, type ReactNode, useCallback, useMemo } from 'react'
 import type { BaseFieldProps, FieldTooltipMeta } from '../../types'
 import { FieldError, FieldLabel, getFieldErrors, useResolvedFieldProps } from '../base'
 

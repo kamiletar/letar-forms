@@ -7,9 +7,9 @@ import {
   createField,
   FieldError,
   getOptionLabel,
+  type GroupedOptionsResult,
   SelectionFieldLabel,
   useGroupedOptions,
-  type GroupedOptionsResult,
 } from '../base'
 
 /**

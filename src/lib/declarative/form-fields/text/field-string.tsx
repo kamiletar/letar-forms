@@ -56,7 +56,7 @@ function getInputModeFromType(type: string): StringFieldProps['inputMode'] {
 
 export const FieldString = createField<StringFieldProps, string>({
   displayName: 'FieldString',
-  render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
+  render: ({ field, fullPath, resolved, hasError, errorMessage, isValidating, componentProps }): ReactElement => {
     const { constraints } = resolved
 
     // Props take priority over constraints
@@ -68,7 +68,13 @@ export const FieldString = createField<StringFieldProps, string>({
     const inputMode = componentProps.inputMode ?? getInputModeFromType(type)
 
     return (
-      <FieldWrapper resolved={resolved} hasError={hasError} errorMessage={errorMessage} fullPath={fullPath}>
+      <FieldWrapper
+        resolved={resolved}
+        hasError={hasError}
+        errorMessage={errorMessage}
+        isValidating={isValidating}
+        fullPath={fullPath}
+      >
         <Input
           type={type}
           inputMode={inputMode}
@@ -79,7 +85,7 @@ export const FieldString = createField<StringFieldProps, string>({
           maxLength={maxLength}
           minLength={minLength}
           pattern={pattern}
-          autoComplete={componentProps.autoComplete}
+          autoComplete={componentProps.autoComplete ?? resolved.autocomplete}
           data-field-name={fullPath}
         />
       </FieldWrapper>

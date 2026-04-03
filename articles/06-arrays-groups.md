@@ -146,14 +146,14 @@ interface Order {
 {
   /* Вертикальный список (по умолчанию) */
 }
-;<Form.Group.List name="steps" sortable direction="vertical">
+<Form.Group.List name="steps" sortable direction="vertical">
   ...
 </Form.Group.List>
 
 {
   /* Горизонтальный (например, карточки) */
 }
-;<Form.Group.List name="slides" sortable direction="horizontal">
+<Form.Group.List name="slides" sortable direction="horizontal">
   ...
 </Form.Group.List>
 ```
@@ -223,7 +223,7 @@ const OrderSchema = z.object({
         product: z.string().min(1, 'Выберите товар'),
         quantity: z.number().min(1, 'Минимум 1'),
         price: z.number().min(0),
-      })
+      }),
     )
     .min(1, 'Добавьте хотя бы один товар') // Валидация длины массива
     .max(20, 'Максимум 20 позиций'),
@@ -301,6 +301,42 @@ function OrderForm({ products }) {
 2. **Неограниченная глубина** — массивы в объектах в массивах
 3. **Drag & drop** — одним пропом `sortable`
 4. **Валидация** — и на элементах, и на длине массива
+
+---
+
+## Альтернатива: TableEditor для табличных данных
+
+Если массив — это таблица (товары в заказе, строки сметы), `Form.Group.List` с ручной вёрсткой избыточен. `Form.Field.TableEditor` — готовое решение:
+
+```tsx
+<Form.Field.TableEditor
+  name="items"
+  columns={[
+    { name: 'product', width: '40%' },
+    { name: 'qty', width: '15%', align: 'right' },
+    { name: 'price', width: '15%', align: 'right' },
+    { name: 'total', computed: (row) => row.qty * row.price, label: 'Итого' },
+  ]}
+  addLabel="Добавить товар"
+  sortable
+  footer={[{ column: 'total', aggregate: 'sum', label: 'Итого:' }]}
+/>
+```
+
+Что даёт `TableEditor` сверх `Form.Group.List`:
+
+| Возможность           | Group.List | TableEditor               |
+| --------------------- | ---------- | ------------------------- |
+| Inline-редактирование | Вручную    | Из коробки                |
+| Computed-колонки      | Вручную    | Из коробки                |
+| Footer-агрегации      | Нет        | SUM, AVG, COUNT, MIN, MAX |
+| DnD сортировка        | `sortable` | `sortable`                |
+| Copy-paste из Excel   | Нет        | Из коробки                |
+| Мобильный вид         | Вручную    | Авто (карточки)           |
+
+**Правило:** если данные — линейная таблица (строки × колонки) → `TableEditor`. Если произвольная вёрстка (карточки, аккордеоны) → `Form.Group.List`.
+
+Для продвинутых сценариев (сортировка, фильтрация, виртуализация 1000+ строк) есть `Form.Field.DataGrid` — подробнее в [статье 4: каталог полей](04-40-fields.md).
 
 ---
 

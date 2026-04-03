@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useOfflineForm, type FormOfflineConfig } from '../../offline'
-import { useFormPersistence, type FormPersistenceConfig } from '../form-persistence'
+import { type FormOfflineConfig, useOfflineForm } from '../../offline'
+import { type FormPersistenceConfig, useFormPersistence } from '../form-persistence'
 import type { FormOfflineState } from '../types'
 
 /**

@@ -77,7 +77,7 @@ export const FieldPassword = createField<PasswordFieldProps, string, PasswordFie
           onBlur={field.handleBlur}
           placeholder={resolved.placeholder}
           maxLength={componentProps.maxLength}
-          autoComplete={componentProps.autoComplete}
+          autoComplete={componentProps.autoComplete ?? resolved.autocomplete}
           data-field-name={fullPath}
         />
       </InputGroup>

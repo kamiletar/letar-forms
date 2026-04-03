@@ -239,16 +239,16 @@ import { FormI18nProvider, useFormI18n } from '@letar/forms/i18n'
 
 ## Peer Dependencies
 
-| Package                | Version   | Required |
-| ---------------------- | --------- | -------- |
-| `react`                | >= 18.0.0 | Yes      |
-| `@tanstack/react-form` | >= 1.0.0  | Yes      |
-| `@chakra-ui/react`     | >= 3.0.0  | Yes      |
-| `framer-motion`        | >= 10.0.0 | Yes      |
-| `zod`                  | >= 3.24.0 | Yes      |
+| Package                | Version   | Required                         |
+| ---------------------- | --------- | -------------------------------- |
+| `react`                | >= 18.0.0 | Yes                              |
+| `@tanstack/react-form` | >= 1.0.0  | Yes                              |
+| `@chakra-ui/react`     | >= 3.0.0  | Yes                              |
+| `framer-motion`        | >= 10.0.0 | Yes                              |
+| `zod`                  | >= 3.24.0 | Yes                              |
 | `@dnd-kit/*`           | >= 6.0.0  | Optional (drag & drop in arrays) |
-| `use-mask-input`       | >= 3.0.0  | Optional (Phone, MaskedInput) |
-| `@uiw/react-json-view` | >= 2.0.0 | Optional (Form.DebugValues) |
+| `use-mask-input`       | >= 3.0.0  | Optional (Phone, MaskedInput)    |
+| `@uiw/react-json-view` | >= 2.0.0  | Optional (Form.DebugValues)      |
 
 ## Documentation
 

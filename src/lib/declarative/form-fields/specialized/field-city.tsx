@@ -5,16 +5,13 @@ import { type ReactElement, useCallback, useEffect, useRef, useState } from 'rea
 import { useDeclarativeFormOptional } from '../../form-context'
 import type { CityFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel, useDebounce } from '../base'
-import { createDaDataProvider } from './providers'
 import type { AddressProvider, AddressSuggestion } from './providers'
+import { createDaDataProvider } from './providers'
 
 /**
  * Resolve address provider from props, context, token, or env fallback.
  */
-function useCityProvider(
-  propProvider?: AddressProvider,
-  token?: string,
-): AddressProvider | null {
+function useCityProvider(propProvider?: AddressProvider, token?: string): AddressProvider | null {
   const formContext = useDeclarativeFormOptional()
 
   // Priority: prop > createForm context > token > env
@@ -111,7 +108,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
           setIsLoading(false)
         }
       },
-      [provider, minChars],
+      [provider, minChars]
     )
 
     // Load on debounced query change
@@ -188,9 +185,7 @@ export const FieldCity = createField<CityFieldProps, string, CityFieldState>({
     // Handler for city selection
     const handleSelect = (suggestion: AddressSuggestion) => {
       // Extract city name from provider data, fallback to suggestion value
-      const cityName = (suggestion.data?.city as string)
-        || (suggestion.data?.settlement as string)
-        || suggestion.value
+      const cityName = (suggestion.data?.city as string) || (suggestion.data?.settlement as string) || suggestion.value
       justSelectedRef.current = true
       setInputValue(cityName)
       setIsOpen(false)

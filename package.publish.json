@@ -1,7 +1,7 @@
 {
   "name": "@letar/forms",
-  "version": "1.1.0",
-  "description": "Declarative form components for React with 40+ field types, powered by TanStack Form and Chakra UI v3",
+  "version": "1.2.0",
+  "description": "Declarative form components for React with 50+ field types, built-in analytics, server error mapping, undo/redo — powered by TanStack Form and Chakra UI v3",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -42,6 +42,18 @@
       "types": "./fields/specialized.d.ts",
       "import": "./fields/specialized.js"
     },
+    "./server-errors": {
+      "types": "./server-errors.d.ts",
+      "import": "./server-errors.js"
+    },
+    "./analytics": {
+      "types": "./analytics.d.ts",
+      "import": "./analytics.js"
+    },
+    "./validators/ru": {
+      "types": "./validators/ru.d.ts",
+      "import": "./validators/ru.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./index.js",
@@ -68,7 +80,12 @@
     "validation",
     "multi-step",
     "offline",
-    "i18n"
+    "i18n",
+    "analytics",
+    "undo-redo",
+    "server-errors",
+    "prisma",
+    "zenstack"
   ],
   "homepage": "https://forms.letar.best",
   "repository": {

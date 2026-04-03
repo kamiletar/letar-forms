@@ -12,6 +12,10 @@ export default defineConfig({
     'fields/selection': 'src/lib/declarative/form-fields/selection/index.ts',
     'fields/boolean': 'src/lib/declarative/form-fields/boolean/index.ts',
     'fields/specialized': 'src/lib/declarative/form-fields/specialized/index.ts',
+    // DX фичи (v0.80.0)
+    'server-errors': 'src/lib/server-errors/index.ts',
+    analytics: 'src/lib/analytics/index.ts',
+    'validators/ru': 'src/lib/validators/ru/index.ts',
   },
   format: ['esm'],
   dts: false,

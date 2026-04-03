@@ -48,7 +48,15 @@ export {
 } from './selection/field-cascading-select'
 export { type CheckboxCardFieldProps, FieldCheckboxCard } from './selection/field-checkbox-card'
 export { type ComboboxFieldProps, FieldCombobox } from './selection/field-combobox'
+export { FieldImageChoice, type ImageChoiceFieldProps, type ImageChoiceOption } from './selection/field-image-choice'
+export { FieldLikert, type LikertFieldProps } from './selection/field-likert'
 export { FieldListbox, type ListboxFieldProps } from './selection/field-listbox'
+export {
+  FieldMatrixChoice,
+  type MatrixChoiceFieldProps,
+  type MatrixColumn,
+  type MatrixRow,
+} from './selection/field-matrix-choice'
 export {
   FieldNativeSelect,
   type NativeSelectFieldProps,
@@ -59,6 +67,7 @@ export { FieldRadioGroup, type RadioGroupFieldProps } from './selection/field-ra
 export { FieldSegmentedGroup, type SegmentedGroupFieldProps } from './selection/field-segmented-group'
 export { FieldSelect, type SelectFieldProps } from './selection/field-select'
 export { FieldTags, type TagsFieldProps } from './selection/field-tags'
+export { FieldYesNo, type YesNoFieldProps } from './selection/field-yes-no'
 export { FieldAddress } from './specialized/field-address'
 export { FieldCity } from './specialized/field-city'
 export { type ColorPickerFieldProps, FieldColorPicker } from './specialized/field-color-picker'
@@ -66,6 +75,7 @@ export { FieldFileUpload, type FileUploadFieldProps } from './specialized/field-
 export { FieldOTPInput } from './specialized/field-otp-input'
 export { FieldPhone } from './specialized/field-phone'
 export { FieldPinInput, type PinInputFieldProps } from './specialized/field-pin-input'
+export { FieldSignature, type SignatureFieldProps } from './specialized/field-signature'
 export { type EditableFieldProps, FieldEditable } from './text/field-editable'
 export { FieldMaskedInput } from './text/field-masked-input'
 export { FieldPassword } from './text/field-password'
@@ -79,6 +89,8 @@ export {
   type ToolbarButton,
   type ToolbarButtonConfig,
 } from './text/toolbar-config'
+export { type CalculatedFieldProps, FieldCalculated } from './utility/field-calculated'
+export { FieldHidden, type HiddenFieldProps } from './utility/field-hidden'
 
 // Deprecated type aliases - for backward compatibility
 // @deprecated Use base types: BaseOption, GroupableOption, RichOption

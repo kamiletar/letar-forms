@@ -13,8 +13,10 @@ import {
   Text,
   useFileUploadContext,
 } from '@chakra-ui/react'
-import type { ReactElement, ReactNode } from 'react'
+import { type ReactElement, type ReactNode, useState } from 'react'
 import { LuFile, LuUpload, LuX } from 'react-icons/lu'
+import type { FileSecurityConfig } from '../../security/file-security'
+import { processFileWithSecurity } from '../../security/file-security'
 import type { FieldTooltipMeta } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'
 
@@ -63,6 +65,14 @@ export interface FileUploadFieldProps {
   dropzoneDescription?: ReactNode
   /** Button text (for 'button' variant) */
   buttonText?: ReactNode
+  /**
+   * Security configuration for file validation.
+   * - maxSize: max file size ('10MB', '500KB')
+   * - allowedTypes: MIME types checked via magic bytes
+   * - stripMetadata: remove EXIF from images
+   * - renameFile: replace filename with UUID
+   */
+  security?: FileSecurityConfig
 }
 
 /**
@@ -194,7 +204,12 @@ function FileList({ showSize, clearable }: { showSize?: boolean; clearable?: boo
 export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
   displayName: 'FieldFileUpload',
 
-  render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps }): ReactElement => {
+  useFieldState: (componentProps) => {
+    const [securityError, setSecurityError] = useState<string | null>(null)
+    return { securityError, setSecurityError }
+  },
+
+  render: ({ field, fullPath, resolved, hasError, errorMessage, componentProps, fieldState }): ReactElement => {
     const {
       accept,
       maxFileSize,
@@ -205,7 +220,9 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
       dropzoneLabel = 'Drag and drop files here',
       dropzoneDescription,
       buttonText = 'Upload file',
+      security,
     } = componentProps
+    const { securityError, setSecurityError } = fieldState
 
     const placeholder = resolved.placeholder ?? 'Select file(s)'
 
@@ -228,8 +245,27 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
           maxFileSize={maxFileSize}
           accept={normalizedAccept}
           disabled={resolved.disabled}
-          onFileChange={(details) => {
-            field.handleChange(details.acceptedFiles)
+          onFileChange={async (details) => {
+            if (!security || details.acceptedFiles.length === 0) {
+              setSecurityError(null)
+              field.handleChange(details.acceptedFiles)
+              return
+            }
+
+            // Применяем security-проверки к каждому файлу
+            const results = await Promise.all(details.acceptedFiles.map((f) => processFileWithSecurity(f, security)))
+
+            const rejected = results.filter((r) => !r.valid)
+            if (rejected.length > 0) {
+              setSecurityError(rejected.map((r) => r.reason).join('; '))
+              // Пропускаем только валидные файлы
+              const validFiles = results.filter((r) => r.valid).map((r) => r.file)
+              field.handleChange(validFiles.length > 0 ? validFiles : [])
+              return
+            }
+
+            setSecurityError(null)
+            field.handleChange(results.map((r) => r.file))
           }}
           data-field-name={fullPath}
         >
@@ -289,7 +325,11 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
           )}
         </FileUpload.Root>
 
-        <FieldError hasError={hasError} errorMessage={errorMessage} helperText={resolved.helperText} />
+        <FieldError
+          hasError={hasError || !!securityError}
+          errorMessage={securityError ?? errorMessage}
+          helperText={resolved.helperText}
+        />
       </Field.Root>
     )
   },

@@ -63,6 +63,15 @@ export type FieldComponentType =
   | 'colorPicker'
   | 'fileUpload'
   | 'maskedInput'
+  // Вычисляемые поля
+  | 'calculated'
+  // Поля для опросников
+  | 'matrixChoice'
+  | 'imageChoice'
+  | 'likert'
+  | 'yesNo'
+  // Табличный редактор
+  | 'tableEditor'
 
 /**
  * Option for select/enum fields with i18n support
@@ -113,4 +122,14 @@ export interface FieldUIMeta {
    * @example i18nKey: 'Product.name' -> translations in Product.name.title, Product.name.placeholder
    */
   i18nKey?: string
+  /**
+   * HTML autocomplete атрибут.
+   * Override автоматического определения по имени поля.
+   * Установите 'off' для отключения автозаполнения.
+   *
+   * @example autocomplete: 'street-address'
+   * @example autocomplete: 'off'
+   * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls
+   */
+  autocomplete?: string
 }

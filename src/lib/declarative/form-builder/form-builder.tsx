@@ -3,6 +3,7 @@
 import type { ReactElement, ReactNode } from 'react'
 import { ButtonSubmit } from '../form-buttons'
 import {
+  camelCaseToLabel,
   FieldAuto,
   FieldCheckbox,
   FieldCurrency,
@@ -18,7 +19,6 @@ import {
   FieldString,
   FieldSwitch,
   FieldTextarea,
-  camelCaseToLabel,
 } from '../form-fields'
 import { Form } from '../form-root'
 import type { FormMiddleware, ValidateOn } from '../types'

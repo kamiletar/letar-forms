@@ -296,6 +296,7 @@ export function FieldCascadingSelect<TParent = string, TValue = string>(
     readOnly: resolvedRest.readOnly,
     constraints: resolvedRest.constraints,
     options: resolvedRest.options,
+    autocomplete: resolvedRest.autocomplete,
   }
 
   // Build full path to parent field

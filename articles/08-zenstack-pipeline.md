@@ -129,7 +129,7 @@ export const ProductCreateFormSchema = z.object({
 
 ```tsx
 import { ProductCreateFormSchema } from '@/generated/form-schemas' // Автогенерация
-<Form.FromSchema
+;<Form.FromSchema
   schema={ProductCreateFormSchema}
   initialValue={{}}
   onSubmit={createProduct}
@@ -280,7 +280,7 @@ categoryId: z.string().meta({
 ```tsx
 import { RelationFieldProvider, useRelationOptions } from '@letar/forms'
 
-<RelationFieldProvider
+;<RelationFieldProvider
   model="Category"
   labelField="name"
   queryFn={() => db.category.findMany({ select: { id: true, name: true } })}

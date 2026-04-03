@@ -95,7 +95,7 @@ function ContactForm() {
 - **Документация:** [forms.letar.best](https://forms.letar.best)
 - **16 интерактивных примеров:** [forms-example.letar.best](https://forms-example.letar.best)
 - **Исходный код примеров:** [GitHub](https://github.com/kamiletar/letar-forms-example)
-- **MCP для AI:** `npx @letar/form-mcp` — AI-ассистент узнает про все 40 полей
+- **MCP для AI:** `npx @letar/form-mcp` — AI-ассистент узнает про все 50+ полей
 
 Хотите понять, _зачем_ это нужно и какие проблемы решает? Читайте [статью 1: Формы в React — почему всё ещё больно](01-why-forms-hurt.md).
 
@@ -107,7 +107,7 @@ function ContactForm() {
 1. [Формы в React — почему всё ещё больно](01-why-forms-hurt.md)
 2. [Zod `.meta()` — одна схема для валидации и UI](02-zod-meta-single-source.md)
 3. [Compound Components vs конфиг-объекты](03-compound-components.md)
-4. [40 полей: от String до Schedule](04-40-fields.md)
+4. [50+ полей: от String до CreditCard](04-40-fields.md)
 5. [Мультистеп формы и условный рендеринг](05-multistep-conditional.md)
 6. [Массивы и вложенные объекты](06-arrays-groups.md)
 7. [FromSchema: генерируем форму из одной строки](07-from-schema.md)

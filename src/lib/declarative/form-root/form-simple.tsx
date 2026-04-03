@@ -6,8 +6,12 @@ import type { FormOfflineConfig } from '../../offline'
 import { DeclarativeFormContext } from '../form-context'
 import { FormDebugValues } from '../form-debug-values'
 import type { FormPersistenceConfig } from '../form-persistence'
-import type { DeclarativeFormContextValue, FormMiddleware, ValidateOn } from '../types'
+import { HoneypotField, useHoneypotCheck } from '../security/honeypot'
+import type { RateLimitConfig } from '../security/rate-limiter'
+import { useRateLimit } from '../security/rate-limiter'
+import type { DeclarativeFormContextValue, FormMiddleware, OnFieldChangeMap, ValidateOn } from '../types'
 import { buildValidators } from './form-validators'
+import { useFieldChangeListeners } from './use-field-change-listeners'
 import { useFormFeatures } from './use-form-features'
 
 /**
@@ -37,6 +41,12 @@ export interface FormSimpleProps<TData extends object> {
   middleware?: FormMiddleware<TData>
   /** Address suggestion provider for Form.Field.Address and Form.Field.City */
   addressProvider?: import('../form-fields/specialized/providers').AddressProvider
+  /** Реактивные побочные эффекты при изменении полей */
+  onFieldChange?: OnFieldChangeMap
+  /** Honeypot-ловушка для ботов */
+  honeypot?: boolean
+  /** Клиентский rate limiting */
+  rateLimit?: RateLimitConfig
   /** Form content */
   children: ReactNode
 }
@@ -68,8 +78,17 @@ export function FormSimple<TData extends object>({
   debug,
   middleware,
   addressProvider,
+  onFieldChange,
+  honeypot,
+  rateLimit,
   children,
 }: FormSimpleProps<TData>): ReactElement {
+  // Honeypot — проверка бота при submit
+  const { isBot } = useHoneypotCheck(honeypot)
+
+  // Rate limiting — ограничение попыток submit
+  const rateLimitState = useRateLimit(rateLimit)
+
   // Use shared hook for persistence and offline
   const features = useFormFeatures<TData>({
     persistence,
@@ -84,6 +103,12 @@ export function FormSimple<TData extends object>({
     defaultValues: initialValue,
     validators: buildValidators(schema, validateOn),
     onSubmit: async ({ value, formApi }) => {
+      // Honeypot — блокировка ботов
+      if (isBot()) return
+
+      // Rate limiting — проверка лимита
+      if (rateLimitState && !rateLimitState.recordAttempt()) return
+
       let dataToSubmit = value as TData
 
       // Apply beforeSubmit middleware
@@ -116,6 +141,9 @@ export function FormSimple<TData extends object>({
     },
   })
 
+  // Подписка на изменения полей (onFieldChange)
+  useFieldChangeListeners(form, onFieldChange)
+
   // Subscribe to changes for persistence
   useEffect(() => {
     return features.subscribeToFormChanges(form)
@@ -124,9 +152,9 @@ export function FormSimple<TData extends object>({
   // Restore data from persistence
   useEffect(() => {
     if (
-      !features.isPersistenceEnabled
-      || !features.persistenceResult.shouldRestore
-      || !features.persistenceResult.savedData
+      !features.isPersistenceEnabled ||
+      !features.persistenceResult.shouldRestore ||
+      !features.persistenceResult.savedData
     ) {
       return
     }
@@ -149,7 +177,7 @@ export function FormSimple<TData extends object>({
       readOnly,
       addressProvider,
     }),
-    [form, schema, features.offlineState, disabled, readOnly, addressProvider],
+    [form, schema, features.offlineState, disabled, readOnly, addressProvider]
   )
 
   return (
@@ -163,6 +191,12 @@ export function FormSimple<TData extends object>({
           form.handleSubmit()
         }}
       >
+        {honeypot && <HoneypotField />}
+        {rateLimitState?.isBlocked && (
+          <div role="alert" style={{ color: 'var(--chakra-colors-fg-error, #e53e3e)', marginBottom: '1rem' }}>
+            Too many attempts. Try again in {rateLimitState.secondsLeft}s.
+          </div>
+        )}
         {children}
         {debug && <FormDebugValues showInProduction={debug === 'force'} />}
       </form>

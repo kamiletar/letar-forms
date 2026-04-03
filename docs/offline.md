@@ -36,9 +36,7 @@ import { Form } from '@lena/form-components'
 Индикатор статуса синхронизации очереди (можно использовать вне формы):
 
 ```tsx
-import { FormSyncStatus } from '@lena/form-components/offline'
-
-// В layout или header
+import { FormSyncStatus } from '@lena/form-components/offline' // В layout или header
 ;<FormSyncStatus
   showWhenEmpty={false} // Показывать когда очередь пуста
   syncingLabel="Синхронизация..." // Текст при синхронизации

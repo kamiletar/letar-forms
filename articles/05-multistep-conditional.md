@@ -139,28 +139,28 @@
 {
   /* Значение не равно */
 }
-;<Form.When field="role" isNot="guest">
+<Form.When field="role" isNot="guest">
   <Form.Field.String name="email" />
 </Form.When>
 
 {
   /* Значение из списка */
 }
-;<Form.When field="country" isOneOf={['RU', 'BY', 'KZ']}>
+<Form.When field="country" isOneOf={['RU', 'BY', 'KZ']}>
   <Form.Field.Phone name="phone" />
 </Form.When>
 
 {
   /* Кастомное условие */
 }
-;<Form.When field="age" condition={(age) => age >= 18}>
+<Form.When field="age" condition={(age) => age >= 18}>
   <Form.Field.Checkbox name="drivingLicense" />
 </Form.When>
 
 {
   /* Булево поле */
 }
-;<Form.When field="hasDiscount" is={true}>
+<Form.When field="hasDiscount" is={true}>
   <Form.Field.Percentage name="discountPercent" />
 </Form.When>
 ```
@@ -288,13 +288,48 @@ function RegistrationForm() {
 | `Form.Steps.Step`       | Один шаг (title, description, children)     |
 | `Form.Steps.Navigation` | Кнопки «Назад» / «Далее» / «Отправить»      |
 | `Form.When`             | Условный рендеринг по значению поля         |
+| `Form.Watch`            | Отслеживание изменений + побочные эффекты   |
+
+### Form.Watch — побочные эффекты между шагами
+
+`Form.Watch` — renderless-компонент для отслеживания изменений полей и автоматических побочных эффектов:
+
+```tsx
+<Form schema={Schema} initialValue={data} onSubmit={save}>
+  {/* Автогенерация slug при изменении title */}
+  <Form.Watch
+    field="title"
+    onChange={(value, { setFieldValue }) => {
+      setFieldValue('slug', transliterate(String(value)))
+    }}
+  />
+
+  <Form.Steps animated validateOnNext>
+    <Form.Steps.Step title="Основное">
+      <Form.Field.String name="title" />
+      <Form.Field.String name="slug" />
+    </Form.Steps.Step>
+    <Form.Steps.Step title="Детали">
+      <Form.Field.Textarea name="description" />
+    </Form.Steps.Step>
+    <Form.Steps.Navigation />
+  </Form.Steps>
+</Form>
+```
+
+`Form.Watch` не рендерит UI — он только подписывается на изменения поля и вызывает `onChange`. Это удобно для:
+
+- Автозаполнения зависимых полей (title → slug)
+- Пересчёта значений при изменении другого поля
+- Условной логики, которая не влияет на рендеринг
 
 Ключевые принципы:
 
 1. Валидация **по шагам** — пользователь не видит ошибок будущих полей
 2. When + Steps = **динамические шаги** — количество шагов зависит от ответов
-3. Данные **не теряются** при навигации назад
-4. Всё — **декларативно** в JSX, без императивного стейт-менеджмента
+3. Watch = **побочные эффекты** между полями и шагами
+4. Данные **не теряются** при навигации назад
+5. Всё — **декларативно** в JSX, без императивного стейт-менеджмента
 
 ---
 
@@ -309,4 +344,4 @@ function RegistrationForm() {
 
 ---
 
-_Это пятая статья из цикла «@letar/forms — от боли к декларативным формам». [Предыдущая: 40 полей](04-40-fields.md) | [Следующая: Массивы и группы](06-arrays-groups.md)._
+_Это пятая статья из цикла «@letar/forms — от боли к декларативным формам». [Предыдущая: 50+ полей](04-40-fields.md) | [Следующая: Массивы и группы](06-arrays-groups.md)._

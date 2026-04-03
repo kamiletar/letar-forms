@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, type Context, type Provider } from 'react'
+import { type Context, createContext, type Provider, useContext } from 'react'
 
 /**
  * Результат создания безопасного контекста.

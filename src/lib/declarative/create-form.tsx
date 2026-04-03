@@ -1,6 +1,9 @@
 'use client'
 
 import type { ComponentType, ReactElement, ReactNode } from 'react'
+import { CaptchaContext } from '../captcha/captcha-context'
+import { CaptchaField } from '../captcha/captcha-field'
+import type { CaptchaConfig, CaptchaFieldProps } from '../captcha/types'
 import type { AutoFieldsProps } from './form-auto-fields'
 import type { ResetButtonProps } from './form-buttons'
 import type {
@@ -11,7 +14,10 @@ import type {
   DateRangeFieldProps,
   EditableFieldProps,
   FileUploadFieldProps,
+  ImageChoiceFieldProps,
+  LikertFieldProps,
   ListboxFieldProps,
+  MatrixChoiceFieldProps,
   NativeSelectFieldProps,
   PinInputFieldProps,
   RadioCardFieldProps,
@@ -23,7 +29,10 @@ import type {
   SelectFieldProps,
   SliderFieldProps,
   TagsFieldProps,
+  YesNoFieldProps,
 } from './form-fields'
+import type { CreditCardFieldProps } from './form-fields/specialized/credit-card'
+import type { DataGridFieldProps, TableEditorFieldProps } from './form-fields/table'
 import type { FormFromSchemaProps } from './form-from-schema'
 import type {
   FormStepsIndicatorProps,
@@ -115,6 +124,25 @@ interface CreateFormOptions {
   lazyComboboxes?: Record<string, LazyComponentImport>
 
   /**
+   * Настройки CAPTCHA по умолчанию для всех форм приложения.
+   * Можно переопределить на уровне конкретной формы через пропсы <Form.Captcha>.
+   *
+   * @example
+   * ```tsx
+   * const AppForm = createForm({
+   *   captcha: {
+   *     provider: 'turnstile',
+   *     siteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
+   *     theme: 'auto',
+   *   },
+   * })
+   *
+   * // <AppForm.Captcha /> без пропсов использует настройки из createForm
+   * ```
+   */
+  captcha?: CaptchaConfig
+
+  /**
    * Lazy Listbox components — loaded only at render time
    *
    * @example
@@ -181,6 +209,13 @@ interface ExtendedFormField {
   FileUpload: (props: FileUploadFieldProps) => ReactElement
   RichText: (props: RichTextFieldProps) => ReactElement
   Tags: (props: TagsFieldProps) => ReactElement
+  MatrixChoice: (props: MatrixChoiceFieldProps) => ReactElement
+  ImageChoice: (props: ImageChoiceFieldProps) => ReactElement
+  Likert: (props: LikertFieldProps) => ReactElement
+  YesNo: (props: YesNoFieldProps) => ReactElement
+  TableEditor: (props: TableEditorFieldProps) => ReactElement
+  DataGrid: (props: DataGridFieldProps) => ReactElement
+  CreditCard: (props: CreditCardFieldProps) => ReactElement
   [key: string]: AnyComponent
 }
 
@@ -239,6 +274,7 @@ export interface ExtendedForm {
     fallback?: ReactNode
   }) => ReactNode
   Steps: ExtendedFormSteps
+  Captcha: (props: CaptchaFieldProps) => ReactElement | null
   AutoFields: (props: AutoFieldsProps) => ReactElement
   FromSchema: <TData extends object>(props: FormFromSchemaProps<TData>) => ReactElement
 }
@@ -281,6 +317,7 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
     lazyComboboxes = {},
     lazyListboxes = {},
     addressProvider,
+    captcha,
   } = options
 
   // Create lazy wrappers for components
@@ -315,13 +352,18 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
   }
 
   const ExtendedForm = Object.assign(
-    // Root component
+    // Root component — оборачивает в CaptchaContext если captcha задан
     function ExtendedFormRoot<TData extends object>(props: FormPropsWithApi<TData>) {
       // Inject addressProvider from createForm if not set on Form props
-      const mergedProps = addressProvider && !props.addressProvider
-        ? { ...props, addressProvider }
-        : props
-      return Form(mergedProps)
+      const mergedProps = addressProvider && !props.addressProvider ? { ...props, addressProvider } : props
+      const formElement = Form(mergedProps)
+
+      // Оборачиваем в CaptchaContext если captcha конфиг задан
+      if (captcha) {
+        return <CaptchaContext value={captcha}>{formElement}</CaptchaContext>
+      }
+
+      return formElement
     },
     {
       Group: Form.Group,
@@ -333,11 +375,12 @@ export function createForm(options: CreateFormOptions = {}): ExtendedForm {
       Errors: Form.Errors,
       DebugValues: Form.DebugValues,
       DirtyGuard: Form.DirtyGuard,
+      Captcha: CaptchaField,
       When: Form.When,
       Steps: Form.Steps,
       AutoFields: Form.AutoFields,
       FromSchema: Form.FromSchema,
-    },
+    }
   )
 
   return ExtendedForm as ExtendedForm

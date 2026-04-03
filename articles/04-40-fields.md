@@ -1,14 +1,14 @@
-# 40 полей: от String до Schedule
+# 50+ полей: от String до CreditCard
 
-> Четвёртая статья из цикла «@letar/forms — от боли к декларативным формам». Подробный обзор всех field-компонентов библиотеки — от базовых текстовых до экзотических вроде редактора недельного расписания.
+> Четвёртая статья из цикла «@letar/forms — от боли к декларативным формам». Подробный обзор всех field-компонентов библиотеки — от базовых текстовых до платёжных форм и опросников.
 
 ---
 
-## Зачем 40 полей?
+## Зачем 50+ полей?
 
-Когда мы начинали, думали: «хватит 10 — текст, число, чекбокс, селект, дата». Потом пришла задача на форму товара — понадобился `Currency`. Потом PWA для автошколы — нужен `Schedule` для расписания занятий. Потом e-commerce — `Rating`, `ColorPicker`, `FileUpload`.
+Когда мы начинали, думали: «хватит 10 — текст, число, чекбокс, селект, дата». Потом пришла задача на форму товара — понадобился `Currency`. Потом PWA для автошколы — нужен `Schedule` для расписания занятий. Потом e-commerce — `Rating`, `ColorPicker`, `FileUpload`. Потом платёжные формы — `CreditCard`, опросники — `MatrixChoice`, `Likert`.
 
-За два года продакшн-использования в 10+ приложениях набралось 40 компонентов. И каждый из них:
+За два года продакшн-использования в 10+ приложениях набралось 50+ компонентов. И каждый из них:
 
 - Читает метаданные из Zod `.meta()`
 - Автоматически показывает ошибки валидации
@@ -95,7 +95,7 @@
 
 `Schedule` — наша гордость. Визуальная сетка 7 дней недели, где можно задать рабочие часы для каждого дня. Используется в driving-school для расписания инструкторов.
 
-### Булевы поля (2)
+### Булевы поля (3)
 
 ```tsx
 // Чекбокс
@@ -103,6 +103,9 @@
 
 // Переключатель (toggle)
 <Form.Field.Switch name="isActive" label="Активен" />
+
+// Checkbox-карточки (multi-select карточками)
+<Form.Field.CheckboxCard name="features" options={featureOptions} />
 ```
 
 ### Поля выбора (10)
@@ -143,7 +146,7 @@
 
 `RadioCard` — отличный UX для выбора тарифа или плана. Каждая опция — карточка с иконкой, заголовком и описанием.
 
-### Специальные поля (8)
+### Специальные поля (7)
 
 ```tsx
 // Телефон с маской и флагом страны
@@ -166,10 +169,123 @@
 
 // Загрузка файлов (drag & drop + preview)
 <Form.Field.FileUpload name="avatar" accept="image/*" maxSize={5_000_000} />
-
-// Checkbox-карточки (multi-select карточками)
-<Form.Field.CheckboxCard name="features" options={featureOptions} />
 ```
+
+### Опросные поля (4)
+
+```tsx
+// Матричный выбор (вопросы × варианты ответов)
+<Form.Field.MatrixChoice
+  name="satisfaction"
+  questions={['Качество', 'Цена', 'Сервис']}
+  answers={['Плохо', 'Средне', 'Хорошо', 'Отлично']}
+/>
+
+// Выбор по картинкам (сетка с изображениями)
+<Form.Field.ImageChoice name="style" options={styleOptions} columns={3} />
+
+// Шкала Лайкерта (5-7 баллов)
+<Form.Field.Likert name="agreement" scale={5} labels={['Не согласен', 'Согласен']} />
+
+// Да/Нет (кнопки, палец вверх/вниз или эмодзи)
+<Form.Field.YesNo name="recommend" variant="thumbs" />
+```
+
+`MatrixChoice` — незаменим для опросов удовлетворённости. Рендерит таблицу с вопросами по строкам и вариантами ответов по столбцам. Поддерживает клавиатурную навигацию (стрелки, Enter/Space).
+
+### Табличные поля (2)
+
+```tsx
+// Редактируемая таблица (inline-редактирование, DnD сортировка)
+<Form.Field.TableEditor
+  name="items"
+  columns={[
+    { name: 'product', width: '40%' },
+    { name: 'qty', width: '15%', align: 'right' },
+    { name: 'price', width: '15%', align: 'right' },
+    { name: 'total', computed: (row) => row.qty * row.price, label: 'Итого' },
+  ]}
+  addLabel="Добавить товар"
+  footer={[{ column: 'total', aggregate: 'sum', label: 'Итого:' }]}
+/>
+
+// Продвинутая таблица данных (сортировка, фильтрация, виртуализация)
+<Form.Field.DataGrid
+  name="products"
+  columns={productColumns}
+  enableSorting
+  enableFiltering
+  enableColumnResizing
+  virtualizeRows
+/>
+```
+
+`TableEditor` — полноценный inline-редактор таблиц с поддержкой computed-колонок, footer-агрегаций (SUM, AVG, COUNT), drag & drop сортировкой строк, и адаптивным мобильным видом (карточки вместо таблицы). Подробнее — в [статье 6: массивы и группы](06-arrays-groups.md).
+
+`DataGrid` — построен на TanStack Table v8. Поддерживает виртуализацию для 1000+ строк, ресайз колонок, diff-подсветку изменённых ячеек.
+
+### Платёжные поля (1)
+
+```tsx
+// Кредитная карта (номер + срок + CVC)
+<Form.Field.CreditCard name="card" />
+```
+
+`CreditCard` — Stripe-style ввод карты в одном компоненте:
+
+- **Автоформатирование** — 4-4-4-4 для Visa/MC, 4-6-5 для Amex
+- **Определение бренда** по BIN (Visa, MC, Amex, МИР, JCB, Discover, UnionPay, Maestro)
+- **SVG иконки** брендов (инлайновые, без внешних зависимостей)
+- **Luhn-валидация** номера карты
+- **MM/YY** — автоматический формат срока действия
+- **Готовая Zod-схема:** `creditCardSchema()` для серверной валидации
+
+### Защитные поля (1)
+
+```tsx
+// CAPTCHA (Cloudflare Turnstile / Google reCAPTCHA / hCaptcha)
+<Form.Captcha />
+```
+
+`Captcha` — провайдер-абстракция для CAPTCHA. Lazy-загрузка скрипта, серверная верификация через `verifyCaptcha()`. Подключается через `createForm({ captcha: { provider: 'turnstile', siteKey: '...' } })`.
+
+### Утилитарные поля (3)
+
+```tsx
+// Скрытое поле (не рендерится в DOM, только состояние)
+<Form.Field.Hidden name="utm_source" value="landing" />
+
+// Вычисляемое поле (read-only, авто-пересчёт)
+<Form.Field.Calculated
+  name="total"
+  compute={(v) => v.price * v.qty}
+  format={(v) => `${v.toLocaleString()} ₽`}
+  deps={['price', 'qty']}
+/>
+
+// Автоматический выбор компонента по Zod-схеме
+<Form.Field.Auto name="anyField" />
+```
+
+`Calculated` — автоматически обновляется при изменении зависимых полей. Отображает отформатированное значение, но хранит числовое. `Hidden` — для UTM-меток, referral-кодов, и прочих скрытых данных.
+
+### Российские документы (9)
+
+Отдельный namespace `Form.Document.*` для реквизитов и документов РФ:
+
+```tsx
+<Form.Document.INN name="inn" />         // ИНН (10/12 цифр, контрольная сумма)
+<Form.Document.KPP name="kpp" />         // КПП (9 цифр)
+<Form.Document.OGRN name="ogrn" />       // ОГРН (13 цифр, контрольная сумма)
+<Form.Document.OGRNIP name="ogrnip" />   // ОГРНИП (15 цифр)
+<Form.Document.BIK name="bik" />         // БИК (9 цифр)
+<Form.Document.BankAccount name="account" />    // Расчётный счёт (20 цифр)
+<Form.Document.CorrAccount name="corr" />       // Корр. счёт (20 цифр)
+<Form.Document.SNILS name="snils" />     // СНИЛС (11 цифр, маска ___-___-___ __)
+<Form.Document.Passport name="passport" /> // Паспорт (серия + номер)
+```
+
+Каждый компонент включает маску ввода, алгоритмическую валидацию контрольных сумм (где применимо) и форматированный вывод.
 
 `Phone` использует `use-mask-input` для форматирования и автоматически определяет страну по первым цифрам. `Address` и `City` работают через подключаемый `AddressProvider` — по умолчанию DaData, но можно подключить любой сервис геокодинга.
 
@@ -201,7 +317,7 @@
 
 ## Как создать кастомное поле
 
-Все 40 полей построены на одном паттерне. Создать своё — 20 строк:
+Все 50+ полей построены на одном паттерне. Создать своё — 20 строк:
 
 ```tsx
 import { useFieldContext } from '@letar/forms'
@@ -364,17 +480,22 @@ const ContactSchema = z.object({
 
 ## Итоги
 
-| Категория   | Кол-во | Примеры                                                      |
-| ----------- | ------ | ------------------------------------------------------------ |
-| Текстовые   | 7      | String, Textarea, Password, RichText, Editable, MaskedInput  |
-| Числовые    | 6      | Number, Slider, Rating, Currency, Percentage, NumberInput    |
-| Дата/время  | 6      | Date, DateRange, DateTimePicker, Time, Duration, Schedule    |
-| Выбор       | 10     | Select, Combobox, RadioGroup, RadioCard, Tags, Listbox, ...  |
-| Специальные | 8      | Phone, Address, City, FileUpload, PinInput, ColorPicker, ... |
-| Булевы      | 2      | Checkbox, Switch                                             |
-| Авто        | 1      | Auto (выбор компонента по Zod-схеме)                         |
+| Категория    | Кол-во | Примеры                                                      |
+| ------------ | ------ | ------------------------------------------------------------ |
+| Текстовые    | 7      | String, Textarea, Password, RichText, Editable, MaskedInput  |
+| Числовые     | 6      | Number, Slider, Rating, Currency, Percentage, NumberInput    |
+| Дата/время   | 6      | Date, DateRange, DateTimePicker, Time, Duration, Schedule    |
+| Выбор        | 10     | Select, Combobox, RadioGroup, RadioCard, Tags, Listbox, ...  |
+| Специальные  | 7      | Phone, Address, City, FileUpload, PinInput, ColorPicker, OTP |
+| Булевы       | 3      | Checkbox, Switch, CheckboxCard                               |
+| Опросные     | 4      | MatrixChoice, ImageChoice, Likert, YesNo                     |
+| Табличные    | 2      | TableEditor, DataGrid                                        |
+| Платёжные    | 1      | CreditCard                                                   |
+| Защитные     | 1      | Captcha                                                      |
+| Утилитарные  | 3      | Hidden, Calculated, Auto                                     |
+| Документы РФ | 9      | INN, KPP, OGRN, BIK, BankAccount, SNILS, Passport, ...       |
 
-40 компонентов покрывают ~95% наших продакшн-сценариев. Оставшиеся 5% — кастомные поля через `createForm({ extraFields })`.
+50+ компонентов покрывают ~98% наших продакшн-сценариев. Оставшиеся 2% — кастомные поля через `createForm({ extraFields })`.
 
 ---
 

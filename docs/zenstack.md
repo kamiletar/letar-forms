@@ -207,7 +207,7 @@ const UserFormSchema = withUIMetaDeep(UserCreateInputSchema, {
 ### Хелперы для типичных случаев
 
 ```tsx
-import { enumMeta, relationMeta, textMeta, numberMeta, booleanMeta, dateMeta, commonMeta } from '@lena/form-components'
+import { booleanMeta, commonMeta, dateMeta, enumMeta, numberMeta, relationMeta, textMeta } from '@lena/form-components'
 
 const UserFormSchema = withUIMeta(UserCreateInputSchema, {
   ...commonMeta, // id, createdAt, updatedAt (readonly/disabled)
@@ -238,9 +238,9 @@ const UserFormSchema = withUIMeta(UserCreateInputSchema, {
 Провайдер для автоматической загрузки опций relation полей:
 
 ```tsx
-import { RelationFieldProvider } from '@lena/form-components'
 import { useFindManyCategory, useFindManyTag } from '@/generated/hooks'
-;<RelationFieldProvider
+import { RelationFieldProvider } from '@lena/form-components'
+<RelationFieldProvider
   relations={[
     { model: 'Category', useQuery: useFindManyCategory, labelField: 'name' },
     { model: 'Tag', useQuery: useFindManyTag, labelField: 'title' },
@@ -294,7 +294,7 @@ const ProductFormWithRelations = withRelations(ProductForm, [
 ### Хуки для кастомных компонентов
 
 ```tsx
-import { useRelationOptions, useRelationFieldContext } from '@lena/form-components'
+import { useRelationFieldContext, useRelationOptions } from '@lena/form-components'
 
 function CustomCategorySelect() {
   const { options, isLoading, error } = useRelationOptions('Category')
@@ -361,6 +361,65 @@ plugin formSchema {
 ```
 
 > Подробнее: [i18n документация](../zenstack-form-plugin/README.md#i18n-опционально)
+
+---
+
+## Обработка ошибок мутаций
+
+При использовании ZenStack enhanced client ошибки мутаций содержат структурированную информацию. `mapServerErrors()` автоматически их распознаёт:
+
+### Prisma ошибки (через ZenStack)
+
+```typescript
+// P2002 (unique constraint) — маппится на поле формы
+try {
+  await db.user.create({ data: { email: 'existing@mail.com', name: 'Test' } })
+} catch (error) {
+  const mapped = mapServerErrors(error)
+  // → fieldErrors: [{ field: 'email', message: 'email уже существует' }]
+}
+```
+
+### ZenStack access policy rejection
+
+```typescript
+// @@allow('create', auth() != null) — нарушение политики
+try {
+  await db.post.create({ data: { title: 'Test' } }) // без авторизации
+} catch (error) {
+  const mapped = mapServerErrors(error)
+  // → formErrors: ['Нет доступа для выполнения этой операции']
+}
+```
+
+### ZenStack db-query-error (обёртка Prisma)
+
+```typescript
+// ZenStack оборачивает Prisma ошибки в { reason: 'db-query-error', code: 'P2002', meta }
+// mapServerErrors автоматически разворачивает и делегирует Prisma парсеру
+```
+
+### Использование в формах
+
+```tsx
+import { applyServerErrors, mapServerErrors } from '@lena/form-components'
+
+<Form schema={ProductSchema} onSubmit={async ({ value }) => {
+  const db = getEnhancedPrisma(session?.user)
+  try {
+    await db.product.create({ data: value })
+  } catch (error) {
+    const mapped = mapServerErrors(error, {
+      fieldMap: {
+        name: { field: 'name', message: 'Товар с таким названием уже существует' },
+      },
+    })
+    applyServerErrors(form, mapped)
+  }
+}}>
+```
+
+> Подробнее: [server-errors.md](./server-errors.md)
 
 ---
 

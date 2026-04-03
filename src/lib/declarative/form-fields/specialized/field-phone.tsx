@@ -1,7 +1,7 @@
 'use client'
 
 import { Field, Group, Input, Text } from '@chakra-ui/react'
-import { useCallback, type ReactElement } from 'react'
+import { type ReactElement, useCallback } from 'react'
 import { withMask } from 'use-mask-input'
 import type { PhoneCountry, PhoneFieldProps } from '../../types'
 import { createField, FieldError, FieldLabel } from '../base'

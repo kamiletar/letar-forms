@@ -1,18 +1,18 @@
 'use client'
 
 import { Combobox, Field, Portal, Spinner, useFilter } from '@chakra-ui/react'
-import { useMemo, type ReactElement, type ReactNode } from 'react'
+import { type ReactElement, type ReactNode, useMemo } from 'react'
 import type { BaseFieldProps, FieldSize, GroupableOption } from '../../types'
 import {
+  type AsyncQueryFn,
   createField,
   FieldError,
   getOptionLabel,
+  type GroupedOptionsResult,
+  type ResolvedFieldProps,
   SelectionFieldLabel,
   useAsyncSearch,
   useGroupedOptions,
-  type AsyncQueryFn,
-  type GroupedOptionsResult,
-  type ResolvedFieldProps,
 } from '../base'
 
 /**

@@ -47,6 +47,7 @@ export const FieldTextarea = createField<TextareaFieldProps, string>({
           autoresize={componentProps.autoresize}
           resize={componentProps.resize ?? 'vertical'}
           maxLength={maxLength}
+          autoComplete={resolved.autocomplete}
           data-field-name={fullPath}
         />
       </FieldWrapper>

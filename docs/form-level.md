@@ -4,21 +4,26 @@
 
 ## Обзор компонентов
 
-| Компонент                           | Описание                                        |
-| ----------------------------------- | ----------------------------------------------- |
-| `Form`                              | Корневой компонент формы                        |
-| `Form.Group`                        | Группа полей с dot-notation путём               |
-| `Form.Group.List`                   | Автоитерация по массиву                         |
-| `Form.Group.List.Button.Add`        | Кнопка добавления элемента                      |
-| `Form.Group.List.Button.Remove`     | Кнопка удаления элемента                        |
-| `Form.Group.List.Button.DragHandle` | Ручка для перетаскивания (DnD)                  |
-| `Form.Button.Submit`                | Кнопка отправки с автоматическим loading        |
-| `Form.Button.Reset`                 | Кнопка сброса формы                             |
-| `Form.When`                         | Условный рендеринг полей                        |
-| `Form.DirtyGuard`                   | Предупреждение при уходе с несохранённой формой |
-| `Form.Errors`                       | Сводка всех ошибок валидации                    |
-| `Form.DebugValues`                  | Интерактивный JSON-инспектор значений формы     |
-| `Form.Steps`                        | Контейнер для мультистеп форм                   |
+| Компонент                           | Описание                                             |
+| ----------------------------------- | ---------------------------------------------------- |
+| `Form`                              | Корневой компонент формы                             |
+| `Form.Group`                        | Группа полей с dot-notation путём                    |
+| `Form.Group.List`                   | Автоитерация по массиву                              |
+| `Form.Group.List.Button.Add`        | Кнопка добавления элемента                           |
+| `Form.Group.List.Button.Remove`     | Кнопка удаления элемента                             |
+| `Form.Group.List.Button.DragHandle` | Ручка для перетаскивания (DnD)                       |
+| `Form.Button.Submit`                | Кнопка отправки с автоматическим loading             |
+| `Form.Button.Reset`                 | Кнопка сброса формы                                  |
+| `Form.Watch`                        | Отслеживание изменений поля (побочные эффекты)       |
+| `Form.When`                         | Условный рендеринг полей                             |
+| `Form.DirtyGuard`                   | Предупреждение при уходе с несохранённой формой      |
+| `Form.Errors`                       | Сводка всех ошибок валидации                         |
+| `Form.DebugValues`                  | Интерактивный JSON-инспектор значений формы          |
+| `Form.InfoBlock`                    | Информационный блок (info/warning/error/success/tip) |
+| `Form.Divider`                      | Разделитель секций с опциональной меткой             |
+| `Form.Field.Hidden`                 | Скрытое поле (не рендерится, только в state)         |
+| `Form.Field.Calculated`             | Вычисляемое поле с автопересчётом                    |
+| `Form.Steps`                        | Контейнер для мультистеп форм                        |
 
 ---
 
@@ -74,6 +79,185 @@
     <Form.Field.Select name="frequency" options={frequencies} />
   </Form.When>
 </Form.Group>
+```
+
+---
+
+## Form.Watch — отслеживание изменений (v0.61.0+)
+
+Renderless компонент для реактивных побочных эффектов при изменении значения поля. Учитывает контекст `Form.Group` — пути резолвятся автоматически.
+
+```tsx
+<Form initialValue={{ name: '', slug: '' }} onSubmit={save}>
+  <Form.Field.String name="name" label="Название" />
+  <Form.Field.String name="slug" label="Slug" />
+
+  <Form.Watch
+    field="name"
+    onChange={(value, { setFieldValue }) => {
+      setFieldValue('slug', transliterate(String(value)))
+    }}
+  />
+
+  <Form.Button.Submit />
+</Form>
+```
+
+### Props
+
+| Prop       | Тип                                             | Описание                       |
+| ---------- | ----------------------------------------------- | ------------------------------ |
+| `field`    | `string`                                        | Имя поля (относительно группы) |
+| `onChange` | `(value: unknown, api: FieldChangeApi) => void` | Callback при изменении         |
+
+### FieldChangeApi
+
+| Метод           | Описание                        |
+| --------------- | ------------------------------- |
+| `setFieldValue` | Установить значение любого поля |
+| `getFieldValue` | Получить значение поля          |
+| `getValues`     | Все текущие значения формы      |
+
+### Альтернатива: onFieldChange prop
+
+Тот же функционал доступен как prop на `<Form>` — удобнее для простых случаев:
+
+```tsx
+<Form
+  initialValue={{ name: '', slug: '' }}
+  onSubmit={save}
+  onFieldChange={{
+    name: (value, { setFieldValue }) => {
+      setFieldValue('slug', transliterate(String(value)))
+    },
+  }}
+>
+  <Form.Field.String name="name" />
+  <Form.Field.String name="slug" />
+</Form>
+```
+
+---
+
+## Smart Autofill — автоматический autocomplete (v0.62.0+)
+
+Поля автоматически получают HTML `autocomplete` атрибуты по имени — +30% конверсии (Google), WCAG 1.3.5.
+
+```tsx
+<Form.Field.String name="email" />      // → autocomplete="email"
+<Form.Field.String name="firstName" />   // → autocomplete="given-name"
+<Form.Field.String name="city" />        // → autocomplete="address-level2"
+<Form.Field.Password name="password" />  // → autocomplete="current-password"
+```
+
+### Приоритет
+
+1. Prop `autoComplete` (наивысший)
+2. `.meta({ ui: { autocomplete: '...' } })` из Zod схемы
+3. Авто-определение по имени поля
+
+### Override через meta
+
+```tsx
+z.string().meta({ ui: { autocomplete: 'street-address' } }) // Явное значение
+z.string().meta({ ui: { autocomplete: 'off' } }) // Отключить
+```
+
+### Поддерживаемые маппинги
+
+`email`, `phone`/`tel`, `firstName`/`lastName`, `name`, `password`/`newPassword`, `address`/`street`, `city`, `zip`/`postalCode`, `country`, `company`/`organization`, `username` — и другие (30+ маппингов).
+
+---
+
+## Form.InfoBlock — информационный блок (v0.63.0+)
+
+Компонент для отображения info/warning/error/success/tip сообщений внутри формы. На базе Chakra UI Alert.
+
+```tsx
+<Form.InfoBlock variant="info" title="Важно">
+  Заполните все поля для получения скидки 10%.
+</Form.InfoBlock>
+```
+
+**Варианты:**
+
+| Variant   | Цвет    | Назначение         |
+| --------- | ------- | ------------------ |
+| `info`    | Синий   | Общая информация   |
+| `warning` | Оранж   | Предупреждения     |
+| `error`   | Красный | Критические ошибки |
+| `success` | Зелёный | Подтверждения      |
+| `tip`     | Бирюза  | Полезные советы    |
+
+**Props:**
+
+| Prop         | Тип         | Default    | Описание                |
+| ------------ | ----------- | ---------- | ----------------------- |
+| `variant`    | `string`    | `'info'`   | Вариант отображения     |
+| `title`      | `ReactNode` | —          | Заголовок блока         |
+| `children`   | `ReactNode` | —          | Содержимое              |
+| `appearance` | `string`    | `'subtle'` | Визуальный стиль Chakra |
+| `size`       | `string`    | `'md'`     | Размер                  |
+
+```tsx
+// Условное отображение
+<Form.When field="type" is="company">
+  <Form.InfoBlock variant="warning">Для компаний требуется ИНН и юридический адрес.</Form.InfoBlock>
+</Form.When>
+```
+
+---
+
+## Form.Divider — разделитель секций (v0.63.0+)
+
+Горизонтальная линия с опциональной текстовой меткой и иконкой. На базе Chakra UI Separator.
+
+```tsx
+<Form.Divider label="Контактная информация" />
+```
+
+**Props:**
+
+| Prop           | Тип         | Default   | Описание                |
+| -------------- | ----------- | --------- | ----------------------- |
+| `label`        | `ReactNode` | —         | Текст на разделителе    |
+| `icon`         | `ReactNode` | —         | Иконка перед текстом    |
+| `variant`      | `string`    | `'solid'` | solid / dashed / dotted |
+| `size`         | `string`    | `'xs'`    | Толщина линии           |
+| `colorPalette` | `string`    | `'gray'`  | Цветовая палитра        |
+
+```tsx
+// С иконкой
+import { LuPhone } from 'react-icons/lu'
+<Form.Divider label="Телефоны" icon={<LuPhone />} />
+
+// Пунктирный
+<Form.Divider variant="dashed" />
+```
+
+---
+
+## Form.Field.Hidden — скрытое поле (v0.63.0+)
+
+Не рендерится в DOM, но участвует в form state. Значение синхронизируется реактивно при изменении `value` prop.
+
+```tsx
+<Form.Field.Hidden name="utm_source" value={searchParams.get('utm_source')} />
+<Form.Field.Hidden name="referralCode" value="PARTNER2026" />
+```
+
+**Props:**
+
+| Prop    | Тип       | Описание                                  |
+| ------- | --------- | ----------------------------------------- |
+| `name`  | `string`  | Имя поля в форме                          |
+| `value` | `unknown` | Значение (синхронизируется при изменении) |
+
+```tsx
+// Динамическое значение
+const [geo, setGeo] = useState(null)
+useEffect(() => { detectLocation().then(setGeo) }, [])
+<Form.Field.Hidden name="location" value={geo} />
 ```
 
 ---

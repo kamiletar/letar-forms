@@ -302,12 +302,67 @@ function SyncStatus() {
 
 ---
 
+## Серверный автосейв
+
+Для длинных форм (20+ полей) данные должны сохраняться на сервер автоматически, не дожидаясь submit:
+
+```tsx
+import { AutosaveIndicator, useFormAutosave } from '@letar/forms'
+
+function EditProductForm({ productId }: { productId: string }) {
+  return (
+    <Form schema={ProductSchema} initialValue={product} onSubmit={save}>
+      <AutosaveIndicator /> {/* «Сохранено» / «Сохраняется...» / «Ошибка» */}
+
+      <Form.Field.String name="title" />
+      <Form.Field.RichText name="description" />
+      <Form.Field.Currency name="price" />
+      <Form.Button.Submit>Опубликовать</Form.Button.Submit>
+    </Form>
+  )
+}
+```
+
+`useFormAutosave` принимает:
+
+- `endpoint` — URL для PUT/PATCH запроса
+- `interval` — интервал автосохранения (по умолчанию 30 секунд)
+- `debounce` — задержка после последнего изменения (по умолчанию 2 секунды)
+
+### Form.DirtyGuard — предупреждение при уходе
+
+```tsx
+<Form schema={Schema} initialValue={data} onSubmit={save}>
+  <Form.DirtyGuard message="У вас есть несохранённые изменения. Уйти?" />
+  <Form.Field.String name="title" />
+  <Form.Button.Submit>Сохранить</Form.Button.Submit>
+</Form>
+```
+
+`DirtyGuard` перехватывает `beforeunload` и навигацию (Next.js Router) — если форма грязная, показывает подтверждение.
+
+---
+
+## Сравнение подходов
+
+| Функция        | `persistence`             | `offline`               | `useFormAutosave`         |
+| -------------- | ------------------------- | ----------------------- | ------------------------- |
+| Хранилище      | localStorage              | IndexedDB               | Сервер (API endpoint)     |
+| Когда          | При каждом изменении      | При submit без сети     | По таймеру / debounce     |
+| Восстановление | При перезагрузке страницы | При восстановлении сети | Не нужно (уже на сервере) |
+| Для чего       | Черновики                 | Гарантия доставки       | Длинные формы (CMS)       |
+
+---
+
 ## Итоги
 
 | Компонент                               | Что делает                                 |
 | --------------------------------------- | ------------------------------------------ |
 | `offline` prop                          | Включает offline-режим с очередью          |
 | `persistence` prop                      | Автосохранение черновиков                  |
+| `useFormAutosave`                       | Серверный автосейв по таймеру              |
+| `AutosaveIndicator`                     | UI-статус автосохранения                   |
+| `Form.DirtyGuard`                       | Предупреждение о несохранённых данных      |
 | `Form.OfflineIndicator`                 | UI-статус сети и синхронизации             |
 | `actionType`                            | Тип действия (для идентификации в очереди) |
 | `onQueued` / `onSynced` / `onSyncError` | Колбэки жизненного цикла                   |
@@ -317,6 +372,7 @@ function SyncStatus() {
 1. **Форма не знает про сеть** — offline/online прозрачно для пользователя
 2. **Гарантия доставки** — retry с exponential backoff
 3. **Persistence отдельно** — черновики ≠ offline-очередь
+4. **Автосейв** — для длинных форм, где данные критичны
 
 ---
 

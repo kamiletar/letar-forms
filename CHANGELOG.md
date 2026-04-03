@@ -4,6 +4,314 @@
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [0.80.0] - 2026-04-04 — DX фичи: Analytics, History, ServerErrors, ReadOnly, Skeleton, Comparison, DependsOn
+
+### Added
+
+- **mapServerErrors()** — автоматический маппинг серверных ошибок на поля формы
+  - Автодетект формата: Prisma P2002/P2003/P2025/P2014, ZenStack policy/db-query, Zod flatten, ActionResult
+  - `applyServerErrors(form, mapped)` для TanStack Form
+  - Кастомный fieldMap для constraint → поле маппинга
+  - Locale: ru/en, subpath `@letar/forms/server-errors`
+  - 24 unit-теста, bench: 10M+ ops/sec
+- **useFormHistory()** — Undo/Redo для форм (Ctrl+Z/Ctrl+Y)
+  - Debounced structuredClone снапшоты
+  - Keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y)
+  - HistoryControls — визуальные кнопки ↩/↪
+  - Persist в sessionStorage (опционально)
+- **Form.Analytics** — встроенная field-level аналитика форм
+  - useFormAnalytics() — focus/blur/error/correction/abandon/complete
+  - AnalyticsPanel — dev-only live-панель
+  - 4 адаптера: Umami, Яндекс Метрика, GA4, PostHog
+  - Subpath `@letar/forms/analytics`, bench: 25M+ ops/sec
+- **FormReadOnlyView** — отображение данных формы в режиме чтения
+  - Автоматические labels из Zod .meta({ ui: { title } })
+  - exclude/include, compact mode, кастомные formatters
+- **FormSkeleton** — loading state из Zod-схемы
+  - Автоопределение количества полей из schema
+  - showSubmit, configurable fieldHeight/gap
+- **FormComparison** — diff-view (было → стало)
+  - Подсветка изменённых полей, onlyChanged mode
+  - Labels из Zod .meta(), exclude, кастомные labels
+- **FormDependsOn** — каскадный рендеринг по значению поля
+  - cases map: значение → children, fallback
+
+### Tests
+
+- 59 новых unit/render тестов + 13 E2E + 16 бенчмарков
+
+## [0.78.0] - 2026-04-03 — Captcha + CreditCard (Фазы 29-30)
+
+### Added
+
+- **Form.Captcha** — CAPTCHA для защиты форм (Cloudflare Turnstile, Google reCAPTCHA, hCaptcha)
+  - Провайдер-абстракция с lazy loading
+  - Серверная верификация через `verifyCaptcha()`
+  - Интеграция с `createForm({ captcha: {...} })`
+- **Form.Field.CreditCard** — ввод данных банковской карты
+  - Авто-форматирование номера (4-4-4-4 / 4-6-5 для Amex)
+  - Определение бренда по BIN (Visa, MC, Amex, МИР, JCB, Discover, UnionPay, Maestro)
+  - Luhn валидация, MM/YY expiry
+  - Готовая Zod-схема `creditCardSchema()`
+  - SVG иконки брендов (inline)
+  - Accessibility: role="group", aria-label, inputMode="numeric"
+
+### Dependencies
+
+- `@marsidev/react-turnstile` — peer dependency для Turnstile
+
+## [0.77.0] - 2026-04-03
+
+### Improved
+
+- **DataGrid** — column reordering: drag заголовки колонок для изменения порядка
+- **DataGrid** — diff highlighting: изменённые ячейки подсвечиваются жёлтым
+- **MatrixChoice** — keyboard навигация: стрелки для перемещения между ячейками, Enter/Space для выбора
+
+## [0.76.0] - 2026-04-03
+
+### Improved
+
+- **DataGrid** — виртуализация 1000+ строк через @tanstack/react-virtual (`virtualized` prop)
+  - Автоматический scroll-container с фиксированной высотой
+  - Пагинация автоматически отключается при виртуализации
+  - overscan: 10 строк для плавной прокрутки
+- **DataGrid** — column resizing: drag границы колонок (`columnResizing` prop)
+  - Визуальный индикатор resize при перетаскивании
+- **DataGrid** — расширенные фильтры уже поддерживают text (range, select, date — через кастомные filterFn)
+- **MatrixChoice** — подсветка незаполненных строк красным при required + ошибке валидации
+- **Async Validation** — loading indicator "Проверяю..." в FieldError при isValidating
+- **TableEditor** — DnD сортировка строк через SortableWrapper (@dnd-kit)
+- **TableEditor** — responsive mobile card view (карточки на sm breakpoints)
+
+## [0.75.0] - 2026-04-03
+
+### Added
+
+- **`Form.Field.DataGrid`** — редактируемая таблица данных на TanStack Table (Фаза 16.2)
+  - TanStack Table v8 под капотом
+  - Сортировка по клику на заголовок (↑↓)
+  - Текстовые фильтры по колонкам
+  - Пагинация (кнопки Назад/Далее, номер страницы)
+  - Inline editing: клик по ячейке → Input
+  - Row-level save (`onRowSave` callback)
+  - Чекбокс-выбор строк + bulk delete
+  - Diff от TableEditor: DataGrid — для существующих данных с фильтрацией/сортировкой/пагинацией
+
+### Changed
+
+- Убраны из плана Фаза 16.3 (Spreadsheet) и 16.4 (Bulk Entry) — нишевые, избыточные
+
+## [0.74.0] - 2026-04-03
+
+### Added
+
+- **Conversational Mode** — Typeform-стиль: одно поле за раз с анимацией
+  - `ConversationalMode` компонент-обёртка для полей формы
+  - Анимация fade-in-up при переходе между полями
+  - Progress bar и номер вопроса ("Вопрос 3 из 7")
+  - Enter → следующее поле, Alt+стрелки для навигации
+  - Кнопки Назад/Далее/Отправить
+  - Welcome screen и Completed screen
+  - `useConversationalState` хук для кастомного UI
+  - Keyboard-first UX
+
+## [0.73.0] - 2026-04-03
+
+### Added
+
+- **Autosave to Server** — серверное автосохранение форм
+  - `useFormAutosave(form, config)` хук: периодическое POST/PUT с debounce
+  - `AutosaveIndicator` компонент: статус "Сохраняю..." / "Сохранено" / "Ошибка"
+  - Fallback на localStorage при отсутствии сети
+  - Восстановление черновиков: `loadDraft()` (сервер → localStorage)
+  - Не отправляет если данные не изменились
+  - AbortController-совместимый
+
+## [0.72.0] - 2026-04-03
+
+### Added
+
+- **Form Templates** — 10 готовых шаблонов форм для быстрого старта
+  - `Form.FromTemplate` — компонент автоматической генерации формы из шаблона
+  - **Auth:** loginForm, registerForm, forgotPasswordForm
+  - **Feedback:** contactForm, feedbackForm
+  - **Survey:** npsForm
+  - **Business:** companyRegistration (ИНН, КПП, ОГРН, реквизиты)
+  - **E-commerce:** orderForm (клиент, адрес, товары)
+  - **Profile:** profileForm (имя, email, телефон)
+  - **Address:** addressForm (страна, город, улица, дом, индекс)
+  - Headless: `templates.xxx.schema` + `templates.xxx.defaultValues`
+  - Override: `exclude`, `fields` для кастомизации
+  - `FormTemplate<T>` интерфейс для создания собственных шаблонов
+
+## [0.71.0] - 2026-04-03
+
+### Added
+
+- **Async Validation** — асинхронная валидация полей через props или Zod `.meta()`
+  - `asyncValidate` prop на любом поле: `<Form.Field.String asyncValidate={checkEmail} />`
+  - Декларативно через `.meta({ asyncValidate, asyncDebounce, asyncTrigger })`
+  - Debounce (по умолчанию 500мс), AbortController для отмены предыдущего запроса
+  - Кэширование результатов (не перепроверяет уже валидированные значения)
+  - Offline-safe: пропускает async-валидацию при отсутствии сети
+  - Триггер: `onBlur` (по умолчанию) или `onChange`
+  - Интеграция через TanStack Form `validators.onBlurAsync`/`onChangeAsync`
+  - `useAsyncFieldValidation` хук для кастомного использования
+
+## [0.70.0] - 2026-04-03
+
+### Added
+
+- **`Form.Field.ImageChoice`** — выбор из картинок (grid карточек с изображениями)
+  - Single/multiple selection, hover + selected overlay
+  - Responsive grid (1→2→N колонок)
+- **`Form.Field.Likert`** — шкала Лайкерта (5-7 точек с текстовыми якорями)
+  - Горизонтальная шкала (десктоп), вертикальный список (мобайл)
+  - Опциональная нумерация точек
+- **`Form.Field.YesNo`** — бинарный выбор (два больших блока)
+  - Варианты: `buttons`, `thumbs` (👍👎), `emoji` (😊😞)
+  - Зелёный/красный highlight при выборе
+
+## [0.69.0] - 2026-04-03
+
+### Added
+
+- **`Form.Field.MatrixChoice`** — матричный выбор для опросников и NPS-форм
+  - Таблица "вопрос × вариант ответа" (как в Google Forms, SurveyMonkey)
+  - 3 варианта: `radio` (одиночный), `checkbox` (множественный), `rating` (звёзды)
+  - Responsive: на мобильных — карточки вместо таблицы
+  - Row hover highlight, keyboard navigation
+  - Значение: `Record<string, string | string[]>`
+
+## [0.68.0] - 2026-04-03
+
+### Added
+
+- **`Form.Field.TableEditor`** — инлайн-редактируемая таблица для array-полей
+  - Авто-колонки из Zod schema `.meta({ ui: { title } })` или кастомные через `columns` prop
+  - Клик по ячейке → inline editing (Input, NativeSelect, Checkbox в зависимости от типа)
+  - Tab/Enter навигация между ячейками, Enter в последней → новая строка
+  - Escape → выход из редактирования
+  - Стрелки вверх/вниз для перемещения между строками
+  - Computed columns — вычисляемые readonly колонки
+  - Footer aggregates — SUM, AVG, COUNT, MIN, MAX по колонкам
+  - Copy-paste из Excel/Sheets (парсинг TSV через Clipboard API)
+  - Чекбокс-выбор строк + массовое удаление
+  - Cell-level Zod валидация (ошибки прямо в ячейке)
+  - Пустое состояние с placeholder текстом
+  - `sortable`, `selectable`, `clipboard`, `striped` props
+  - Хуки: `useTableColumns`, `useTableNavigation`, `useTableClipboard`, `useTableEditorContext`
+  - Утилиты: `parseTSV`, `buildTSV`, `coerceValue`, `computeAggregate`, `formatCellValue`
+
+## [0.67.0] - 2026-04-03
+
+### Added
+
+- **Russian Documents** — `zRu` Zod-валидаторы + `Form.Document.*` UI-компоненты
+  - **Валидаторы** (`@letar/forms/validators/ru`): zRu.inn(), zRu.kpp(), zRu.ogrn(), zRu.ogrnip(), zRu.bik(), zRu.bankAccount(), zRu.corrAccount(), zRu.snils(), zRu.passport()
+  - Контрольные суммы: ИНН (взвешенная mod 11), ОГРН (mod 11), ОГРНИП (mod 13), СНИЛС (mod 101), банковский счёт (контрольный ключ с БИК)
+  - Варианты ИНН: `zRu.inn.legal()` (10 цифр), `zRu.inn.individual()` (12 цифр)
+  - Transform: автоматическая очистка от пробелов/дефисов
+  - **UI-компоненты** (`Form.Document.*`): INN, KPP, OGRN, BIK, BankAccount, CorrAccount, SNILS, Passport
+  - Маска ввода (use-mask-input), иконки, realtime-валидация контрольных сумм
+  - `createDocumentField` — фабрика для кастомных документных полей
+  - Subpath export: `@letar/forms/validators/ru` для headless использования
+- 46 unit-тестов для валидаторов
+
+## [0.66.0] - 2026-04-03
+
+### Added
+
+- **`Form.Field.Signature`** — поле цифровой подписи
+  - Draw mode: рисование мышью и пальцем (touch) на Canvas
+  - Typed mode: ввод имени курсивным шрифтом, отрисовка на Canvas
+  - Переключение режимов через SegmentedControl (Draw / Type)
+  - Кнопка очистки подписи
+  - Placeholder поверх пустого canvas
+  - Responsive: canvas адаптируется к ширине контейнера
+  - Touch support: `touchAction: none` для предотвращения scroll
+  - Accessibility: `role="img"`, `aria-label`, Tab focus, typed mode как keyboard fallback
+  - Dark mode support через props `strokeColor`/`backgroundColor`
+  - Значение: data URI строка (image/png base64)
+  - Props: `width`, `height`, `strokeColor`, `strokeWidth`, `backgroundColor`, `clearLabel`, `placeholder`, `allowTyped`, `typedFont`
+- 7 unit-тестов для FieldSignature
+
+## [0.65.0] - 2026-04-03
+
+### Added
+
+- **Security Patterns** — три механизма защиты форм
+  - **Honeypot** — ловушка для ботов: `<Form honeypot={true}>`, скрытое поле блокирует submit ботов
+  - **Rate Limiting** — клиентский лимит: `<Form rateLimit={{ maxSubmits: 3, windowMs: 60000 }}>`, обратный отсчёт, sessionStorage persistence
+  - **Secure File Upload** — расширение FileUpload: `<Form.Field.FileUpload security={{ ... }}>`:
+    - `maxSize` — проверка размера ('10MB', '500KB')
+    - `allowedTypes` — проверка MIME по magic bytes (не по расширению)
+    - `stripMetadata` — удаление EXIF через Canvas API
+    - `renameFile` — замена имени на UUID (защита от path traversal)
+- `parseFileSize()`, `validateMimeType()`, `sanitizeFileName()` — утилиты безопасности
+- `useRateLimit()` — хук клиентского rate limiting
+- `FileSecurityConfig`, `RateLimitConfig` — типы конфигурации
+- 21 unit-тест для security модуля
+
+## [0.64.0] - 2026-04-03
+
+### Added
+
+- **`Form.Field.Calculated`** — вычисляемое поле формы с автоматическим пересчётом
+  - `compute(values)` — функция вычисления значения из всех полей формы
+  - `format(value)` — форматирование отображения (например, `1 500 ₽`)
+  - `deps` — список зависимых полей для оптимизации пересчёта
+  - `debounce` — дебаунс вычислений для тяжёлых формул
+  - `hidden` — скрытый режим (вычисляет без отображения, как Hidden)
+  - Защита от циклических зависимостей (runtime detection)
+  - Работает внутри `Form.Group` (group-aware paths)
+  - Значение readonly, сохраняется в form state при submit
+- `useComputedValue` — хук реактивного вычисления (подписка на form.store)
+- 8 unit-тестов для FieldCalculated
+- Демо-страница calculated-demo в form-develop-app
+
+## [0.63.0] - 2026-04-03
+
+### Added
+
+- **`Form.InfoBlock`** — информационный блок внутри формы (info/warning/error/success/tip), на базе Chakra Alert
+  - Props: `variant`, `title`, `appearance`, `size`
+  - Интеграция с `Form.When` для условного отображения
+- **`Form.Divider`** — разделитель секций формы с опциональной меткой и иконкой, на базе Chakra Separator
+  - Props: `label`, `icon`, `variant` (solid/dashed/dotted), `size`, `colorPalette`
+- **`Form.Field.Hidden`** — скрытое поле формы (не рендерится в DOM, только в form state)
+  - Реактивная синхронизация `value` prop с form state
+  - Полезно для UTM-меток, referral кодов, внутренних ID
+- 10 unit-тестов для новых компонентов
+
+## [0.62.0] - 2026-04-03
+
+### Added
+
+- **Smart Autofill** — автоматическое проставление HTML `autocomplete` атрибутов по имени поля (+30% конверсии, WCAG 1.3.5)
+  - 30+ маппингов: email, phone, firstName, lastName, password, address, city, zip, country, company, username...
+  - Override через `.meta({ ui: { autocomplete: '...' } })` или prop `autoComplete`
+  - Приоритет: prop > meta > авто-определение
+  - Поддержка dot-path (address.city → autocomplete="address-level2")
+  - `autocomplete` в `FieldUIMeta` для ZenStack-генерации
+- Поле `autocomplete` в `ResolvedFieldProps` — доступно всем field-компонентам
+- 22 unit-теста для маппинга autocomplete
+
+## [0.61.0] - 2026-04-03
+
+### Added
+
+- **`onFieldChange` prop** на `<Form>` — реактивные побочные эффекты при изменении полей (автогенерация slug, пересчёт итогов, синхронизация зависимых полей)
+- **`<Form.Watch>`** — renderless compound component для отслеживания изменений поля внутри формы (group-aware, резолвит пути относительно `Form.Group`)
+- **`FieldChangeApi`** — интерфейс с `setFieldValue`, `getFieldValue`, `getValues` для callbacks
+- **`useFieldChangeListeners`** — хук подписки на изменения полей через `form.store.subscribe()` с `Object.is` сравнением
+- 7 unit-тестов для нового функционала
+
+### Fixed
+
+- `FormRoot` теперь прокидывает `middleware` и `addressProvider` в `FormSimple`/`FormWithApi` (ранее терялись)
+
 ## [1.1.0] - 2026-04-01
 
 ### Added

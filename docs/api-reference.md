@@ -102,7 +102,7 @@ function CustomNavigation() {
 
 ```tsx
 import { FormI18nProvider } from '@lena/form-components'
-import { useTranslations, useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 function App({ children }) {
   const t = useTranslations('forms')
@@ -187,7 +187,7 @@ const { submit, isOffline, pendingCount, isProcessing } = useOfflineForm({
 ## Хуки relation полей
 
 ```tsx
-import { useRelationOptions, useRelationFieldContext } from '@lena/form-components'
+import { useRelationFieldContext, useRelationOptions } from '@lena/form-components'
 
 function CustomCategorySelect() {
   // Получить options для конкретной модели
@@ -296,15 +296,15 @@ interface RelationConfig {
 
 ```tsx
 import {
-  withUIMeta,
-  withUIMetaDeep,
+  booleanMeta,
+  commonMeta,
+  dateMeta,
   enumMeta,
+  numberMeta,
   relationMeta,
   textMeta,
-  numberMeta,
-  booleanMeta,
-  dateMeta,
-  commonMeta,
+  withUIMeta,
+  withUIMetaDeep,
 } from '@lena/form-components'
 ```
 

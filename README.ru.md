@@ -45,15 +45,16 @@ const Schema = z.object({
 
 ## Документация
 
-| Категория        | Документация                                             | Описание                                     |
-| ---------------- | -------------------------------------------------------- | -------------------------------------------- |
-| Field компоненты | [docs/fields.md](./docs/fields.md)                       | 40 типов полей (String, Number, Select, ...) |
-| Form-level       | [docs/form-level.md](./docs/form-level.md)               | Steps, When, Errors, Middleware, Persistence |
-| Schema генерация | [docs/schema-generation.md](./docs/schema-generation.md) | FromSchema, AutoFields, Builder              |
-| Offline          | [docs/offline.md](./docs/offline.md)                     | Оффлайн режим, очередь синхронизации         |
-| ZenStack         | [docs/zenstack.md](./docs/zenstack.md)                   | Плагин, @form.\* директивы, withUIMeta       |
-| i18n             | [docs/i18n.md](./docs/i18n.md)                           | Мультиязычность, перевод ошибок валидации    |
-| API Reference    | [docs/api-reference.md](./docs/api-reference.md)         | Хуки, контексты, типы                        |
+| Категория        | Документация                                             | Описание                                      |
+| ---------------- | -------------------------------------------------------- | --------------------------------------------- |
+| Field компоненты | [docs/fields.md](./docs/fields.md)                       | 50+ типов полей (String, Number, Select, ...) |
+| Form-level       | [docs/form-level.md](./docs/form-level.md)               | Steps, When, Watch, Errors, Persistence       |
+| Schema генерация | [docs/schema-generation.md](./docs/schema-generation.md) | FromSchema, AutoFields, Builder, Templates    |
+| Server Errors    | [docs/server-errors.md](./docs/server-errors.md)         | Маппинг Prisma/ZenStack/Zod ошибок на поля    |
+| Offline          | [docs/offline.md](./docs/offline.md)                     | Оффлайн режим, очередь синхронизации          |
+| ZenStack         | [docs/zenstack.md](./docs/zenstack.md)                   | Плагин, @form.\* директивы, withUIMeta        |
+| i18n             | [docs/i18n.md](./docs/i18n.md)                           | Мультиязычность, перевод ошибок валидации     |
+| API Reference    | [docs/api-reference.md](./docs/api-reference.md)         | Хуки, контексты, типы                         |
 
 ---
 
@@ -81,6 +82,11 @@ const Schema = z.object({
 <Form.Field.Date name="birthday" />
 <Form.Field.Phone name="phone" />
 <Form.Field.FileUpload name="avatar" />
+<Form.Field.Signature name="signature" />
+<Form.Field.CreditCard name="card" />
+
+// Защита
+<Form.Captcha />
 ```
 
 [Полный список → docs/fields.md](./docs/fields.md)
@@ -89,6 +95,14 @@ const Schema = z.object({
 
 ```tsx
 <Form schema={Schema} initialValue={data} onSubmit={save}>
+  {/* Реактивные побочные эффекты */}
+  <Form.Watch
+    field="name"
+    onChange={(v, { setFieldValue }) => {
+      setFieldValue('slug', transliterate(String(v)))
+    }}
+  />
+
   {/* Условный рендеринг */}
   <Form.When field="type" is="company">
     <Form.Field.String name="companyName" />
@@ -100,6 +114,38 @@ const Schema = z.object({
     <Form.Steps.Step title="Шаг 2">...</Form.Steps.Step>
     <Form.Steps.Navigation />
   </Form.Steps>
+
+  {/* Информационный блок */}
+  <Form.InfoBlock variant="info" title="Подсказка">
+    Заполните все поля для скидки.
+  </Form.InfoBlock>
+
+  {/* Разделитель секций */}
+  <Form.Divider label="Контакты" />
+
+  {/* Вычисляемые поля */}
+  <Form.Field.Calculated
+    name="total"
+    compute={(v) => v.price * v.qty}
+    format={(v) => `${v.toLocaleString()} ₽`}
+    deps={['price', 'qty']}
+  />
+
+  {/* Табличный редактор (массив объектов) */}
+  <Form.Field.TableEditor
+    name="items"
+    columns={[
+      { name: 'product', width: '40%' },
+      { name: 'qty', width: '15%', align: 'right' },
+      { name: 'price', width: '15%', align: 'right' },
+      { name: 'total', computed: (row) => row.qty * row.price, label: 'Итого' },
+    ]}
+    addLabel="Добавить товар"
+    footer={[{ column: 'total', aggregate: 'sum', label: 'Итого:' }]}
+  />
+
+  {/* Скрытые поля (UTM, referral) */}
+  <Form.Field.Hidden name="utm_source" value="landing" />
 
   {/* Сводка ошибок */}
   <Form.Errors title="Исправьте ошибки:" />
@@ -128,6 +174,18 @@ const Schema = z.object({
   <Form.Group.List.Button.Add>Добавить телефон</Form.Group.List.Button.Add>
 </Form.Group.List>
 ```
+
+### Smart Autofill
+
+Поля автоматически получают правильные `autocomplete` атрибуты (+30% конверсии, WCAG 1.3.5):
+
+```tsx
+<Form.Field.String name="email" />      // → autocomplete="email"
+<Form.Field.String name="firstName" />   // → autocomplete="given-name"
+<Form.Field.Password name="password" />  // → autocomplete="current-password"
+```
+
+Override: `autoComplete` prop или `.meta({ ui: { autocomplete: 'off' } })`.
 
 ### Автоматические constraints из Zod
 
@@ -159,7 +217,7 @@ model Product {
 
 ```tsx
 import { ProductCreateFormSchema } from '@/generated/form-schemas'
-;<Form.FromSchema schema={ProductCreateFormSchema} initialValue={data} onSubmit={save} />
+<Form.FromSchema schema={ProductCreateFormSchema} initialValue={data} onSubmit={save} />
 ```
 
 [Подробнее → docs/zenstack.md](./docs/zenstack.md)
@@ -184,6 +242,32 @@ import { ProductCreateFormSchema } from '@/generated/form-schemas'
 
 [Подробнее → docs/offline.md](./docs/offline.md)
 
+### Security
+
+```tsx
+// Honeypot — ловушка для ботов
+<Form honeypot={true} initialValue={data} onSubmit={handleSubmit}>
+  <Form.Field.String name="email" />
+  <Form.Button.Submit />
+</Form>
+
+// Rate Limiting — ограничение попыток submit
+<Form rateLimit={{ maxSubmits: 3, windowMs: 60000 }} initialValue={data} onSubmit={handleSubmit}>
+  ...
+</Form>
+
+// Secure File Upload — проверка MIME, удаление EXIF, переименование
+<Form.Field.FileUpload
+  name="document"
+  security={{
+    maxSize: '10MB',
+    allowedTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+    stripMetadata: true,
+    renameFile: true,
+  }}
+/>
+```
+
 ---
 
 ## Установка
@@ -195,13 +279,14 @@ import { Form } from '@lena/form-components'
 
 ### Опциональные зависимости (npm)
 
-| Пакет                  | Для чего                          |
-| ---------------------- | --------------------------------- |
-| `@dnd-kit/*`           | Drag & drop сортировка в массивах |
-| `use-mask-input`       | Phone, MaskedInput                |
-| `@tiptap/*`            | RichText редактор                 |
-| `@uiw/react-json-view` | Form.DebugValues (JSON инспектор) |
-| `next-intl`            | i18n интеграция                   |
+| Пакет                       | Для чего                          |
+| --------------------------- | --------------------------------- |
+| `@dnd-kit/*`                | Drag & drop сортировка в массивах |
+| `use-mask-input`            | Phone, MaskedInput                |
+| `@tiptap/*`                 | RichText редактор                 |
+| `@uiw/react-json-view`      | Form.DebugValues (JSON инспектор) |
+| `next-intl`                 | i18n интеграция                   |
+| `@marsidev/react-turnstile` | CAPTCHA (Cloudflare Turnstile)    |
 
 ---
 
@@ -262,17 +347,17 @@ MCP сервер [`@letar/form-mcp`](../form-mcp/README.md) предоставл
 
 Библиотека поставляется как ESM с external dependencies. Все тяжёлые зависимости (Chakra, React, Tiptap, dnd-kit) — external и не включаются в bundle.
 
-| Модуль | Размер (brotli) | Размер (raw) |
-|--------|----------------|--------------|
-| `@letar/forms` (все 40 полей) | **20 KB** | 109 KB |
-| `@letar/forms/fields/text` | < 1 KB | re-export |
-| `@letar/forms/fields/number` | < 1 KB | re-export |
-| `@letar/forms/fields/datetime` | < 1 KB | re-export |
-| `@letar/forms/fields/selection` | < 1 KB | re-export |
-| `@letar/forms/fields/boolean` | < 1 KB | re-export |
-| `@letar/forms/fields/specialized` | < 1 KB | re-export |
-| `@letar/forms/offline` | < 1 KB | 5 KB |
-| `@letar/forms/i18n` | < 1 KB | 13 KB |
+| Модуль                            | Размер (brotli) | Размер (raw) |
+| --------------------------------- | --------------- | ------------ |
+| `@letar/forms` (все 40 полей)     | **20 KB**       | 109 KB       |
+| `@letar/forms/fields/text`        | < 1 KB          | re-export    |
+| `@letar/forms/fields/number`      | < 1 KB          | re-export    |
+| `@letar/forms/fields/datetime`    | < 1 KB          | re-export    |
+| `@letar/forms/fields/selection`   | < 1 KB          | re-export    |
+| `@letar/forms/fields/boolean`     | < 1 KB          | re-export    |
+| `@letar/forms/fields/specialized` | < 1 KB          | re-export    |
+| `@letar/forms/offline`            | < 1 KB          | 5 KB         |
+| `@letar/forms/i18n`               | < 1 KB          | 13 KB        |
 
 Категорийные entry points (`fields/*`) позволяют импортировать только нужные поля:
 
@@ -300,5 +385,5 @@ import { FieldString, FieldTextarea } from '@letar/forms/fields/text'
 
 ---
 
-**Версия:** 0.59.0
-**Последнее обновление:** 2026-04-01
+**Версия:** 0.63.0
+**Последнее обновление:** 2026-04-03

@@ -3,11 +3,13 @@
 import { Field } from '@chakra-ui/react'
 import type { AnyFieldApi } from '@tanstack/react-form'
 import type { ReactElement, ReactNode } from 'react'
+import { useDeclarativeFormOptional } from '../../form-context'
 import type { ZodConstraints } from '../../schema-constraints'
 import type { BaseFieldProps, FieldTooltipMeta } from '../../types'
 import { FieldErrorBoundary } from './field-error-boundary'
 import { FieldLabel } from './field-label'
 import { formatFieldErrors, hasFieldErrors } from './field-utils'
+import { useAsyncFieldValidation } from './use-async-field-validation'
 import { useResolvedFieldProps } from './use-resolved-field-props'
 
 /**
@@ -32,6 +34,8 @@ export interface ResolvedFieldProps {
   constraints: ZodConstraints
   /** Options for select fields (from meta.options with i18n translations) */
   options: Array<{ value: string | number; label: string; disabled?: boolean; i18nKey?: string }> | undefined
+  /** HTML autocomplete атрибут (авто-определение по имени поля + meta override) */
+  autocomplete: string | undefined
 }
 
 /**
@@ -50,6 +54,8 @@ export interface FieldRenderProps<TValue = unknown, TState = Record<string, neve
   hasError: boolean
   /** Formatted error message */
   errorMessage: string
+  /** Async-валидация в процессе */
+  isValidating: boolean
   /** Local component state (from useFieldState) */
   fieldState: TState
 }
@@ -61,7 +67,7 @@ export interface FieldRenderProps<TValue = unknown, TState = Record<string, neve
  * including Field.Root wrapper and error display.
  */
 export type FieldRenderFn<P extends BaseFieldProps, TValue = unknown, TState = Record<string, never>> = (
-  props: FieldRenderProps<TValue, TState> & { componentProps: Omit<P, keyof BaseFieldProps> }
+  props: FieldRenderProps<TValue, TState> & { componentProps: Omit<P, keyof BaseFieldProps> },
 ) => ReactElement
 
 /**
@@ -164,14 +170,27 @@ export interface CreateFieldOptions<P extends BaseFieldProps, TValue = unknown, 
  * ```
  */
 export function createField<P extends BaseFieldProps, TValue = unknown, TState = Record<string, never>>(
-  options: CreateFieldOptions<P, TValue, TState>
+  options: CreateFieldOptions<P, TValue, TState>,
 ): (props: P) => ReactElement {
   const { displayName, render } = options
   // Use no-op hook by default so the call is always unconditional
   const useFieldState = options.useFieldState ?? (() => ({}) as TState)
 
   function FieldComponent(props: P): ReactElement {
-    const { name, label, placeholder, helperText, required, disabled, readOnly, tooltip, ...componentProps } = props
+    const {
+      name,
+      label,
+      placeholder,
+      helperText,
+      required,
+      disabled,
+      readOnly,
+      tooltip,
+      asyncValidate,
+      asyncDebounce,
+      asyncTrigger,
+      ...componentProps
+    } = props
 
     const { form, fullPath, ...resolvedRest } = useResolvedFieldProps(name, {
       label,
@@ -193,21 +212,37 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
       readOnly: resolvedRest.readOnly,
       constraints: resolvedRest.constraints,
       options: resolvedRest.options,
+      autocomplete: resolvedRest.autocomplete,
     }
 
     // Call useFieldState at the top level (before form.Field)
     // This allows using hooks inside useFieldState
     const fieldState = useFieldState(componentProps as Omit<P, keyof BaseFieldProps>, resolved)
 
+    // Async validation (from props or schema meta)
+    const declarativeCtx = useDeclarativeFormOptional()
+    const asyncValidation = useAsyncFieldValidation(
+      declarativeCtx?.schema,
+      fullPath,
+      asyncValidate ? { asyncValidate, asyncDebounce, asyncTrigger } : undefined,
+    )
+
     return (
       <FieldErrorBoundary fieldName={fullPath}>
-        <form.Field name={fullPath}>
+        <form.Field
+          name={fullPath}
+          {...(asyncValidation.validators ? { validators: asyncValidation.validators } : {})}
+          {...(asyncValidation.asyncDebounceMs ? { asyncDebounceMs: asyncValidation.asyncDebounceMs } : {})}
+        >
           {(field: AnyFieldApi) => {
             const errors = field.state.meta.errors
             const isTouched = field.state.meta.isTouched
             // Show errors only if field was touched (after blur or programmatic validation)
             const hasError = isTouched && hasFieldErrors(errors)
             const errorMessage = hasError ? formatFieldErrors(errors) : ''
+
+            // Async validation в процессе
+            const isValidating = !!field.state.meta.isValidating
 
             return render({
               field,
@@ -216,6 +251,7 @@ export function createField<P extends BaseFieldProps, TValue = unknown, TState =
               resolved,
               hasError,
               errorMessage,
+              isValidating,
               fieldState,
               componentProps: componentProps as Omit<P, keyof BaseFieldProps>,
             })
@@ -244,11 +280,16 @@ export function FieldError({
   hasError,
   errorMessage,
   helperText,
+  isValidating,
 }: {
   hasError: boolean
   errorMessage: string
   helperText: ReactNode
+  isValidating?: boolean
 }): ReactElement | null {
+  if (isValidating) {
+    return <Field.HelperText color="blue.500">⟳ Проверяю...</Field.HelperText>
+  }
   if (hasError) {
     return <Field.ErrorText>{errorMessage}</Field.ErrorText>
   }

@@ -2,7 +2,7 @@
 
 import { Box, Button, HStack, IconButton, Input, Popover, Portal, VStack } from '@chakra-ui/react'
 import type { Editor } from '@tiptap/react'
-import { useCallback, useState, type ReactElement } from 'react'
+import { type ReactElement, useCallback, useState } from 'react'
 import { LuLink, LuUnlink } from 'react-icons/lu'
 
 /**

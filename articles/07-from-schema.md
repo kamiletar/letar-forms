@@ -228,6 +228,91 @@ const schema = z.object({
 
 ---
 
+## Ещё больше автоматизации
+
+### Form.FromTemplate — готовые шаблоны
+
+10 шаблонов для типичных форм. Ноль конфигурации:
+
+```tsx
+// Контактная форма
+<Form.FromTemplate template="contact" onSubmit={handleContact} />
+
+// Логин
+<Form.FromTemplate template="login" onSubmit={handleLogin} />
+
+// Регистрация
+<Form.FromTemplate template="register" onSubmit={handleRegister} />
+```
+
+Доступные шаблоны: `contact`, `login`, `register`, `feedback`, `survey`, `address`, `payment`, `profile`, `newsletter`, `support`.
+
+Каждый шаблон — готовая Zod-схема + подобранные компоненты + валидация. Можно кастомизировать через `overrides`:
+
+```tsx
+<Form.FromTemplate
+  template="contact"
+  overrides={{ fields: { phone: { required: true } } }}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Form.Builder — JSON-конфигурация
+
+Для динамических форм (CMS, конструкторы) — JSON-driven подход:
+
+```tsx
+const config = {
+  fields: [
+    { name: 'title', type: 'string', label: 'Название', required: true },
+    { name: 'price', type: 'currency', label: 'Цена', currency: 'RUB' },
+    { name: 'category', type: 'select', label: 'Категория', options: categories },
+  ],
+}
+
+<Form.Builder config={config} onSubmit={save} />
+```
+
+### ConversationalMode — Typeform-style
+
+Одно поле за раз. Идеально для опросов и анкет:
+
+```tsx
+import { ConversationalMode } from '@letar/forms'
+
+<ConversationalMode
+  schema={SurveySchema}
+  initialValue={{}}
+  onSubmit={submitSurvey}
+  animation="slide"
+/>
+```
+
+### Иерархия уровней контроля
+
+```
+Макс. автоматизация → Макс. контроль
+
+FromTemplate → FromSchema → AutoFields → Builder → ConversationalMode → Field.*
+   ↑              ↑            ↑           ↑              ↑                ↑
+ Шаблоны     Вся форма    Часть полей   JSON-driven   По одному       Ручной JSX
+```
+
+---
+
+## Когда что использовать
+
+| Сценарий                | Инструмент                      |
+| ----------------------- | ------------------------------- |
+| Типовая форма           | `FromTemplate`                  |
+| Линейная форма          | `FromSchema`                    |
+| Частичная автогенерация | `AutoFields`                    |
+| CMS / динамические      | `Builder`                       |
+| Опросники / анкеты      | `ConversationalMode`            |
+| Сложный layout          | `Field.*` (Compound Components) |
+
+---
+
 ## Когда FromSchema НЕ подходит
 
 - **Сложная вёрстка** — двухколоночный layout, табы, аккордеоны → используйте Compound Components
@@ -241,14 +326,17 @@ const schema = z.object({
 
 ## Итоги
 
-| Что                     | Как                                   |
-| ----------------------- | ------------------------------------- |
-| Полная автогенерация    | `<Form.FromSchema schema={S} ... />`  |
-| Частичная автогенерация | `<Form.AutoFields exclude={[...]} />` |
-| Исключение полей        | `exclude={['id', 'createdAt']}`       |
-| Включение полей         | `include={['name', 'email']}`         |
-| Маппинг типов           | Автоматический (Zod type → компонент) |
-| Переопределение         | `fieldType` в `.meta({ ui })`         |
+| Что                     | Как                                      |
+| ----------------------- | ---------------------------------------- |
+| Полная автогенерация    | `<Form.FromSchema schema={S} ... />`     |
+| Частичная автогенерация | `<Form.AutoFields exclude={[...]} />`    |
+| Готовые шаблоны         | `<Form.FromTemplate template="contact">` |
+| JSON-конфигурация       | `<Form.Builder config={...} />`          |
+| Typeform-style          | `<ConversationalMode schema={S} />`      |
+| Исключение полей        | `exclude={['id', 'createdAt']}`          |
+| Включение полей         | `include={['name', 'email']}`            |
+| Маппинг типов           | Автоматический (Zod type → компонент)    |
+| Переопределение         | `fieldType` в `.meta({ ui })`            |
 
 ---
 

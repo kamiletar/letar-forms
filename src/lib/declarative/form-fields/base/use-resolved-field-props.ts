@@ -5,6 +5,7 @@ import { getLocalizedValue, useFormI18n, useLocalizedOptions } from '../../../i1
 import { generateConstraintHint } from '../../constraint-hints'
 import type { ZodConstraints } from '../../schema-constraints'
 import type { BaseFieldProps, FieldOptionMeta, FieldTooltipMeta } from '../../types'
+import { resolveAutoComplete } from './autocomplete-map'
 import { useDeclarativeField } from './base-field'
 
 /**
@@ -51,6 +52,8 @@ export function useResolvedFieldProps(
   constraints: ZodConstraints
   /** Options for select fields (from meta.options with i18n translations) */
   options: FieldOptionMeta[] | undefined
+  /** HTML autocomplete атрибут (авто-определение по имени поля + meta override) */
+  autocomplete: string | undefined
 } {
   const {
     form,
@@ -98,5 +101,7 @@ export function useResolvedFieldProps(
     constraints,
     // Options with i18n translations
     options: localizedOptions,
+    // HTML autocomplete (авто-определение по имени + meta override)
+    autocomplete: resolveAutoComplete(fullPath, meta?.autocomplete),
   }
 }

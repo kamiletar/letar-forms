@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import type { $ZodType } from 'zod/v4/core'
 import type { FormOfflineConfig } from '../../offline'
 import type { FormPersistenceConfig } from '../form-persistence'
+import type { RateLimitConfig } from '../security'
 
 /**
  * Form API type returned by useAppForm
@@ -25,6 +26,35 @@ export type ZodSchema = $ZodType
  * Form validation modes
  */
 export type ValidateOn = 'change' | 'blur' | 'submit' | 'mount'
+
+/**
+ * API доступное в onFieldChange callback.
+ * Позволяет реактивно менять значения других полей при изменении текущего.
+ */
+export interface FieldChangeApi {
+  /** Установить значение поля */
+  setFieldValue: (name: string, value: unknown) => void
+  /** Получить значение поля */
+  getFieldValue: (name: string) => unknown
+  /** Получить все текущие значения формы */
+  getValues: () => Record<string, unknown>
+}
+
+/**
+ * Маппинг поле → callback при изменении значения.
+ *
+ * @example
+ * ```tsx
+ * <Form
+ *   onFieldChange={{
+ *     name: (value, { setFieldValue }) => {
+ *       setFieldValue('slug', transliterate(String(value)))
+ *     },
+ *   }}
+ * >
+ * ```
+ */
+export type OnFieldChangeMap = Record<string, (value: unknown, api: FieldChangeApi) => void>
 
 /**
  * Middleware for processing form events
@@ -178,6 +208,23 @@ export interface FormPropsWithApi<TData extends object> {
    * Can also be set globally via createForm({ addressProvider }).
    */
   addressProvider?: import('../form-fields/specialized/providers').AddressProvider
+  /**
+   * Реактивные побочные эффекты при изменении полей.
+   * Ключ — имя поля, значение — callback с новым значением и form API.
+   */
+  onFieldChange?: OnFieldChangeMap
+  /**
+   * Включить honeypot-ловушку для ботов.
+   * Рендерит скрытое поле — если бот его заполнит, submit будет заблокирован.
+   */
+  honeypot?: boolean
+  /**
+   * Клиентский rate limiting для защиты от спама.
+   * Ограничивает количество submit за указанное окно времени.
+   *
+   * @example { maxSubmits: 3, windowMs: 60000 } // 3 попытки в минуту
+   */
+  rateLimit?: RateLimitConfig
   /** Form content */
   children: ReactNode
 }
@@ -197,7 +244,7 @@ export interface FormPropsWithApi<TData extends object> {
 export type UseQueryHook<TData = any, TInclude = any> = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: { where: { id: string }; include?: TInclude } | any,
-  options?: { enabled?: boolean },
+  options?: { enabled?: boolean }
 ) => {
   data: TData | undefined
   isLoading: boolean

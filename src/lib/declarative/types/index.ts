@@ -54,6 +54,7 @@ export type {
 export type {
   AppFormApi,
   DeclarativeFormContextValue,
+  FieldChangeApi,
   FormApiConfig,
   FormApiResult,
   FormApiState,
@@ -61,6 +62,7 @@ export type {
   FormOfflineState,
   FormProps,
   FormPropsWithApi,
+  OnFieldChangeMap,
   UseCreateHook,
   UseQueryHook,
   UseUpdateHook,

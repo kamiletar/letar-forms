@@ -15,6 +15,8 @@ export interface FieldWrapperProps {
   errorMessage: string
   /** Full path for data-field-name attribute */
   fullPath: string
+  /** Async-валидация в процессе */
+  isValidating?: boolean
   /** Field content (Input, Textarea, etc.) */
   children: ReactNode
 }
@@ -52,6 +54,7 @@ export const FieldWrapper = memo(function FieldWrapper({
   resolved,
   hasError,
   errorMessage,
+  isValidating,
   children,
 }: FieldWrapperProps): ReactElement {
   return (
@@ -63,7 +66,12 @@ export const FieldWrapper = memo(function FieldWrapper({
     >
       <FieldLabel label={resolved.label} tooltip={resolved.tooltip} required={resolved.required} />
       {children}
-      <FieldError hasError={hasError} errorMessage={errorMessage} helperText={resolved.helperText} />
+      <FieldError
+        hasError={hasError}
+        errorMessage={errorMessage}
+        helperText={resolved.helperText}
+        isValidating={isValidating}
+      />
     </Field.Root>
   )
 })

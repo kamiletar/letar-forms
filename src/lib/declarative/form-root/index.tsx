@@ -22,6 +22,7 @@ export { FormLoadingState } from './form-loading-state'
 export { FormSimple, type FormSimpleProps } from './form-simple'
 export { buildValidators } from './form-validators'
 export { FormWithApi, type FormWithApiProps } from './form-with-api'
+export { useFieldChangeListeners } from './use-field-change-listeners'
 export { useFormFeatures, type UseFormFeaturesConfig, type UseFormFeaturesResult } from './use-form-features'
 
 /**
@@ -66,6 +67,11 @@ function FormRoot<TData extends object>({
   disabled,
   readOnly,
   debug,
+  middleware,
+  addressProvider,
+  onFieldChange,
+  honeypot,
+  rateLimit,
   children,
 }: FormPropsWithApi<TData>): ReactElement {
   // If api is provided — use FormWithApi, otherwise — simple form
@@ -82,6 +88,11 @@ function FormRoot<TData extends object>({
         disabled={disabled}
         readOnly={readOnly}
         debug={debug}
+        middleware={middleware}
+        addressProvider={addressProvider}
+        onFieldChange={onFieldChange}
+        honeypot={honeypot}
+        rateLimit={rateLimit}
       >
         {children}
       </FormWithApi>
@@ -107,6 +118,11 @@ function FormRoot<TData extends object>({
       disabled={disabled}
       readOnly={readOnly}
       debug={debug}
+      middleware={middleware}
+      addressProvider={addressProvider}
+      onFieldChange={onFieldChange}
+      honeypot={honeypot}
+      rateLimit={rateLimit}
     >
       {children}
     </FormSimple>

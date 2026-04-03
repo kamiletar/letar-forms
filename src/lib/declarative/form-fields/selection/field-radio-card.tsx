@@ -1,7 +1,7 @@
 'use client'
 
 import { Field, RadioCard } from '@chakra-ui/react'
-import { useCallback, type KeyboardEvent, type ReactElement } from 'react'
+import { type KeyboardEvent, type ReactElement, useCallback } from 'react'
 import type { BaseFieldProps, FieldSizeWithoutXs, FieldTooltipMeta, RichOption } from '../../types'
 import { createField, FieldError, SelectionFieldLabel } from '../base'
 

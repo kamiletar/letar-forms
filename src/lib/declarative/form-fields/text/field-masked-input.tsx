@@ -1,7 +1,7 @@
 'use client'
 
 import { Input } from '@chakra-ui/react'
-import { useCallback, type ReactElement } from 'react'
+import { type ReactElement, useCallback } from 'react'
 import { withMask } from 'use-mask-input'
 import type { MaskedInputFieldProps } from '../../types'
 import { createField, FieldWrapper } from '../base'

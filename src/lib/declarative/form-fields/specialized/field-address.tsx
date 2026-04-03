@@ -5,16 +5,13 @@ import { type ReactElement, useCallback, useEffect, useRef, useState } from 'rea
 import { useDeclarativeFormOptional } from '../../form-context'
 import type { AddressFieldProps, AddressValue } from '../../types'
 import { createField, FieldError, FieldLabel, useDebounce } from '../base'
-import { createDaDataProvider } from './providers'
 import type { AddressProvider, AddressSuggestion } from './providers'
+import { createDaDataProvider } from './providers'
 
 /**
  * Resolve address provider from props, context, or token fallback.
  */
-function useAddressProvider(
-  propProvider?: AddressProvider,
-  token?: string,
-): AddressProvider | null {
+function useAddressProvider(propProvider?: AddressProvider, token?: string): AddressProvider | null {
   const formContext = useDeclarativeFormOptional()
 
   // Priority: prop > createForm context > token fallback
@@ -106,7 +103,7 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
           setIsLoading(false)
         }
       },
-      [provider, minChars, locations],
+      [provider, minChars, locations]
     )
 
     // Load on debounced query change

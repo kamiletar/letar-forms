@@ -4,7 +4,7 @@
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
-## [0.85.0] - 2026-04-10 — Testing Utilities + URL Prefill
+## [1.3.0] - 2026-04-10 — Testing Utilities + URL Prefill
 
 ### Added
 

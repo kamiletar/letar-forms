@@ -57,7 +57,7 @@ export function FieldImageChoice({
   multiple = false,
 }: ImageChoiceFieldProps): ReactElement {
   const { form } = useDeclarativeForm()
-  const parentGroup = useFormGroup()
+  useFormGroup() // Контекст группы (доступен через хук при необходимости)
   const {
     fullPath,
     label: resolvedLabel,
@@ -117,13 +117,7 @@ export function FieldImageChoice({
                     opacity={resolvedDisabled ? 0.5 : 1}
                     position="relative"
                   >
-                    <Image
-                      src={opt.image}
-                      alt={opt.label}
-                      w="100%"
-                      h="120px"
-                      objectFit="cover"
-                    />
+                    <Image src={opt.image} alt={opt.label} w="100%" h="120px" objectFit="cover" />
                     {/* Галочка выбора */}
                     {selected && (
                       <Box
@@ -145,8 +139,14 @@ export function FieldImageChoice({
                       </Box>
                     )}
                     <Box p={2}>
-                      <Text fontSize="sm" fontWeight="medium">{opt.label}</Text>
-                      {opt.description && <Text fontSize="xs" color="fg.muted">{opt.description}</Text>}
+                      <Text fontSize="sm" fontWeight="medium">
+                        {opt.label}
+                      </Text>
+                      {opt.description && (
+                        <Text fontSize="xs" color="fg.muted">
+                          {opt.description}
+                        </Text>
+                      )}
                     </Box>
                   </Box>
                 )

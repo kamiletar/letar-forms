@@ -77,10 +77,18 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
     const [highlightedIndex, setHighlightedIndex] = useState(-1)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const initializedRef = useRef(false)
+    const abortControllerRef = useRef<AbortController | null>(null)
 
     const debouncedQuery = useDebounce(inputValue, debounceMs)
 
-    // Fetch suggestions from provider
+    // Отмена in-flight запросов при unmount
+    useEffect(() => {
+      return () => {
+        abortControllerRef.current?.abort()
+      }
+    }, [])
+
+    // Загрузка подсказок от провайдера
     const fetchSuggestions = useCallback(
       async (query: string) => {
         if (query.length < minChars || !provider) {
@@ -88,29 +96,40 @@ export const FieldAddress = createField<AddressFieldProps, AddressValue | string
           return
         }
 
+        // Отменяем предыдущий запрос
+        abortControllerRef.current?.abort()
+        const controller = new AbortController()
+        abortControllerRef.current = controller
+
         setIsLoading(true)
         try {
           const results = await provider.getSuggestions(query, {
             count: 10,
             filters: locations ? Object.assign({}, ...locations) : undefined,
           })
+          // Игнорируем результат если запрос был отменён
+          if (controller.signal.aborted) return
           setSuggestions(results)
           setIsOpen(true)
         } catch (error) {
+          if (controller.signal.aborted) return
           console.error('Error loading address suggestions:', error)
           setSuggestions([])
         } finally {
-          setIsLoading(false)
+          if (!controller.signal.aborted) {
+            setIsLoading(false)
+          }
         }
       },
       [provider, minChars, locations]
     )
 
-    // Load on debounced query change
+    // Загрузка при изменении debounced запроса
     useEffect(() => {
       if (debouncedQuery) {
         fetchSuggestions(debouncedQuery)
       } else {
+        abortControllerRef.current?.abort()
         setSuggestions([])
         setIsOpen(false)
       }

@@ -90,9 +90,7 @@ export function FieldMatrixChoice({
           if (variant === 'checkbox') {
             // Множественный выбор — toggle в массиве
             const current = (value[rowValue] as string[] | undefined) ?? []
-            const next = current.includes(colValue)
-              ? current.filter((v) => v !== colValue)
-              : [...current, colValue]
+            const next = current.includes(colValue) ? current.filter((v) => v !== colValue) : [...current, colValue]
             field.handleChange({ ...value, [rowValue]: next })
           } else {
             // Radio/Rating — одиночный выбор
@@ -114,45 +112,45 @@ export function FieldMatrixChoice({
           <VStack gap={4} align="stretch" display={{ base: 'flex', md: 'none' }}>
             {rows.map((row) => (
               <Box key={row.value} p={3} borderWidth="1px" borderRadius="md">
-                <Text fontWeight="medium" mb={2}>{row.label}</Text>
-                {variant === 'checkbox'
-                  ? (
+                <Text fontWeight="medium" mb={2}>
+                  {row.label}
+                </Text>
+                {variant === 'checkbox' ? (
+                  <VStack align="start" gap={1}>
+                    {columns.map((col) => (
+                      <Checkbox.Root
+                        key={col.value}
+                        checked={isSelected(row.value, col.value)}
+                        onCheckedChange={() => setRowValue(row.value, col.value)}
+                        disabled={!!resolvedDisabled}
+                        size="sm"
+                      >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>{col.label}</Checkbox.Label>
+                      </Checkbox.Root>
+                    ))}
+                  </VStack>
+                ) : (
+                  <RadioGroup.Root
+                    value={String(value[row.value] ?? '')}
+                    onValueChange={(details) => {
+                      if (details.value) setRowValue(row.value, details.value)
+                    }}
+                    disabled={!!resolvedDisabled}
+                    size="sm"
+                  >
                     <VStack align="start" gap={1}>
                       {columns.map((col) => (
-                        <Checkbox.Root
-                          key={col.value}
-                          checked={isSelected(row.value, col.value)}
-                          onCheckedChange={() => setRowValue(row.value, col.value)}
-                          disabled={!!resolvedDisabled}
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control />
-                          <Checkbox.Label>{col.label}</Checkbox.Label>
-                        </Checkbox.Root>
+                        <RadioGroup.Item key={col.value} value={col.value}>
+                          <RadioGroup.ItemHiddenInput />
+                          <RadioGroup.ItemIndicator />
+                          <RadioGroup.ItemText>{col.label}</RadioGroup.ItemText>
+                        </RadioGroup.Item>
                       ))}
                     </VStack>
-                  )
-                  : (
-                    <RadioGroup.Root
-                      value={String(value[row.value] ?? '')}
-                      onValueChange={(details) => {
-                        if (details.value) setRowValue(row.value, details.value)
-                      }}
-                      disabled={!!resolvedDisabled}
-                      size="sm"
-                    >
-                      <VStack align="start" gap={1}>
-                        {columns.map((col) => (
-                          <RadioGroup.Item key={col.value} value={col.value}>
-                            <RadioGroup.ItemHiddenInput />
-                            <RadioGroup.ItemIndicator />
-                            <RadioGroup.ItemText>{col.label}</RadioGroup.ItemText>
-                          </RadioGroup.Item>
-                        ))}
-                      </VStack>
-                    </RadioGroup.Root>
-                  )}
+                  </RadioGroup.Root>
+                )}
               </Box>
             ))}
           </VStack>
@@ -196,7 +194,7 @@ export function FieldMatrixChoice({
 
           e.preventDefault()
           const nextCell = document.querySelector(
-            `[data-matrix-row="${rows[nextRowIdx].value}"][data-matrix-col="${columns[nextColIdx].value}"]`,
+            `[data-matrix-row="${rows[nextRowIdx].value}"][data-matrix-col="${columns[nextColIdx].value}"]`
           ) as HTMLElement | null
           nextCell?.focus()
         }
@@ -218,9 +216,8 @@ export function FieldMatrixChoice({
                 {rows.map((row) => {
                   // Подсветка незаполненной строки при required
                   const rowValue = value[row.value]
-                  const isRowEmpty = variant === 'checkbox'
-                    ? (!Array.isArray(rowValue) || rowValue.length === 0)
-                    : !rowValue
+                  const isRowEmpty =
+                    variant === 'checkbox' ? !Array.isArray(rowValue) || rowValue.length === 0 : !rowValue
                   const showRowError = resolvedRequired && hasError && isRowEmpty
 
                   return (
@@ -242,46 +239,42 @@ export function FieldMatrixChoice({
                           tabIndex={0}
                           role="gridcell"
                         >
-                          {variant === 'checkbox'
-                            ? (
-                              <Checkbox.Root
-                                checked={isSelected(row.value, col.value)}
-                                onCheckedChange={() => setRowValue(row.value, col.value)}
-                                disabled={!!resolvedDisabled}
-                                size="sm"
-                              >
-                                <Checkbox.HiddenInput />
-                                <Checkbox.Control />
-                              </Checkbox.Root>
-                            )
-                            : variant === 'rating'
-                            ? (
-                              <Box
-                                cursor={resolvedDisabled ? 'default' : 'pointer'}
-                                onClick={() => setRowValue(row.value, col.value)}
-                                fontSize="lg"
-                                color={isSelected(row.value, col.value) ? 'yellow.400' : 'gray.300'}
-                                _hover={resolvedDisabled ? undefined : { color: 'yellow.400' }}
-                              >
-                                ★
-                              </Box>
-                            )
-                            : (
-                              <Circle
-                                size="18px"
-                                borderWidth="2px"
-                                borderColor={isSelected(row.value, col.value) ? 'blue.500' : 'border'}
-                                bg={isSelected(row.value, col.value) ? 'blue.500' : 'transparent'}
-                                cursor={resolvedDisabled ? 'default' : 'pointer'}
-                                onClick={() => setRowValue(row.value, col.value)}
-                                transition="all 0.15s"
-                                _hover={resolvedDisabled ? undefined : { borderColor: 'blue.400' }}
-                                aria-checked={isSelected(row.value, col.value)}
-                                role="radio"
-                              >
-                                {isSelected(row.value, col.value) && <Circle size="8px" bg="white" />}
-                              </Circle>
-                            )}
+                          {variant === 'checkbox' ? (
+                            <Checkbox.Root
+                              checked={isSelected(row.value, col.value)}
+                              onCheckedChange={() => setRowValue(row.value, col.value)}
+                              disabled={!!resolvedDisabled}
+                              size="sm"
+                            >
+                              <Checkbox.HiddenInput />
+                              <Checkbox.Control />
+                            </Checkbox.Root>
+                          ) : variant === 'rating' ? (
+                            <Box
+                              cursor={resolvedDisabled ? 'default' : 'pointer'}
+                              onClick={() => setRowValue(row.value, col.value)}
+                              fontSize="lg"
+                              color={isSelected(row.value, col.value) ? 'yellow.400' : 'gray.300'}
+                              _hover={resolvedDisabled ? undefined : { color: 'yellow.400' }}
+                            >
+                              ★
+                            </Box>
+                          ) : (
+                            <Circle
+                              size="18px"
+                              borderWidth="2px"
+                              borderColor={isSelected(row.value, col.value) ? 'blue.500' : 'border'}
+                              bg={isSelected(row.value, col.value) ? 'blue.500' : 'transparent'}
+                              cursor={resolvedDisabled ? 'default' : 'pointer'}
+                              onClick={() => setRowValue(row.value, col.value)}
+                              transition="all 0.15s"
+                              _hover={resolvedDisabled ? undefined : { borderColor: 'blue.400' }}
+                              aria-checked={isSelected(row.value, col.value)}
+                              role="radio"
+                            >
+                              {isSelected(row.value, col.value) && <Circle size="8px" bg="white" />}
+                            </Circle>
+                          )}
                         </Table.Cell>
                       ))}
                     </Table.Row>

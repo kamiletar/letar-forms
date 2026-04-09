@@ -108,7 +108,7 @@ export function useAsyncFieldValidation(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: any,
   fieldPath: string,
-  propsConfig?: Partial<AsyncValidateConfig>,
+  propsConfig?: Partial<AsyncValidateConfig>
 ): AsyncFieldValidators {
   // AbortController для отмены предыдущего запроса
   const abortRef = useRef<AbortController | null>(null)
@@ -116,10 +116,7 @@ export function useAsyncFieldValidation(
   const cacheRef = useRef<Map<string, string | undefined>>(new Map())
 
   // Извлекаем конфиг из schema meta
-  const schemaConfig = useMemo(
-    () => getAsyncValidateFromSchema(schema, fieldPath),
-    [schema, fieldPath],
-  )
+  const schemaConfig = useMemo(() => getAsyncValidateFromSchema(schema, fieldPath), [schema, fieldPath])
 
   // Мержим: props > schema meta
   const asyncFn = propsConfig?.asyncValidate ?? schemaConfig?.asyncValidate
@@ -158,7 +155,7 @@ export function useAsyncFieldValidation(
         return undefined
       }
     },
-    [asyncFn],
+    [asyncFn]
   )
 
   // Собираем validators

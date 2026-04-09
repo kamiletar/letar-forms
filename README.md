@@ -1,12 +1,9 @@
 # @letar/forms
 
-Declarative form components for React with **56 field types**, powered by [TanStack Form](https://tanstack.com/form) and [Chakra UI v3](https://chakra-ui.com).
+Declarative form components for React with **40+ field types**, powered by [TanStack Form](https://tanstack.com/form) and [Chakra UI v3](https://chakra-ui.com).
 
 [![npm version](https://img.shields.io/npm/v/@letar/forms)](https://www.npmjs.com/package/@letar/forms)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@letar/forms)](https://bundlephobia.com/package/@letar/forms)
 [![license](https://img.shields.io/npm/l/@letar/forms)](./LICENSE)
-
-📖 [Documentation](https://forms.letar.best) · 🎮 [Live Examples](https://forms-example.letar.best) · 🤖 [MCP for AI](https://www.npmjs.com/package/@letar/form-mcp)
 
 [Документация на русском](./README.ru.md)
 
@@ -62,7 +59,7 @@ function MyForm() {
 
 ## Features
 
-### 56 Field Components
+### 40+ Field Components
 
 ```tsx
 // Text
@@ -91,8 +88,7 @@ function MyForm() {
 <Form.Field.Phone name="phone" />
 <Form.Field.FileUpload name="avatar" />
 <Form.Field.ColorPicker name="color" />
-<Form.Field.Signature name="signature" />
-<Form.Field.CreditCard name="card" />
+<Form.Field.PinInput name="code" />
 ```
 
 ### Conditional Rendering
@@ -145,121 +141,6 @@ function MyForm() {
 </Form.Group.List>
 ```
 
-### Security
-
-```tsx
-// Honeypot — invisible bot trap (zero friction for users)
-<Form honeypot initialValue={data} onSubmit={save}>
-  ...
-</Form>
-
-// Rate Limiting — throttle repeated submits
-<Form rateLimit={{ maxSubmits: 3, windowMs: 60000 }} initialValue={data} onSubmit={save}>
-  ...
-</Form>
-
-// CAPTCHA (Cloudflare Turnstile / Google reCAPTCHA / hCaptcha)
-<Form.Captcha />
-```
-
-### Offline Support (PWA)
-
-```tsx
-<Form
-  initialValue={data}
-  offline={{ actionType: 'SAVE_REPORT', onSynced: () => toast.success('Synced') }}
-  onSubmit={save}
->
-  <Form.OfflineIndicator />
-  <Form.Field.String name="name" />
-  <Form.Button.Submit />
-</Form>
-```
-
-### Analytics
-
-```tsx
-<Form analytics={{ adapter: umamiAdapter }}>
-  <Form.Analytics.Panel />  {/* Dev-only live dashboard */}
-</Form>
-```
-
-### Undo / Redo
-
-```tsx
-<Form history initialValue={data} onSubmit={save}>
-  <Form.History.Controls />  {/* Ctrl+Z / Ctrl+Shift+Z */}
-  ...
-</Form>
-```
-
-### Conversational Mode (Typeform-style)
-
-```tsx
-<Form schema={SurveySchema} initialValue={{}} onSubmit={save}>
-  <ConversationalMode showProgress showQuestionNumber>
-    <Form.Field.String name="name" label="What's your name?" />
-    <Form.Field.Rating name="satisfaction" label="Rate the service" />
-  </ConversationalMode>
-</Form>
-```
-
-### Form Builder (JSON-driven)
-
-```tsx
-<FormBuilder
-  config={{
-    fields: [
-      { name: 'title', type: 'string', label: 'Title' },
-      { name: 'price', type: 'currency', label: 'Price' },
-    ],
-  }}
-  initialValue={{}}
-  onSubmit={save}
-/>
-```
-
-### Form Comparison (Diff View)
-
-```tsx
-<FormComparison original={oldData} current={newData} schema={Schema} onlyChanged />
-```
-
-### Read-Only View
-
-```tsx
-<FormReadOnlyView data={values} schema={Schema} compact />
-```
-
-### Form Skeleton
-
-```tsx
-<FormSkeleton schema={Schema} showSubmit />
-```
-
-### URL Prefill
-
-```tsx
-import { useUrlPrefill, generatePrefillUrl } from '@letar/forms'
-
-// URL: /contact?name=Ivan&email=ivan@test.com
-const prefilled = useUrlPrefill({ fields: ['name', 'email'], cleanUrl: true })
-
-// Generate marketing links
-const url = generatePrefillUrl('/contact', { name: 'Ivan', email: 'ivan@test.com' })
-```
-
-### Testing Utilities
-
-```tsx
-import { renderForm, fillField, submitForm, expectFieldError } from '@letar/forms/testing'
-
-const { onSubmit } = renderForm(ContactForm)
-await fillField('name', 'Ivan')
-await submitForm()
-expect(onSubmit).toHaveBeenCalled()
-```
-
 ### Auto Constraints from Zod
 
 ```tsx
@@ -268,6 +149,21 @@ const Schema = z.object({
   email: z.string().email(),          // → type="email"
   rating: z.number().min(1).max(10),  // → min={1} max={10}
 })
+
+// DRY: validation and UI constraints in one place
+<Form.Field.String name="title" />  {/* maxLength={100} from schema */}
+```
+
+### Error Summary
+
+```tsx
+<Form schema={Schema} initialValue={data} onSubmit={save}>
+  <Form.Field.String name="name" />
+  <Form.Field.String name="email" />
+
+  <Form.Errors title="Please fix:" />
+  <Form.Button.Submit />
+</Form>
 ```
 
 ### Address Provider
@@ -277,24 +173,53 @@ Address and city fields support pluggable geocoding providers. DaData (Russia) i
 ```tsx
 import { createDaDataProvider, createForm } from '@letar/forms'
 
+// Option 1: Set once via createForm (recommended)
 const AppForm = createForm({
   addressProvider: createDaDataProvider({ token: process.env.DADATA_TOKEN }),
 })
 
 <AppForm.Field.Address name="address" />
 <AppForm.Field.City name="city" />
+
+// Option 2: Per-field provider
+<Form.Field.Address name="address" provider={myProvider} />
+
+// Option 3: Backward compatible token prop
+<Form.Field.Address name="address" token="dadata-token" />
+```
+
+Custom provider — implement the `AddressProvider` interface:
+
+```typescript
+import type { AddressProvider } from '@letar/forms'
+
+const googlePlaces: AddressProvider = {
+  async getSuggestions(query, options) {
+    const res = await fetch(`/api/places?q=${query}&limit=${options?.count ?? 10}`)
+    const data = await res.json()
+    return data.map((item) => ({
+      label: item.description,
+      value: item.description,
+      data: item.structured,
+    }))
+  },
+}
 ```
 
 ### createForm — App-Level Customization
 
+Create an extended Form with app-specific fields, selects, and address provider:
+
 ```tsx
-import { createForm } from '@letar/forms'
+import { createForm, createDaDataProvider } from '@letar/forms'
+import { SelectCategory } from './selects/select-category'
 
 const AppForm = createForm({
   addressProvider: createDaDataProvider({ token: '...' }),
   extraSelects: { Category: SelectCategory },
 })
 
+// Usage — all customizations applied automatically
 <AppForm initialValue={data} onSubmit={save}>
   <AppForm.Field.Address name="address" />
   <AppForm.Select.Category name="categoryId" />
@@ -305,10 +230,11 @@ const AppForm = createForm({
 ## Subpath Exports
 
 ```tsx
-import { useOfflineForm } from '@letar/forms/offline'
-import { FormI18nProvider } from '@letar/forms/i18n'
-import { renderForm } from '@letar/forms/testing'
-import { umamiAdapter } from '@letar/forms/analytics'
+// Offline support (PWA)
+import { FormOfflineIndicator, useOfflineForm } from '@letar/forms/offline'
+
+// Internationalization
+import { FormI18nProvider, useFormI18n } from '@letar/forms/i18n'
 ```
 
 ## Peer Dependencies
@@ -322,6 +248,7 @@ import { umamiAdapter } from '@letar/forms/analytics'
 | `zod`                  | >= 3.24.0 | Yes                              |
 | `@dnd-kit/*`           | >= 6.0.0  | Optional (drag & drop in arrays) |
 | `use-mask-input`       | >= 3.0.0  | Optional (Phone, MaskedInput)    |
+| `@uiw/react-json-view` | >= 2.0.0  | Optional (Form.DebugValues)      |
 
 ## Documentation
 
@@ -333,4 +260,4 @@ Full documentation and live examples: **[forms.letar.best](https://forms.letar.b
 
 ---
 
-**Version:** 0.85.0
+**Version:** 0.58.0

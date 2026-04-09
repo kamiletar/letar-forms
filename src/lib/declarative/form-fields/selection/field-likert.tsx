@@ -46,7 +46,7 @@ export function FieldLikert({
   showNumbers = false,
 }: LikertFieldProps): ReactElement {
   const { form } = useDeclarativeForm()
-  const parentGroup = useFormGroup()
+  useFormGroup()
   const {
     fullPath,
     label: resolvedLabel,
@@ -55,8 +55,6 @@ export function FieldLikert({
     disabled: resolvedDisabled,
     readOnly: resolvedReadOnly,
   } = useResolvedFieldProps(name, { label, helperText, required, disabled, readOnly })
-
-  const points = anchors.length
 
   return (
     <form.Field name={fullPath}>
@@ -92,7 +90,11 @@ export function FieldLikert({
                       onClick={() => handleSelect(point)}
                       opacity={resolvedDisabled ? 0.5 : 1}
                     >
-                      {showNumbers && <Text fontSize="xs" color="fg.muted">{point}</Text>}
+                      {showNumbers && (
+                        <Text fontSize="xs" color="fg.muted">
+                          {point}
+                        </Text>
+                      )}
                       <Box
                         w="32px"
                         h="32px"

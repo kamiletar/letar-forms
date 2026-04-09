@@ -4,6 +4,130 @@
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [0.85.0] - 2026-04-10 — Testing Utilities + URL Prefill
+
+### Added
+
+- **@letar/forms/testing** — новый entry point с хелперами для тестирования форм:
+  - `renderForm()` — рендер в ChakraProvider + привязанные хелперы
+  - `fillField()` — заполнение полей по data-field-name (text, number, checkbox)
+  - `submitForm()` — поиск и клик кнопки сабмита
+  - `expectFieldError()` / `expectNoFieldError()` / `expectFieldValue()` — ассерты
+  - `goToStep()` / `expectActiveStep()` — мультистеп хелперы
+  - `addItem()` / `removeItem()` / `expectItemCount()` — массивы
+  - `renderComparison()` / `renderReadOnlyView()` — утилитарные компоненты
+  - `TestWrapper` — централизованный ChakraProvider wrapper
+- **useUrlPrefill()** — хук для автозаполнения формы из URL-параметров (whitelist, маппинг, массивы, вложенные объекты, cleanUrl)
+- **generatePrefillUrl()** — генерация маркетинговых ссылок с предзаполненными параметрами
+
+### Documentation
+
+- Обновлены GitHub READMEs: letar-forms (56 fields, новые фичи), zenstack-form-plugin (бейджи), letar-form-mcp (56 fields)
+- Добавлены MDX guides (EN+RU) и демо-страницы в form-docs для testing-utilities и url-prefill
+- Добавлены примеры в form-example с навигацией
+
+## [0.84.3] - 2026-04-04 — Fix: TableEditor checkbox selection
+
+### Fixed
+
+- **TableEditor selectable** — клик по чекбоксу одной строки выделял все строки. Причина: Chakra Checkbox без уникального `id` и `Checkbox.Indicator` внутри `Checkbox.Control` вызывал коллизии label-input привязок. Добавлены уникальные `id` и `Checkbox.Indicator`.
+
+### Added
+
+- **table-selection.spec.tsx** — 3 unit-теста для проверки изолированного выделения строк
+
+## [0.84.2] - 2026-04-04 — Аудит документации: 56 полей задокументированы
+
+### Added
+
+- **docs/analytics.md** — полная документация аналитики форм (useFormAnalytics, 4 адаптера, AnalyticsPanel, события)
+- **docs/fields.md** — добавлены 17 недокументированных полей: Document (7), Survey (3), YesNo, TableEditor, DataGrid, Hidden, Calculated, Signature, CreditCard
+- **docs/form-level.md** — добавлены секции: Captcha, Analytics.Panel, History.Controls, Comparison, ReadOnlyView, Skeleton, DependsOn
+- **docs/api-reference.md** — добавлены: useFormHistory, useFormAnalytics, useFormAutosave, mapServerErrors, applyServerErrors, deepEqual, safeStringify
+
+### Improved
+
+- **README.md** — обновлён счётчик полей: "50+" → "56"
+- **docs/fields.md** — обновлён счётчик: "40 типов" → "56 типов", добавлены 6 новых категорий полей
+
+## [0.84.1] - 2026-04-04 — Аудит качества: unit-тесты ядра и документных полей
+
+### Added
+
+- **create-form.spec.tsx** — 10 unit-тестов для фабрики createForm (extraSelects, extraComboboxes, extraListboxes, extraFields, комбинирование)
+- **form-autosave.spec.ts** — 12 unit-тестов для useFormAutosave (saveNow, loadDraft, localStorage fallback, callbacks, HTTP метод, draftId)
+- **document-fields.spec.ts** — 27 unit-тестов для валидации документных полей (ИНН, БИК, ОГРН, СНИЛС, КПП, паспорт, р/с, корр. счёт)
+
+### Improved
+
+- **TESTING_PLAN.md** — актуализированы метрики (109 файлов, 1074 теста; убраны завышенные планируемые числа)
+- Метрики: 112 тестовых файлов, 1074 теста (было 109/1020)
+
+## [0.84.0] - 2026-04-04 — P3 тесты + документация DX-фич
+
+### Added
+
+- **5 unit-тестов P3**: creditCardSchema, KPP validator, table-utils (6 функций), captcha verify (3 провайдера), useConversationalState
+- **5 MDX guides** (form-docs): comparison, depends-on, readonly-view, form-skeleton, debug-values
+- **4 demo pages** (form-docs): comparison, depends-on, debug-values, form-templates
+- **3 example pages** (form-example): comparison, depends-on, debug-values
+
+### Improved
+
+- Навигация form-example: +3 ссылки (Comparison Diff, DependsOn, Debug Values)
+- meta.json form-docs: +5 guide slugs
+- Метрики: 109 тестовых файлов, 1020 тестов (было 104/951)
+
+## [0.83.0] - 2026-04-04 — DragHandle, SVG export, async validation Spinner
+
+### Added
+
+- **Signature SVG Export** — новый проп `exportFormat: 'png' | 'svg'` для поля подписи
+  - Draw mode: запись stroke-координат → SVG `<path>` элементы
+  - Typed mode: SVG `<text>` элемент с курсивным шрифтом
+  - Векторный формат для печати без потери качества
+  - XSS-защита через `escapeXml()` для typed mode
+  - По умолчанию `'png'` — полная обратная совместимость
+  - 10 unit-тестов для SVG утилит
+
+### Improved
+
+- **TableEditor DragHandle** — заменён текстовый ⋮ на полноценный `DragHandle` компонент из @dnd-kit с keyboard support, aria-label и grab/grabbing курсором
+- **Async Validation Spinner** — заменён текст "⟳ Проверяю..." на Chakra `Spinner` компонент + синяя рамка на input при валидации (`data-validating` атрибут)
+
+## [0.82.0] - 2026-04-04 — P2 тесты, lint/typecheck фиксы, E2E инфраструктура
+
+### Fixed
+
+- **honeypot.tsx** — tabIndex вынесен из style в JSX prop (TS2353)
+- **field-file-upload.tsx** — добавлен generic FileUploadFieldState в createField (TS2322/TS2349)
+- **field-signature.tsx** — placeholder/disabled из resolved вместо componentProps (TS2339)
+- **rate-limiter.ts** — убрана неиспользуемая переменная attemptVersion (TS6133)
+- **map-server-errors.ts** — `==` → `===` (eqeqeq)
+
+### Tests
+
+- 8 новых P2 unit-тестовых файлов: SegmentedGroup, Tags, CheckboxCard, RadioCard, Schedule, Address, RichText, City
+- 828 тестов в 81 файле (100% проходят)
+- E2E инфраструктура: form-example-e2e с Playwright (5 тестов: basic, validation, multi-step, conditional, groups)
+
+## [0.81.0] - 2026-04-04 — Баг-фиксы, типобезопасность, тестовое покрытие
+
+### Fixed
+
+- **AbortController в FieldAddress** — отмена in-flight запросов при новом вводе и unmount, устранён race condition
+- **deepEqual()** — замена JSON.stringify на корректное глубокое сравнение в FormComparison и RelationFieldProvider
+- **safeStringify()** — безопасная сериализация объектов с circular refs в FormComparison и FormReadOnlyView
+
+### Improved
+
+- **Типобезопасность** — RelationConfig: `any` → `unknown`, убраны eslint-disable комментарии
+
+### Tests
+
+- 8 новых тестовых файлов: deepEqual, safeStringify, Rating, PinInput, OTPInput, ColorPicker, Editable, NumberInput, Autocomplete, Listbox
+- 802 теста в 73 файлах (100% проходят)
+
 ## [0.80.0] - 2026-04-04 — DX фичи: Analytics, History, ServerErrors, ReadOnly, Skeleton, Comparison, DependsOn
 
 ### Added

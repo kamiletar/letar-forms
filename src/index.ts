@@ -189,6 +189,10 @@ export type {
   UseFormAutosaveResult,
 } from './lib/declarative'
 
+// URL Prefill
+export { generatePrefillUrl, useUrlPrefill } from './lib/declarative/use-url-prefill'
+export type { UrlPrefillOptions } from './lib/declarative/use-url-prefill'
+
 // Form Templates
 export { FormFromTemplate, templates } from './lib/declarative'
 export type { FormFromTemplateProps, FormTemplate } from './lib/declarative'
@@ -244,12 +248,13 @@ export { HistoryControls, useFormHistory } from './lib/history'
 export type { FormHistoryConfig, HistoryControlsProps, HistoryEntry, UseFormHistoryResult } from './lib/history'
 
 // Form Analytics (field-level tracking, drop-off, completion)
-export { AnalyticsPanel, useFormAnalytics } from './lib/analytics'
 export {
+  AnalyticsPanel,
   createGtagAdapter,
   createPostHogAdapter,
   createUmamiAdapter,
   createYandexMetrikaAdapter,
+  useFormAnalytics,
 } from './lib/analytics'
 export type {
   AnalyticsAdapter,

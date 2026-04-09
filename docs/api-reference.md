@@ -292,6 +292,86 @@ interface RelationConfig {
 
 ---
 
+## DX хуки (v0.80.0+)
+
+### useFormHistory
+
+Undo/Redo для форм с keyboard shortcuts:
+
+```typescript
+import { useFormHistory } from '@lena/form-components'
+
+const { undo, redo, canUndo, canRedo, historyLength } = useFormHistory(form, {
+  maxHistory?: number       // Макс. записей (default: 50)
+  debounceMs?: number       // Debounce сохранения (default: 300)
+  persistence?: boolean     // Сохранять в sessionStorage (default: false)
+})
+```
+
+### useFormAnalytics
+
+Field-level аналитика:
+
+```typescript
+import { useFormAnalytics } from '@lena/form-components/analytics'
+
+const analytics = useFormAnalytics({
+  formId?: string
+  adapters?: AnalyticsAdapter[]
+  enabled?: boolean
+  trackCorrections?: boolean
+})
+// → { fieldAnalytics, completionRate, totalTimeMs, totalErrors, trackError, trackAbandon, trackComplete, reset }
+```
+
+Подробнее: [analytics.md](./analytics.md)
+
+### useFormAutosave
+
+Автосохранение формы при изменениях:
+
+```typescript
+import { useFormAutosave } from '@lena/form-components'
+
+useFormAutosave(form, {
+  onSave: async (values) => { ... }
+  debounceMs?: number     // default: 1000
+  enabled?: boolean       // default: true
+})
+```
+
+---
+
+## Утилиты обработки ошибок (v0.80.0+)
+
+### mapServerErrors
+
+Автодетект формата серверных ошибок:
+
+```typescript
+import { applyServerErrors, mapServerErrors } from '@lena/form-components/server-errors'
+
+const mapped = mapServerErrors(error) // Prisma, ZenStack, Zod flatten, custom
+applyServerErrors(form, mapped) // Применяет ошибки к полям формы
+```
+
+Поддерживаемые форматы: Prisma (P2002/P2003), ZenStack policy errors, Zod flatten, `{ fieldErrors: Record<string, string> }`.
+
+Подробнее: [server-errors.md](./server-errors.md)
+
+---
+
+## Утилиты сравнения
+
+```typescript
+import { deepEqual, safeStringify } from '@lena/form-components'
+
+deepEqual(a, b) // Глубокое сравнение значений
+safeStringify(value) // JSON.stringify с обработкой circular refs
+```
+
+---
+
 ## Утилиты withUIMeta
 
 ```tsx

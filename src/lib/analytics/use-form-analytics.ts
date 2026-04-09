@@ -19,85 +19,126 @@ export function useFormAnalytics(config?: FormAnalyticsConfig): UseFormAnalytics
   const blurredFieldsRef = useRef<Set<string>>(new Set())
 
   // Отправить событие во все адаптеры + callbacks
-  const emit = useCallback((event: FormAnalyticsEvent) => {
-    if (!enabled) return
-    for (const adapter of adapters) {
-      try { adapter.track(event, formId) } catch {}
-    }
-    // Callbacks
-    switch (event.type) {
-      case 'field_focus': config?.onFieldFocus?.(event.field, event.timestamp); break
-      case 'field_blur': config?.onFieldBlur?.(event.field, event.timestamp, event.timeSpentMs); break
-      case 'field_error': config?.onFieldError?.(event.field, event.error); break
-      case 'step_change': config?.onStepChange?.(event.from, event.to); break
-      case 'form_abandon': config?.onAbandon?.(event.lastField, event.filledFields, event.totalFields); break
-      case 'form_complete': config?.onComplete?.(event.totalTimeMs, event.fieldTimes); break
-    }
-  }, [enabled, adapters, formId, config])
+  const emit = useCallback(
+    (event: FormAnalyticsEvent) => {
+      if (!enabled) return
+      for (const adapter of adapters) {
+        try {
+          adapter.track(event, formId)
+        } catch {}
+      }
+      // Callbacks
+      switch (event.type) {
+        case 'field_focus':
+          config?.onFieldFocus?.(event.field, event.timestamp)
+          break
+        case 'field_blur':
+          config?.onFieldBlur?.(event.field, event.timestamp, event.timeSpentMs)
+          break
+        case 'field_error':
+          config?.onFieldError?.(event.field, event.error)
+          break
+        case 'step_change':
+          config?.onStepChange?.(event.from, event.to)
+          break
+        case 'form_abandon':
+          config?.onAbandon?.(event.lastField, event.filledFields, event.totalFields)
+          break
+        case 'form_complete':
+          config?.onComplete?.(event.totalTimeMs, event.fieldTimes)
+          break
+      }
+    },
+    [enabled, adapters, formId, config]
+  )
 
   // Инициализация адаптеров
   useEffect(() => {
     if (!enabled) return
-    for (const adapter of adapters) { try { adapter.init?.() } catch {} }
-    return () => { for (const adapter of adapters) { try { adapter.destroy?.() } catch {} } }
+    for (const adapter of adapters) {
+      try {
+        adapter.init?.()
+      } catch {}
+    }
+    return () => {
+      for (const adapter of adapters) {
+        try {
+          adapter.destroy?.()
+        } catch {}
+      }
+    }
   }, [enabled, adapters])
 
   // Трекинг focus на поле
-  const trackFocus = useCallback((field: string) => {
-    if (!enabled) return
-    const now = Date.now()
-    focusTimeRef.current.set(field, now)
-    setLastFocusedField(field)
+  const trackFocus = useCallback(
+    (field: string) => {
+      if (!enabled) return
+      const now = Date.now()
+      focusTimeRef.current.set(field, now)
+      setLastFocusedField(field)
 
-    setFieldAnalytics((prev) => {
-      const next = new Map(prev)
-      const existing = next.get(field) ?? createEmptyAnalytics()
-      const isCorrection = trackCorrections && blurredFieldsRef.current.has(field)
-      next.set(field, {
-        ...existing,
-        focusCount: existing.focusCount + 1,
-        firstFocusAt: existing.firstFocusAt ?? now,
-        correctionCount: existing.correctionCount + (isCorrection ? 1 : 0),
+      setFieldAnalytics((prev) => {
+        const next = new Map(prev)
+        const existing = next.get(field) ?? createEmptyAnalytics()
+        const isCorrection = trackCorrections && blurredFieldsRef.current.has(field)
+        next.set(field, {
+          ...existing,
+          focusCount: existing.focusCount + 1,
+          firstFocusAt: existing.firstFocusAt ?? now,
+          correctionCount: existing.correctionCount + (isCorrection ? 1 : 0),
+        })
+        return next
       })
-      return next
-    })
 
-    emit({ type: 'field_focus', field, timestamp: now })
-    if (trackCorrections && blurredFieldsRef.current.has(field)) {
-      const analytics = fieldAnalytics.get(field)
-      emit({ type: 'field_correction', field, timestamp: now, correctionCount: (analytics?.correctionCount ?? 0) + 1 })
-    }
-  }, [enabled, trackCorrections, fieldAnalytics, emit])
+      emit({ type: 'field_focus', field, timestamp: now })
+      if (trackCorrections && blurredFieldsRef.current.has(field)) {
+        const analytics = fieldAnalytics.get(field)
+        emit({
+          type: 'field_correction',
+          field,
+          timestamp: now,
+          correctionCount: (analytics?.correctionCount ?? 0) + 1,
+        })
+      }
+    },
+    [enabled, trackCorrections, fieldAnalytics, emit]
+  )
 
   // Трекинг blur
-  const trackBlur = useCallback((field: string) => {
-    if (!enabled) return
-    const now = Date.now()
-    const focusTime = focusTimeRef.current.get(field)
-    const timeSpentMs = focusTime ? now - focusTime : 0
-    blurredFieldsRef.current.add(field)
+  const trackBlur = useCallback(
+    (field: string) => {
+      if (!enabled) return
+      const now = Date.now()
+      const focusTime = focusTimeRef.current.get(field)
+      const timeSpentMs = focusTime ? now - focusTime : 0
+      blurredFieldsRef.current.add(field)
 
-    setFieldAnalytics((prev) => {
-      const next = new Map(prev)
-      const existing = next.get(field) ?? createEmptyAnalytics()
-      next.set(field, { ...existing, totalTimeMs: existing.totalTimeMs + timeSpentMs, lastBlurAt: now })
-      return next
-    })
+      setFieldAnalytics((prev) => {
+        const next = new Map(prev)
+        const existing = next.get(field) ?? createEmptyAnalytics()
+        next.set(field, { ...existing, totalTimeMs: existing.totalTimeMs + timeSpentMs, lastBlurAt: now })
+        return next
+      })
 
-    emit({ type: 'field_blur', field, timestamp: now, timeSpentMs })
-  }, [enabled, emit])
+      emit({ type: 'field_blur', field, timestamp: now, timeSpentMs })
+    },
+    [enabled, emit]
+  )
 
   // Трекинг ошибки
-  const trackError = useCallback((field: string, error: string) => {
-    if (!enabled) return
-    setFieldAnalytics((prev) => {
-      const next = new Map(prev)
-      const existing = next.get(field) ?? createEmptyAnalytics()
-      next.set(field, { ...existing, errorCount: existing.errorCount + 1 })
-      return next
-    })
-    emit({ type: 'field_error', field, error, timestamp: Date.now() })
-  }, [enabled, emit])
+  const trackError = useCallback(
+    (field: string, error: string) => {
+      if (!enabled) return
+      setFieldAnalytics((prev) => {
+        const next = new Map(prev)
+        const existing = next.get(field) ?? createEmptyAnalytics()
+        next.set(field, { ...existing, errorCount: existing.errorCount + 1 })
+        return next
+      })
+      emit({ type: 'field_error', field, error, timestamp: Date.now() })
+    },
+    [enabled, emit]
+  )
 
   // Глобальный перехват focus/blur на инпутах формы
   useEffect(() => {
@@ -174,7 +215,17 @@ export function useFormAnalytics(config?: FormAnalyticsConfig): UseFormAnalytics
     startTimeRef.current = Date.now()
   }, [])
 
-  return { fieldAnalytics, completionRate, lastFocusedField, totalTimeMs, totalErrors, trackAbandon, trackComplete, reset }
+  return {
+    fieldAnalytics,
+    completionRate,
+    lastFocusedField,
+    totalTimeMs,
+    totalErrors,
+    trackError,
+    trackAbandon,
+    trackComplete,
+    reset,
+  }
 }
 
 function createEmptyAnalytics(): FieldAnalytics {

@@ -19,7 +19,12 @@ export function createGtagAdapter(): AnalyticsAdapter {
           gtag('event', 'form_field_error', { ...params, error_message: event.error })
           break
         case 'form_abandon':
-          gtag('event', 'form_abandon', { ...params, last_field: event.lastField, filled_fields: event.filledFields, total_time_ms: event.totalTimeMs })
+          gtag('event', 'form_abandon', {
+            ...params,
+            last_field: event.lastField,
+            filled_fields: event.filledFields,
+            total_time_ms: event.totalTimeMs,
+          })
           break
         case 'form_complete':
           gtag('event', 'form_complete', { ...params, total_time_ms: event.totalTimeMs })

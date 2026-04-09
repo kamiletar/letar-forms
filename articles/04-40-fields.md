@@ -1,4 +1,20 @@
-# 50+ полей: от String до CreditCard
+# 50+ готовых полей для React-форм: от String до CreditCard
+
+> **Уровень сложности:** Простой
+
+**TL;DR:**
+
+- Библиотека содержит 50+ готовых field-компонентов по категориям: текстовые, числовые, дата/время, выбор, специальные, опросные, табличные, платёжные и документы РФ
+- Каждое поле автоматически читает метаданные из Zod `.meta()`, показывает ошибки валидации и извлекает constraints из схемы
+- Создать кастомное поле — 20 строк через `useFieldContext()` и регистрацию в `createForm()`
+
+**Кому полезно:**
+
+- Junior: познакомиться с каталогом готовых полей и понять, что не нужно писать свой DatePicker или FileUpload
+- Middle: узнать про продвинутые поля (TableEditor, MatrixChoice, CreditCard) и паттерн автоматического выбора компонента по Zod-типу
+- Senior: оценить архитектуру расширения через `extraFields` и маппинг Zod type -> компонент
+
+---
 
 > Четвёртая статья из цикла «@letar/forms — от боли к декларативным формам». Подробный обзор всех field-компонентов библиотеки — от базовых текстовых до платёжных форм и опросников.
 
@@ -240,14 +256,27 @@
 - **MM/YY** — автоматический формат срока действия
 - **Готовая Zod-схема:** `creditCardSchema()` для серверной валидации
 
-### Защитные поля (1)
+### Защитные поля (3)
 
 ```tsx
-// CAPTCHA (Cloudflare Turnstile / Google reCAPTCHA / hCaptcha)
+// 1. Honeypot — невидимая ловушка для ботов
+<HoneypotField />
+
+// 2. Rate Limiting — троттлинг повторных сабмитов
+const { isBlocked, remaining, secondsLeft } = useRateLimit({
+  maxSubmits: 3,
+  windowMs: 60_000,
+})
+
+// 3. CAPTCHA (Cloudflare Turnstile / Google reCAPTCHA / hCaptcha)
 <Form.Captcha />
 ```
 
-`Captcha` — провайдер-абстракция для CAPTCHA. Lazy-загрузка скрипта, серверная верификация через `verifyCaptcha()`. Подключается через `createForm({ captcha: { provider: 'turnstile', siteKey: '...' } })`.
+Три уровня защиты, от пассивного к активному:
+
+- **`HoneypotField`** — рендерит скрытое поле, которое пользователь не видит, а бот заполняет. `useHoneypotCheck()` возвращает `isBot()` для блокировки сабмита. Ноль friction для пользователя.
+- **`useRateLimit`** — клиентский троттлинг: не больше N сабмитов за период. Возвращает `isBlocked`, `remaining`, `secondsLeft` для отображения таймера. Состояние хранится в sessionStorage.
+- **`Captcha`** — провайдер-абстракция для CAPTCHA. Lazy-загрузка скрипта, серверная верификация через `verifyCaptcha()`. Подключается через `createForm({ captcha: { provider: 'turnstile', siteKey: '...' } })`.
 
 ### Утилитарные поля (3)
 
@@ -268,6 +297,34 @@
 ```
 
 `Calculated` — автоматически обновляется при изменении зависимых полей. Отображает отформатированное значение, но хранит числовое. `Hidden` — для UTM-меток, referral-кодов, и прочих скрытых данных.
+
+### Сравнение и аудит (1)
+
+```tsx
+import { FormComparison } from '@letar/forms'
+
+<FormComparison
+  original={{ name: 'Иванов И.И.', email: 'old@test.com', role: 'user' }}
+  current={{ name: 'Иванов И.И.', email: 'new@test.com', role: 'admin' }}
+  onlyChanged
+/>
+```
+
+`FormComparison` показывает diff между двумя состояниями данных: изменённые поля подсвечиваются, старое значение перечёркнуто, новое — выделено. Кейсы: модерация изменений профиля, аудит перед сохранением, approval flow. Поддерживает `labels` (ручные или автоматические из Zod `.meta()`), `exclude` для скрытия полей.
+
+### Режим чтения (1)
+
+```tsx
+import { FormReadOnlyView } from '@letar/forms'
+
+<FormReadOnlyView
+  data={{ name: 'Иванов', email: 'ivan@test.com', role: 'Администратор' }}
+  schema={UserSchema}
+  compact
+/>
+```
+
+`FormReadOnlyView` рендерит данные формы в read-only режиме — без инпутов, красиво отформатировано. Та же Zod-схема, что и для формы, но вместо полей — текстовое отображение. Кейсы: квитанция после заказа, карточка клиента, подтверждение перед отправкой. Пропы: `compact` для однострочного формата, `formatters` для кастомного отображения значений, `include`/`exclude` для выбора полей.
 
 ### Российские документы (9)
 
@@ -491,8 +548,9 @@ const ContactSchema = z.object({
 | Опросные     | 4      | MatrixChoice, ImageChoice, Likert, YesNo                     |
 | Табличные    | 2      | TableEditor, DataGrid                                        |
 | Платёжные    | 1      | CreditCard                                                   |
-| Защитные     | 1      | Captcha                                                      |
+| Защитные     | 3      | Honeypot, RateLimit, Captcha                                 |
 | Утилитарные  | 3      | Hidden, Calculated, Auto                                     |
+| Аудит/Чтение | 2      | FormComparison, FormReadOnlyView                             |
 | Документы РФ | 9      | INN, KPP, OGRN, BIK, BankAccount, SNILS, Passport, ...       |
 
 50+ компонентов покрывают ~98% наших продакшн-сценариев. Оставшиеся 2% — кастомные поля через `createForm({ extraFields })`.

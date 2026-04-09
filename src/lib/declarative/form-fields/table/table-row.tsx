@@ -1,6 +1,7 @@
 'use client'
 
-import { Checkbox, IconButton, Table } from '@chakra-ui/react'
+import { IconButton, Table } from '@chakra-ui/react'
+import { DragHandle } from '../../form-group/form-group-list-sortable'
 import { TableCell } from './table-cell'
 import { useTableEditorContext } from './table-editor-context'
 
@@ -33,18 +34,23 @@ export function TableEditorRow({ rowIndex, rowData, selectable, sortable }: Tabl
     >
       {/* Drag handle */}
       {sortable && !readOnly && (
-        <Table.Cell w="40px" cursor="grab" textAlign="center" color="fg.muted">
-          ⠿
+        <Table.Cell w="40px" textAlign="center">
+          <DragHandle />
         </Table.Cell>
       )}
 
-      {/* Чекбокс выбора */}
+      {/* Чекбокс выбора — нативный input чтобы избежать коллизий Chakra Checkbox */}
       {selectable && !readOnly && (
         <Table.Cell w="40px" textAlign="center">
-          <Checkbox.Root checked={isSelected} onCheckedChange={() => toggleRowSelection(rowIndex)} size="sm">
-            <Checkbox.HiddenInput />
-            <Checkbox.Control />
-          </Checkbox.Root>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation()
+              toggleRowSelection(rowIndex)
+            }}
+            style={{ width: 16, height: 16, cursor: 'pointer' }}
+          />
         </Table.Cell>
       )}
 

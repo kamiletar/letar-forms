@@ -2,6 +2,8 @@
 
 import { Box, HStack, Separator, Text, VStack } from '@chakra-ui/react'
 import type { ReactElement } from 'react'
+import { deepEqual } from '../utils/deep-equal'
+import { safeStringify } from '../utils/safe-stringify'
 
 export interface FormComparisonProps<T extends Record<string, unknown> = Record<string, unknown>> {
   /** Оригинальные данные (до изменений) */
@@ -9,7 +11,7 @@ export interface FormComparisonProps<T extends Record<string, unknown> = Record<
   /** Текущие данные (после изменений) */
   current: T
   /** Zod-схема для labels из .meta({ ui: { title } }) */
-  schema?: { _def?: { shape?: () => Record<string, { _def?: { meta?: { ui?: { title?: string } } } }> } }
+  schema?: unknown
   /** Кастомные labels */
   labels?: Record<string, string>
   /** Показывать только изменённые поля */
@@ -30,20 +32,22 @@ export function FormComparison<T extends Record<string, unknown>>({
   onlyChanged = false,
   exclude = [],
 }: FormComparisonProps<T>): ReactElement {
-  // Извлекаем labels из схемы
+  // Извлекаем labels из Zod-схемы (безопасный доступ через unknown)
   const schemaLabels: Record<string, string> = {}
-  if (schema?._def?.shape) {
-    try {
-      const shape = schema._def.shape()
+  try {
+    const s = schema as { _def?: { shape?: () => Record<string, { _def?: { meta?: { ui?: { title?: string } } } }> } }
+    if (s?._def?.shape) {
+      const shape = s._def.shape()
       for (const [key, fieldSchema] of Object.entries(shape)) {
         const title = fieldSchema?._def?.meta?.ui?.title
         if (title) schemaLabels[key] = title
       }
-    } catch {}
-  }
+    }
+  } catch {}
 
-  const allKeys = [...new Set([...Object.keys(original), ...Object.keys(current)])]
-    .filter((key) => !exclude.includes(key))
+  const allKeys = [...new Set([...Object.keys(original), ...Object.keys(current)])].filter(
+    (key) => !exclude.includes(key)
+  )
 
   const entries = allKeys
     .map((key) => ({
@@ -51,12 +55,16 @@ export function FormComparison<T extends Record<string, unknown>>({
       label: labels[key] ?? schemaLabels[key] ?? humanizeKey(key),
       oldValue: original[key],
       newValue: current[key],
-      changed: JSON.stringify(original[key]) !== JSON.stringify(current[key]),
+      changed: !deepEqual(original[key], current[key]),
     }))
     .filter((entry) => !onlyChanged || entry.changed)
 
   if (entries.length === 0) {
-    return <Text color="fg.muted" fontSize="sm">Нет изменений</Text>
+    return (
+      <Text color="fg.muted" fontSize="sm">
+        Нет изменений
+      </Text>
+    )
   }
 
   return (
@@ -71,16 +79,26 @@ export function FormComparison<T extends Record<string, unknown>>({
         >
           <Text fontSize="xs" color="fg.muted" fontWeight="medium" mb={1}>
             {entry.label}
-            {entry.changed && <Text as="span" color="orange.500" ml={1}>●</Text>}
+            {entry.changed && (
+              <Text as="span" color="orange.500" ml={1}>
+                ●
+              </Text>
+            )}
           </Text>
           {entry.changed ? (
             <HStack gap={4} fontSize="sm">
               <Box flex={1}>
-                <Text fontSize="xs" color="red.500" mb={0.5}>Было:</Text>
-                <Text textDecoration="line-through" color="fg.muted">{formatValue(entry.oldValue)}</Text>
+                <Text fontSize="xs" color="red.500" mb={0.5}>
+                  Было:
+                </Text>
+                <Text textDecoration="line-through" color="fg.muted">
+                  {formatValue(entry.oldValue)}
+                </Text>
               </Box>
               <Box flex={1}>
-                <Text fontSize="xs" color="green.500" mb={0.5}>Стало:</Text>
+                <Text fontSize="xs" color="green.500" mb={0.5}>
+                  Стало:
+                </Text>
                 <Text fontWeight="medium">{formatValue(entry.newValue)}</Text>
               </Box>
             </HStack>
@@ -95,14 +113,13 @@ export function FormComparison<T extends Record<string, unknown>>({
 }
 
 function humanizeKey(key: string): string {
-  return key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ').trim().replace(/^\w/, (c) => c.toUpperCase())
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[_-]/g, ' ')
+    .trim()
+    .replace(/^\w/, (c) => c.toUpperCase())
 }
 
 function formatValue(value: unknown): string {
-  if (value == null) return '—'
-  if (typeof value === 'boolean') return value ? 'Да' : 'Нет'
-  if (value instanceof Date) return value.toLocaleDateString('ru-RU')
-  if (Array.isArray(value)) return value.join(', ')
-  if (typeof value === 'object') return JSON.stringify(value)
-  return String(value)
+  return safeStringify(value)
 }

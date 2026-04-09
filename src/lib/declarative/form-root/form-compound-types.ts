@@ -181,6 +181,22 @@ export interface FormFieldComponents {
   TableEditor: (props: TableEditorFieldProps) => ReactElement
   DataGrid: (props: DataGridFieldProps) => ReactElement
 
+  // Подпись
+  Signature: (props: {
+    name?: string
+    label?: string
+    placeholder?: string
+    clearLabel?: string
+    width?: number
+    height?: number
+    mode?: 'draw' | 'type' | 'both'
+    penColor?: string
+    backgroundColor?: string
+    required?: boolean
+    disabled?: boolean
+    readOnly?: boolean
+  }) => ReactElement
+
   // Банковская карта
   CreditCard: (props: CreditCardFieldProps) => ReactElement
 }
@@ -286,4 +302,17 @@ export interface FormComponent {
     submitLabel?: string
     debug?: boolean
   }) => ReactElement
+
+  /** Российские документы (INN, KPP, OGRN, BIK, SNILS, Passport, etc.) */
+  Document: {
+    INN: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    KPP: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    OGRN: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    OGRNIP: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    BIK: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    BankAccount: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    CorrAccount: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    SNILS: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+    Passport: (props: { name?: string; label?: string; required?: boolean }) => ReactElement
+  }
 }

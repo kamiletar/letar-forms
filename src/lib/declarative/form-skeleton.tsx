@@ -5,7 +5,7 @@ import type { ReactElement } from 'react'
 
 export interface FormSkeletonProps {
   /** Количество полей (или Zod-схема для автодетекта) */
-  fields?: number | { _def?: { shape?: () => Record<string, unknown> } }
+  fields?: number | unknown
   /** Показать скелетон кнопки submit */
   showSubmit?: boolean
   /** Высота каждого поля */
@@ -28,9 +28,10 @@ export function FormSkeleton({
   let fieldCount: number
   if (typeof fields === 'number') {
     fieldCount = fields
-  } else if (fields?._def?.shape) {
+  } else if (typeof fields === 'object' && fields !== null && '_def' in fields) {
     try {
-      fieldCount = Object.keys(fields._def.shape()).length
+      const s = fields as { _def?: { shape?: () => Record<string, unknown> } }
+      fieldCount = s._def?.shape ? Object.keys(s._def.shape()).length : 5
     } catch {
       fieldCount = 5
     }

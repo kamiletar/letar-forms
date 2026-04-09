@@ -1,4 +1,20 @@
-# Мультистеп формы и условный рендеринг
+# Мультистеп формы в React: пошаговая валидация, условные шаги и анимации
+
+> **Уровень сложности:** Средний
+
+**TL;DR:**
+
+- `Form.Steps` разбивает длинную форму на шаги с анимацией, прогрессом и валидацией каждого шага отдельно
+- `Form.When` показывает/скрывает поля и целые шаги по условию — количество шагов динамически перестраивается
+- `Form.Watch` — renderless-компонент для побочных эффектов между полями (автозаполнение, пересчёт)
+
+**Кому полезно:**
+
+- Junior: научиться разбивать длинные формы на шаги без ручного state management
+- Middle: освоить динамические мультистепы с условным рендерингом и валидацией по шагам
+- Senior: оценить декларативный подход When + Steps для сложных форм с зависимостями между полями
+
+---
 
 > Пятая статья из цикла «@letar/forms — от боли к декларативным формам». Как разбить длинную форму на шаги, валидировать каждый по отдельности и показывать поля по условию.
 
@@ -139,28 +155,28 @@
 {
   /* Значение не равно */
 }
-<Form.When field="role" isNot="guest">
+;<Form.When field="role" isNot="guest">
   <Form.Field.String name="email" />
 </Form.When>
 
 {
   /* Значение из списка */
 }
-<Form.When field="country" isOneOf={['RU', 'BY', 'KZ']}>
+;<Form.When field="country" isOneOf={['RU', 'BY', 'KZ']}>
   <Form.Field.Phone name="phone" />
 </Form.When>
 
 {
   /* Кастомное условие */
 }
-<Form.When field="age" condition={(age) => age >= 18}>
+;<Form.When field="age" condition={(age) => age >= 18}>
   <Form.Field.Checkbox name="drivingLicense" />
 </Form.When>
 
 {
   /* Булево поле */
 }
-<Form.When field="hasDiscount" is={true}>
+;<Form.When field="hasDiscount" is={true}>
   <Form.Field.Percentage name="discountPercent" />
 </Form.When>
 ```

@@ -22,11 +22,7 @@ export interface HistoryControlsProps {
  * <HistoryControls history={historyApi} />
  * ```
  */
-export function HistoryControls({
-  history,
-  showCounter = true,
-  size = 'sm',
-}: HistoryControlsProps): ReactElement {
+export function HistoryControls({ history, showCounter = true, size = 'sm' }: HistoryControlsProps): ReactElement {
   return (
     <HStack gap={1}>
       <IconButton

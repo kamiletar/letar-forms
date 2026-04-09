@@ -1,4 +1,4 @@
-export { type DataGridColumnDef, type DataGridFieldProps, FieldDataGrid } from './field-data-grid'
+export { FieldDataGrid, type DataGridColumnDef, type DataGridFieldProps } from './field-data-grid'
 export { FieldTableEditor } from './field-table-editor'
 export { TableEditorContext, useTableEditorContext } from './table-editor-context'
 export type {

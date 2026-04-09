@@ -41,6 +41,8 @@ export interface SignatureFieldProps {
   allowTyped?: boolean
   /** Шрифт для typed mode (по умолчанию: cursive) */
   typedFont?: string
+  /** Формат экспорта: 'png' (data URI base64) или 'svg' (SVG data URI). По умолчанию: 'png' */
+  exportFormat?: 'png' | 'svg'
 }
 
 interface SignatureState {
@@ -55,6 +57,86 @@ interface SignatureState {
   stopDrawing: () => string
   clearCanvas: () => void
   renderTypedSignature: (text: string) => string
+}
+
+/** Точка штриха подписи */
+interface StrokePoint {
+  x: number
+  y: number
+}
+
+/** Один штрих (от mousedown до mouseup) */
+export interface SignatureStroke {
+  points: StrokePoint[]
+}
+
+/**
+ * Экранирование XML спецсимволов (защита от инъекций в typed mode)
+ */
+export function escapeXml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+/**
+ * Построить SVG из массива штрихов (draw mode)
+ */
+export function buildSvgString(
+  strokes: SignatureStroke[],
+  width: number,
+  height: number,
+  strokeColor: string,
+  strokeWidth: number,
+  backgroundColor: string
+): string {
+  const paths = strokes
+    .filter((s) => s.points.length > 0)
+    .map((stroke) => {
+      const [first, ...rest] = stroke.points
+      const d =
+        `M${first.x.toFixed(1)},${first.y.toFixed(1)}` +
+        rest.map((p) => `L${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('')
+      return `<path d="${d}" fill="none" stroke="${escapeXml(
+        strokeColor
+      )}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`
+    })
+    .join('\n  ')
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" fill="${escapeXml(backgroundColor)}"/>
+  ${paths}
+</svg>`
+}
+
+/**
+ * Построить SVG из текстовой подписи (typed mode)
+ */
+export function buildTypedSvgString(
+  text: string,
+  width: number,
+  height: number,
+  strokeColor: string,
+  backgroundColor: string,
+  typedFont: string
+): string {
+  const fontSize = Math.min(height * 0.4, 48)
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" fill="${escapeXml(backgroundColor)}"/>
+  <text x="${width / 2}" y="${height / 2}" text-anchor="middle" dominant-baseline="central" font-family="${escapeXml(
+    typedFont
+  )}" font-size="${fontSize}" fill="${escapeXml(strokeColor)}">${escapeXml(text)}</text>
+</svg>`
+}
+
+/**
+ * Конвертировать SVG строку в data URI (base64)
+ */
+function svgToDataUri(svg: string): string {
+  if (typeof btoa === 'function') {
+    // Браузер
+    return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
+  }
+  // Node.js (SSR fallback)
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 
 /**
@@ -103,10 +185,17 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
     const [typedText, setTypedText] = useState('')
     const [isEmpty, setIsEmpty] = useState(true)
 
+    // SVG export: запись штрихов (refs — без ре-рендеров при рисовании)
+    const strokesRef = useRef<SignatureStroke[]>([])
+    const currentPointsRef = useRef<StrokePoint[]>([])
+
     const strokeColor = props.strokeColor ?? 'black'
     const strokeWidth = props.strokeWidth ?? 2
     const backgroundColor = props.backgroundColor ?? 'white'
     const typedFont = props.typedFont ?? "'Segoe Script', 'Dancing Script', cursive"
+    const exportFormat = props.exportFormat ?? 'png'
+    const canvasWidth = props.width ?? 400
+    const canvasHeight = props.height ?? 150
 
     // Инициализация canvas фоном
     const initCanvas = useCallback(() => {
@@ -138,6 +227,9 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
         isDrawingRef.current = true
         const { x, y } = getCoords(e, canvas)
 
+        // Запись координат для SVG export
+        currentPointsRef.current = [{ x, y }]
+
         ctx.strokeStyle = strokeColor
         ctx.lineWidth = strokeWidth
         ctx.lineCap = 'round'
@@ -145,7 +237,7 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
         ctx.beginPath()
         ctx.moveTo(x, y)
       },
-      [strokeColor, strokeWidth],
+      [strokeColor, strokeWidth]
     )
 
     // Рисовать
@@ -160,6 +252,7 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
       if (!ctx) return
 
       const { x, y } = getCoords(e, canvas)
+      currentPointsRef.current.push({ x, y })
       ctx.lineTo(x, y)
       ctx.stroke()
     }, [])
@@ -170,13 +263,27 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
       const canvas = canvasRef.current
       if (!canvas) return ''
 
+      // Сохранить штрих для SVG
+      if (currentPointsRef.current.length > 0) {
+        strokesRef.current.push({ points: [...currentPointsRef.current] })
+        currentPointsRef.current = []
+      }
+
       setIsEmpty(false)
+
+      if (exportFormat === 'svg') {
+        return svgToDataUri(
+          buildSvgString(strokesRef.current, canvasWidth, canvasHeight, strokeColor, strokeWidth, backgroundColor)
+        )
+      }
       return canvas.toDataURL('image/png')
-    }, [])
+    }, [exportFormat, canvasWidth, canvasHeight, strokeColor, strokeWidth, backgroundColor])
 
     // Очистить canvas
     const clearCanvas = useCallback(() => {
       initCanvas()
+      strokesRef.current = []
+      currentPointsRef.current = []
       setIsEmpty(true)
       setTypedText('')
     }, [initCanvas])
@@ -207,9 +314,15 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
         ctx.fillText(text, canvas.width / 2, canvas.height / 2)
 
         setIsEmpty(false)
+
+        if (exportFormat === 'svg') {
+          return svgToDataUri(
+            buildTypedSvgString(text, canvasWidth, canvasHeight, strokeColor, backgroundColor, typedFont)
+          )
+        }
         return canvas.toDataURL('image/png')
       },
-      [backgroundColor, strokeColor, typedFont],
+      [backgroundColor, strokeColor, typedFont, exportFormat, canvasWidth, canvasHeight]
     )
 
     return {
@@ -228,14 +341,8 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
   },
 
   render: ({ field, resolved, hasError, errorMessage, componentProps, fieldState }): ReactElement => {
-    const {
-      width = 400,
-      height = 150,
-      clearLabel = 'Clear',
-      placeholder = 'Sign here',
-      allowTyped = true,
-      disabled: _disabled,
-    } = componentProps
+    const { width = 400, height = 150, clearLabel = 'Clear', allowTyped = true } = componentProps
+    const placeholder = resolved.placeholder ?? 'Sign here'
 
     const {
       canvasRef,
@@ -334,26 +441,32 @@ export const FieldSignature = createField<SignatureFieldProps, string, Signature
               tabIndex={0}
               onMouseDown={mode === 'draw' ? startDrawing : undefined}
               onMouseMove={mode === 'draw' ? draw : undefined}
-              onMouseUp={mode === 'draw'
-                ? () => {
-                  const dataUrl = stopDrawing()
-                  if (dataUrl) field.handleChange(dataUrl)
-                }
-                : undefined}
-              onMouseLeave={mode === 'draw'
-                ? () => {
-                  const dataUrl = stopDrawing()
-                  if (dataUrl) field.handleChange(dataUrl)
-                }
-                : undefined}
+              onMouseUp={
+                mode === 'draw'
+                  ? () => {
+                      const dataUrl = stopDrawing()
+                      if (dataUrl) field.handleChange(dataUrl)
+                    }
+                  : undefined
+              }
+              onMouseLeave={
+                mode === 'draw'
+                  ? () => {
+                      const dataUrl = stopDrawing()
+                      if (dataUrl) field.handleChange(dataUrl)
+                    }
+                  : undefined
+              }
               onTouchStart={mode === 'draw' ? startDrawing : undefined}
               onTouchMove={mode === 'draw' ? draw : undefined}
-              onTouchEnd={mode === 'draw'
-                ? () => {
-                  const dataUrl = stopDrawing()
-                  if (dataUrl) field.handleChange(dataUrl)
-                }
-                : undefined}
+              onTouchEnd={
+                mode === 'draw'
+                  ? () => {
+                      const dataUrl = stopDrawing()
+                      if (dataUrl) field.handleChange(dataUrl)
+                    }
+                  : undefined
+              }
             />
 
             {/* Placeholder */}

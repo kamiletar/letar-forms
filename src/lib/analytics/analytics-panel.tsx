@@ -41,7 +41,9 @@ export function AnalyticsPanel({ analytics, position = 'bottom-right' }: Analyti
       opacity={0.9}
       boxShadow="lg"
     >
-      <Text fontWeight="bold" mb={2}>Form Analytics</Text>
+      <Text fontWeight="bold" mb={2}>
+        Form Analytics
+      </Text>
 
       <HStack gap={4} mb={2}>
         <VStack gap={0} align="start">
@@ -64,18 +66,26 @@ export function AnalyticsPanel({ analytics, position = 'bottom-right' }: Analyti
 
       {topFields.length > 0 && (
         <>
-          <Text color="gray.400" mb={1}>Top fields by time:</Text>
+          <Text color="gray.400" mb={1}>
+            Top fields by time:
+          </Text>
           {topFields.map(([field, fa]) => (
             <HStack key={field} justify="space-between">
-              <Code fontSize="xs" bg="transparent" color="gray.300">{field}</Code>
-              <Text>{Math.round(fa.totalTimeMs / 1000)}s {fa.errorCount > 0 && `(${fa.errorCount} err)`}</Text>
+              <Code fontSize="xs" bg="transparent" color="gray.300">
+                {field}
+              </Code>
+              <Text>
+                {Math.round(fa.totalTimeMs / 1000)}s {fa.errorCount > 0 && `(${fa.errorCount} err)`}
+              </Text>
             </HStack>
           ))}
         </>
       )}
 
       {analytics.lastFocusedField && (
-        <Text color="gray.500" mt={1}>Last: {analytics.lastFocusedField}</Text>
+        <Text color="gray.500" mt={1}>
+          Last: {analytics.lastFocusedField}
+        </Text>
       )}
     </Box>
   )

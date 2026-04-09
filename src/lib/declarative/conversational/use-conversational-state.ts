@@ -47,12 +47,15 @@ export function useConversationalState(totalFields: number): ConversationalState
     }
   }, [currentIndex])
 
-  const goTo = useCallback((index: number) => {
-    if (index >= 0 && index < totalFields) {
-      setCurrentIndex(index)
-      setIsCompleted(false)
-    }
-  }, [totalFields])
+  const goTo = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < totalFields) {
+        setCurrentIndex(index)
+        setIsCompleted(false)
+      }
+    },
+    [totalFields]
+  )
 
   return {
     currentIndex,

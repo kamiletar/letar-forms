@@ -45,22 +45,23 @@ const Schema = z.object({
 
 ## Документация
 
-| Категория        | Документация                                             | Описание                                      |
-| ---------------- | -------------------------------------------------------- | --------------------------------------------- |
-| Field компоненты | [docs/fields.md](./docs/fields.md)                       | 50+ типов полей (String, Number, Select, ...) |
-| Form-level       | [docs/form-level.md](./docs/form-level.md)               | Steps, When, Watch, Errors, Persistence       |
-| Schema генерация | [docs/schema-generation.md](./docs/schema-generation.md) | FromSchema, AutoFields, Builder, Templates    |
-| Server Errors    | [docs/server-errors.md](./docs/server-errors.md)         | Маппинг Prisma/ZenStack/Zod ошибок на поля    |
-| Offline          | [docs/offline.md](./docs/offline.md)                     | Оффлайн режим, очередь синхронизации          |
-| ZenStack         | [docs/zenstack.md](./docs/zenstack.md)                   | Плагин, @form.\* директивы, withUIMeta        |
-| i18n             | [docs/i18n.md](./docs/i18n.md)                           | Мультиязычность, перевод ошибок валидации     |
-| API Reference    | [docs/api-reference.md](./docs/api-reference.md)         | Хуки, контексты, типы                         |
+| Категория        | Документация                                             | Описание                                     |
+| ---------------- | -------------------------------------------------------- | -------------------------------------------- |
+| Field компоненты | [docs/fields.md](./docs/fields.md)                       | 56 типов полей (String, Number, Select, ...) |
+| Form-level       | [docs/form-level.md](./docs/form-level.md)               | Steps, When, Watch, Errors, Persistence      |
+| Schema генерация | [docs/schema-generation.md](./docs/schema-generation.md) | FromSchema, AutoFields, Builder, Templates   |
+| Server Errors    | [docs/server-errors.md](./docs/server-errors.md)         | Маппинг Prisma/ZenStack/Zod ошибок на поля   |
+| Offline          | [docs/offline.md](./docs/offline.md)                     | Оффлайн режим, очередь синхронизации         |
+| ZenStack         | [docs/zenstack.md](./docs/zenstack.md)                   | Плагин, @form.\* директивы, withUIMeta       |
+| i18n             | [docs/i18n.md](./docs/i18n.md)                           | Мультиязычность, перевод ошибок валидации    |
+| Analytics        | [docs/analytics.md](./docs/analytics.md)                 | Field-level аналитика, 4 адаптера            |
+| API Reference    | [docs/api-reference.md](./docs/api-reference.md)         | Хуки, контексты, типы                        |
 
 ---
 
 ## Основные возможности
 
-### 40+ Field компонентов
+### 56 Field компонентов
 
 ```tsx
 // Текстовые
@@ -268,6 +269,62 @@ import { ProductCreateFormSchema } from '@/generated/form-schemas'
 />
 ```
 
+### Testing Utilities (v0.85.0)
+
+```tsx
+import { expectFieldError, fillField, renderForm, submitForm } from '@lena/form-components/testing'
+
+const { onSubmit } = renderForm(ContactForm)
+await fillField('name', 'Иван')
+await fillField('email', 'ivan@test.com')
+await submitForm()
+expect(onSubmit).toHaveBeenCalled()
+```
+
+### URL Prefill (v0.85.0)
+
+```tsx
+import { generatePrefillUrl, useUrlPrefill } from '@lena/form-components'
+
+// URL: /contact?name=Иван&email=ivan@test.com
+const prefilled = useUrlPrefill({
+  fields: ['name', 'email'],
+  cleanUrl: true,
+})
+
+// Генерация маркетинговых ссылок
+const url = generatePrefillUrl('/contact', { name: 'Иван', email: 'ivan@test.com' })
+```
+
+### DX фичи
+
+```tsx
+// Аналитика форм — field-level tracking с 4 адаптерами
+<Form analytics={{ adapter: umamiAdapter }}>
+  <Form.Analytics.Panel />  {/* Dev-only live панель */}
+</Form>
+
+// Undo/Redo — Ctrl+Z/Ctrl+Y для длинных форм
+const { undo, redo, canUndo, canRedo } = useFormHistory(form)
+<Form.History.Controls />
+
+// Маппинг серверных ошибок — автодетект Prisma/ZenStack/Zod
+const mapped = mapServerErrors(error)
+applyServerErrors(form, mapped)
+
+// ReadOnly view — отображение данных из Zod-схемы
+<FormReadOnlyView data={user} schema={UserSchema} compact />
+
+// Skeleton — loading state из схемы
+<FormSkeleton schema={UserSchema} showSubmit />
+
+// Comparison — diff (было → стало)
+<FormComparison original={old} current={new} schema={Schema} onlyChanged />
+
+// Каскадный рендеринг
+<FormDependsOn field="type" cases={{ person: <PersonFields />, company: <CompanyFields /> }} />
+```
+
 ---
 
 ## Установка
@@ -337,7 +394,7 @@ const myProvider: AddressProvider = {
 
 ## AI Tooling (MCP)
 
-MCP сервер [`@letar/form-mcp`](../form-mcp/README.md) предоставляет AI-ассистентам (Claude Code, Cursor, VS Code Copilot) полный контекст о библиотеке: 40+ полей, паттерны форм, @form.\* директивы.
+MCP сервер [`@letar/form-mcp`](../form-mcp/README.md) предоставляет AI-ассистентам (Claude Code, Cursor, VS Code Copilot) полный контекст о библиотеке: 56 п��лей, паттерны форм, @form.\* директивы.
 
 ```json
 { "form-mcp": { "command": "npx", "args": ["-y", "@letar/form-mcp"] } }
@@ -349,7 +406,7 @@ MCP сервер [`@letar/form-mcp`](../form-mcp/README.md) предоставл
 
 | Модуль                            | Размер (brotli) | Размер (raw) |
 | --------------------------------- | --------------- | ------------ |
-| `@letar/forms` (все 40 полей)     | **20 KB**       | 109 KB       |
+| `@letar/forms` (все 56 п��лей)    | **20 KB**       | 109 KB       |
 | `@letar/forms/fields/text`        | < 1 KB          | re-export    |
 | `@letar/forms/fields/number`      | < 1 KB          | re-export    |
 | `@letar/forms/fields/datetime`    | < 1 KB          | re-export    |
@@ -362,7 +419,7 @@ MCP сервер [`@letar/form-mcp`](../form-mcp/README.md) предоставл
 Категорийные entry points (`fields/*`) позволяют импортировать только нужные поля:
 
 ```typescript
-// Полный импорт — все 40 полей
+// Полный импорт — все 56 п��лей
 import { Form } from '@letar/forms'
 
 // Категорийный импорт — только текстовые поля
@@ -385,5 +442,5 @@ import { FieldString, FieldTextarea } from '@letar/forms/fields/text'
 
 ---
 
-**Версия:** 0.63.0
-**Последнее обновление:** 2026-04-03
+**Версия:** 0.85.0
+**Последнее обновление:** 2026-04-10

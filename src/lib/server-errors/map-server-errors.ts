@@ -52,7 +52,7 @@ export function mapServerErrors(error: unknown, config?: MapServerErrorsConfig):
     formErrors: [defaultMessage ?? (locale === 'ru' ? 'Произошла ошибка' : 'An error occurred')],
   }
 
-  if (error == null) return fallback
+  if (error === null || error === undefined) return fallback
 
   // Строковая ошибка → глобальная
   if (typeof error === 'string') {
@@ -86,7 +86,7 @@ function parseByFormat(
   error: unknown,
   format: NonNullable<MapServerErrorsConfig['format']>,
   fieldMap?: MapServerErrorsConfig['fieldMap'],
-  locale: 'ru' | 'en' = 'ru'
+  locale: 'ru' | 'en' = 'ru',
 ): MappedServerErrors | null {
   switch (format) {
     case 'prisma':
@@ -117,7 +117,7 @@ export function applyServerErrors(
     setFieldMeta: (field: string, updater: (prev: { errors: unknown[] }) => { errors: unknown[] }) => void
     setErrorMap: (errorMap: { onSubmit: string }) => void
   },
-  mapped: MappedServerErrors
+  mapped: MappedServerErrors,
 ): void {
   // Устанавливаем ошибки на поля
   for (const { field, message } of mapped.fieldErrors) {

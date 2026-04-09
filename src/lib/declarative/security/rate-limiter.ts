@@ -39,7 +39,7 @@ export function useRateLimit(config: RateLimitConfig | undefined, formId?: strin
   const [secondsLeft, setSecondsLeft] = useState(0)
   const [isBlocked, setIsBlocked] = useState(false)
   // Счётчик для триггера re-render при recordAttempt
-  const [attemptVersion, setAttemptVersion] = useState(0)
+  const [, setAttemptVersion] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Стабильный ключ хранилища
@@ -69,7 +69,7 @@ export function useRateLimit(config: RateLimitConfig | undefined, formId?: strin
         // sessionStorage недоступен — graceful degradation
       }
     },
-    [storageKey]
+    [storageKey],
   )
 
   // Запустить таймер обратного отсчёта
@@ -94,7 +94,7 @@ export function useRateLimit(config: RateLimitConfig | undefined, formId?: strin
       updateTimer()
       timerRef.current = setInterval(updateTimer, 1000)
     },
-    [getAttempts, saveAttempts]
+    [getAttempts, saveAttempts],
   )
 
   // Зарегистрировать попытку — возвращает true если разрешено

@@ -30,12 +30,7 @@ export interface AutosaveIndicatorProps {
  * <AutosaveIndicator status={autosave.status} lastSavedAt={autosave.lastSavedAt} error={autosave.error} />
  * ```
  */
-export function AutosaveIndicator({
-  status,
-  lastSavedAt,
-  error,
-  labels,
-}: AutosaveIndicatorProps): ReactElement | null {
+export function AutosaveIndicator({ status, lastSavedAt, error, labels }: AutosaveIndicatorProps): ReactElement | null {
   if (status === 'idle') return null
 
   const defaultLabels = {

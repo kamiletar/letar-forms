@@ -63,18 +63,9 @@ export interface UseFormAutosaveResult {
 export function useFormAutosave(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any,
-  config: FormAutosaveConfig,
+  config: FormAutosaveConfig
 ): UseFormAutosaveResult {
-  const {
-    endpoint,
-    interval = 5000,
-    debounce = 1000,
-    draftId,
-    method = 'POST',
-    headers = {},
-    onSave,
-    onError,
-  } = config
+  const { endpoint, interval = 5000, debounce = 1000, draftId, method = 'POST', headers = {}, onSave, onError } = config
 
   const [status, setStatus] = useState<AutosaveStatus>('idle')
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
@@ -97,7 +88,9 @@ export function useFormAutosave(
         if (draftId) {
           try {
             localStorage.setItem(`autosave:${draftId}`, serialized)
-          } catch { /* квота localStorage */ }
+          } catch {
+            /* квота localStorage */
+          }
         }
         return
       }
@@ -130,7 +123,9 @@ export function useFormAutosave(
         if (draftId) {
           try {
             localStorage.removeItem(`autosave:${draftId}`)
-          } catch { /* игнорируем */ }
+          } catch {
+            /* игнорируем */
+          }
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Ошибка сохранения'
@@ -142,11 +137,13 @@ export function useFormAutosave(
         if (draftId) {
           try {
             localStorage.setItem(`autosave:${draftId}`, serialized)
-          } catch { /* квота localStorage */ }
+          } catch {
+            /* квота localStorage */
+          }
         }
       }
     },
-    [endpoint, method, headers, draftId, onSave, onError],
+    [endpoint, method, headers, draftId, onSave, onError]
   )
 
   /** Принудительное сохранение */
@@ -168,14 +165,18 @@ export function useFormAutosave(
           const data = await response.json()
           return data as Record<string, unknown>
         }
-      } catch { /* fallback на localStorage */ }
+      } catch {
+        /* fallback на localStorage */
+      }
     }
 
     // Fallback на localStorage
     try {
       const stored = localStorage.getItem(`autosave:${draftId}`)
       if (stored) return JSON.parse(stored) as Record<string, unknown>
-    } catch { /* ничего */ }
+    } catch {
+      /* ничего */
+    }
 
     return null
   }, [endpoint, draftId])

@@ -1,6 +1,6 @@
 'use client'
 
-import { Checkbox, Table } from '@chakra-ui/react'
+import { Table } from '@chakra-ui/react'
 import { useTableEditorContext } from './table-editor-context'
 
 /**
@@ -19,17 +19,21 @@ export function TableEditorHeader({ selectable, sortable }: { selectable?: boole
         {/* Drag handle колонка */}
         {sortable && !readOnly && <Table.ColumnHeader w="40px" />}
 
-        {/* Чекбокс select-all */}
+        {/* Чекбокс select-all — нативный input */}
         {selectable && !readOnly && (
           <Table.ColumnHeader w="40px" textAlign="center">
-            <Checkbox.Root
-              checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-              onCheckedChange={() => toggleSelectAll()}
-              size="sm"
-            >
-              <Checkbox.HiddenInput />
-              <Checkbox.Control />
-            </Checkbox.Root>
+            <input
+              type="checkbox"
+              checked={allSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = someSelected
+              }}
+              onChange={(e) => {
+                e.stopPropagation()
+                toggleSelectAll()
+              }}
+              style={{ width: 16, height: 16, cursor: 'pointer' }}
+            />
           </Table.ColumnHeader>
         )}
 

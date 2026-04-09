@@ -129,11 +129,13 @@ export function FieldDataGrid({
               id: 'select',
               header: ({ table }) => (
                 <Checkbox.Root
-                  checked={table.getIsAllPageRowsSelected()
-                    ? true
-                    : table.getIsSomePageRowsSelected()
-                    ? 'indeterminate'
-                    : false}
+                  checked={
+                    table.getIsAllPageRowsSelected()
+                      ? true
+                      : table.getIsSomePageRowsSelected()
+                        ? 'indeterminate'
+                        : false
+                  }
                   onCheckedChange={() => table.toggleAllPageRowsSelected()}
                   size="sm"
                 >
@@ -142,11 +144,7 @@ export function FieldDataGrid({
                 </Checkbox.Root>
               ),
               cell: ({ row }) => (
-                <Checkbox.Root
-                  checked={row.getIsSelected()}
-                  onCheckedChange={() => row.toggleSelected()}
-                  size="sm"
-                >
+                <Checkbox.Root checked={row.getIsSelected()} onCheckedChange={() => row.toggleSelected()} size="sm">
                   <Checkbox.HiddenInput />
                   <Checkbox.Control />
                 </Checkbox.Root>
@@ -210,9 +208,11 @@ export function FieldDataGrid({
                     textAlign={colDef.align}
                     bg={isModified ? 'yellow.100' : undefined}
                     _dark={isModified ? { bg: 'yellow.900/20' } : undefined}
-                    _hover={colDef.editable !== false && !disabled
-                      ? { bg: isModified ? 'yellow.200' : 'bg.subtle' }
-                      : undefined}
+                    _hover={
+                      colDef.editable !== false && !disabled
+                        ? { bg: isModified ? 'yellow.200' : 'bg.subtle' }
+                        : undefined
+                    }
                     px={1}
                     borderRadius="sm"
                     transition="background 0.3s"
@@ -260,7 +260,7 @@ export function FieldDataGrid({
         const rowVirtualizer = useVirtualizer({
           count: tableRows.length,
           getScrollElement: () => tableContainerRef.current,
-          estimateSize: () => size === 'sm' ? 36 : size === 'md' ? 44 : 52,
+          estimateSize: () => (size === 'sm' ? 36 : size === 'md' ? 44 : 52),
           overscan: 10,
           enabled: virtualized,
         })
@@ -272,20 +272,22 @@ export function FieldDataGrid({
             {/* Фильтры */}
             {columnDefs.some((c) => c.filter) && (
               <HStack gap={2} mb={2} flexWrap="wrap">
-                {columnDefs.filter((c) => c.filter).map((colDef) => {
-                  const column = table.getColumn(colDef.name)
-                  if (!column) return null
-                  return (
-                    <Input
-                      key={colDef.name}
-                      size="xs"
-                      placeholder={`Фильтр: ${colDef.label ?? colDef.name}`}
-                      value={(column.getFilterValue() as string) ?? ''}
-                      onChange={(e) => column.setFilterValue(e.target.value || undefined)}
-                      maxW="200px"
-                    />
-                  )
-                })}
+                {columnDefs
+                  .filter((c) => c.filter)
+                  .map((colDef) => {
+                    const column = table.getColumn(colDef.name)
+                    if (!column) return null
+                    return (
+                      <Input
+                        key={colDef.name}
+                        size="xs"
+                        placeholder={`Фильтр: ${colDef.label ?? colDef.name}`}
+                        value={(column.getFilterValue() as string) ?? ''}
+                        onChange={(e) => column.setFilterValue(e.target.value || undefined)}
+                        maxW="200px"
+                      />
+                    )
+                  })}
               </HStack>
             )}
 
@@ -321,9 +323,8 @@ export function FieldDataGrid({
                             const fromId = e.dataTransfer.getData('text/plain')
                             const toId = header.column.id
                             if (fromId === toId) return
-                            const currentOrder = columnOrder.length > 0
-                              ? columnOrder
-                              : table.getAllLeafColumns().map((c) => c.id)
+                            const currentOrder =
+                              columnOrder.length > 0 ? columnOrder : table.getAllLeafColumns().map((c) => c.id)
                             const fromIdx = currentOrder.indexOf(fromId)
                             const toIdx = currentOrder.indexOf(toId)
                             if (fromIdx === -1 || toIdx === -1) return
@@ -361,67 +362,63 @@ export function FieldDataGrid({
                 </Table.Header>
 
                 <Table.Body>
-                  {tableRows.length === 0
-                    ? (
-                      <Table.Row>
-                        <Table.Cell colSpan={tableColumns.length} textAlign="center" py={8}>
-                          <Text color="fg.muted">Нет данных</Text>
-                        </Table.Cell>
-                      </Table.Row>
-                    )
-                    : virtualized
-                    ? (
-                      <>
-                        {/* Spacer для виртуализации */}
-                        {rowVirtualizer.getVirtualItems().length > 0 && (
-                          <Table.Row style={{ height: `${rowVirtualizer.getVirtualItems()[0]?.start ?? 0}px` }}>
-                            <Table.Cell colSpan={tableColumns.length} p="0" />
-                          </Table.Row>
-                        )}
-                        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                          const row = tableRows[virtualRow.index]
-                          return (
-                            <Table.Row
-                              key={row.id}
-                              bg={row.getIsSelected() ? 'blue.50' : undefined}
-                              _dark={row.getIsSelected() ? { bg: 'blue.900/20' } : undefined}
-                              style={{ height: `${virtualRow.size}px` }}
-                            >
-                              {row.getVisibleCells().map((cell) => (
-                                <Table.Cell key={cell.id}>
-                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </Table.Cell>
-                              ))}
-                            </Table.Row>
-                          )
-                        })}
-                        {/* Bottom spacer */}
-                        <Table.Row
-                          style={{
-                            height: `${
-                              rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0)
-                            }px`,
-                          }}
-                        >
+                  {tableRows.length === 0 ? (
+                    <Table.Row>
+                      <Table.Cell colSpan={tableColumns.length} textAlign="center" py={8}>
+                        <Text color="fg.muted">Нет данных</Text>
+                      </Table.Cell>
+                    </Table.Row>
+                  ) : virtualized ? (
+                    <>
+                      {/* Spacer для виртуализации */}
+                      {rowVirtualizer.getVirtualItems().length > 0 && (
+                        <Table.Row style={{ height: `${rowVirtualizer.getVirtualItems()[0]?.start ?? 0}px` }}>
                           <Table.Cell colSpan={tableColumns.length} p="0" />
                         </Table.Row>
-                      </>
-                    )
-                    : (
-                      tableRows.map((row) => (
-                        <Table.Row
-                          key={row.id}
-                          bg={row.getIsSelected() ? 'blue.50' : undefined}
-                          _dark={row.getIsSelected() ? { bg: 'blue.900/20' } : undefined}
-                        >
-                          {row.getVisibleCells().map((cell) => (
-                            <Table.Cell key={cell.id}>
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </Table.Cell>
-                          ))}
-                        </Table.Row>
-                      ))
-                    )}
+                      )}
+                      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                        const row = tableRows[virtualRow.index]
+                        return (
+                          <Table.Row
+                            key={row.id}
+                            bg={row.getIsSelected() ? 'blue.50' : undefined}
+                            _dark={row.getIsSelected() ? { bg: 'blue.900/20' } : undefined}
+                            style={{ height: `${virtualRow.size}px` }}
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <Table.Cell key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </Table.Cell>
+                            ))}
+                          </Table.Row>
+                        )
+                      })}
+                      {/* Bottom spacer */}
+                      <Table.Row
+                        style={{
+                          height: `${
+                            rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0)
+                          }px`,
+                        }}
+                      >
+                        <Table.Cell colSpan={tableColumns.length} p="0" />
+                      </Table.Row>
+                    </>
+                  ) : (
+                    tableRows.map((row) => (
+                      <Table.Row
+                        key={row.id}
+                        bg={row.getIsSelected() ? 'blue.50' : undefined}
+                        _dark={row.getIsSelected() ? { bg: 'blue.900/20' } : undefined}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <Table.Cell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </Table.Cell>
+                        ))}
+                      </Table.Row>
+                    ))
+                  )}
                 </Table.Body>
               </Table.Root>
             </Box>
@@ -456,11 +453,13 @@ export function FieldDataGrid({
                     // Экспорт CSV
                     const headers = columnDefs.map((c) => c.label ?? c.name).join(',')
                     const csvRows = data.map((row) =>
-                      columnDefs.map((c) => {
-                        const val = row[c.name]
-                        const str = String(val ?? '')
-                        return str.includes(',') ? `"${str}"` : str
-                      }).join(',')
+                      columnDefs
+                        .map((c) => {
+                          const val = row[c.name]
+                          const str = String(val ?? '')
+                          return str.includes(',') ? `"${str}"` : str
+                        })
+                        .join(',')
                     )
                     const csv = [headers, ...csvRows].join('\n')
                     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
@@ -479,8 +478,8 @@ export function FieldDataGrid({
                 {virtualized
                   ? `${data.length} записей`
                   : `Страница ${
-                    table.getState().pagination.pageIndex + 1
-                  } из ${table.getPageCount()} (${data.length} записей)`}
+                      table.getState().pagination.pageIndex + 1
+                    } из ${table.getPageCount()} (${data.length} записей)`}
               </Text>
             </HStack>
 

@@ -240,7 +240,7 @@ const UserFormSchema = withUIMeta(UserCreateInputSchema, {
 ```tsx
 import { useFindManyCategory, useFindManyTag } from '@/generated/hooks'
 import { RelationFieldProvider } from '@lena/form-components'
-<RelationFieldProvider
+;<RelationFieldProvider
   relations={[
     { model: 'Category', useQuery: useFindManyCategory, labelField: 'name' },
     { model: 'Tag', useQuery: useFindManyTag, labelField: 'title' },

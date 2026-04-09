@@ -25,7 +25,7 @@ export function useFormHistory<T>(
     setFieldValue: (field: string, value: unknown) => void
     reset: () => void
   },
-  config?: FormHistoryConfig,
+  config?: FormHistoryConfig
 ): UseFormHistoryResult<T> {
   const {
     maxHistory = 50,
@@ -41,7 +41,9 @@ export function useFormHistory<T>(
       try {
         const saved = sessionStorage.getItem(persistKey)
         if (saved) return JSON.parse(saved)
-      } catch { /* игнорируем ошибки парсинга */ }
+      } catch {
+        /* игнорируем ошибки парсинга */
+      }
     }
     return [{ values: form.state.values, timestamp: Date.now() }]
   })
@@ -51,7 +53,9 @@ export function useFormHistory<T>(
       try {
         const saved = sessionStorage.getItem(`${persistKey}-index`)
         if (saved) return parseInt(saved, 10)
-      } catch { /* игнорируем */ }
+      } catch {
+        /* игнорируем */
+      }
     }
     return 0
   })
@@ -60,21 +64,24 @@ export function useFormHistory<T>(
   const isUndoRedoRef = useRef(false)
 
   // Записать новый снапшот в историю
-  const pushSnapshot = useCallback((values: T) => {
-    setHistory((prev) => {
-      // Обрезаем "будущее" при ветвлении
-      const base = prev.slice(0, currentIndex + 1)
-      const entry: HistoryEntry<T> = { values: structuredClone(values), timestamp: Date.now() }
-      const next = [...base, entry]
-      // Ограничиваем размер
-      const trimmed = next.length > maxHistory ? next.slice(next.length - maxHistory) : next
-      return trimmed
-    })
-    setCurrentIndex((prev) => {
-      const newIndex = Math.min(prev + 1, maxHistory - 1)
-      return newIndex
-    })
-  }, [currentIndex, maxHistory])
+  const pushSnapshot = useCallback(
+    (values: T) => {
+      setHistory((prev) => {
+        // Обрезаем "будущее" при ветвлении
+        const base = prev.slice(0, currentIndex + 1)
+        const entry: HistoryEntry<T> = { values: structuredClone(values), timestamp: Date.now() }
+        const next = [...base, entry]
+        // Ограничиваем размер
+        const trimmed = next.length > maxHistory ? next.slice(next.length - maxHistory) : next
+        return trimmed
+      })
+      setCurrentIndex((prev) => {
+        const newIndex = Math.min(prev + 1, maxHistory - 1)
+        return newIndex
+      })
+    },
+    [currentIndex, maxHistory]
+  )
 
   // Подписка на изменения формы с debounce
   useEffect(() => {
@@ -99,19 +106,26 @@ export function useFormHistory<T>(
     try {
       sessionStorage.setItem(persistKey, JSON.stringify(history))
       sessionStorage.setItem(`${persistKey}-index`, String(currentIndex))
-    } catch { /* sessionStorage может быть полон */ }
+    } catch {
+      /* sessionStorage может быть полон */
+    }
   }, [history, currentIndex, persist, persistKey])
 
   // Применить снапшот из истории к форме
-  const applySnapshot = useCallback((entry: HistoryEntry<T>) => {
-    isUndoRedoRef.current = true
-    const values = entry.values as Record<string, unknown>
-    for (const [key, value] of Object.entries(values)) {
-      form.setFieldValue(key, value)
-    }
-    // Сбросить флаг после микротаска (чтобы subscribe не сработал)
-    setTimeout(() => { isUndoRedoRef.current = false }, 0)
-  }, [form])
+  const applySnapshot = useCallback(
+    (entry: HistoryEntry<T>) => {
+      isUndoRedoRef.current = true
+      const values = entry.values as Record<string, unknown>
+      for (const [key, value] of Object.entries(values)) {
+        form.setFieldValue(key, value)
+      }
+      // Сбросить флаг после микротаска (чтобы subscribe не сработал)
+      setTimeout(() => {
+        isUndoRedoRef.current = false
+      }, 0)
+    },
+    [form]
+  )
 
   const undo = useCallback(() => {
     if (currentIndex <= 0) return
@@ -135,7 +149,9 @@ export function useFormHistory<T>(
       try {
         sessionStorage.removeItem(persistKey)
         sessionStorage.removeItem(`${persistKey}-index`)
-      } catch { /* игнорируем */ }
+      } catch {
+        /* игнорируем */
+      }
     }
   }, [form.state.values, persist, persistKey])
 

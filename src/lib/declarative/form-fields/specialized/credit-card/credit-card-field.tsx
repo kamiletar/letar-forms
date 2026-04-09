@@ -118,7 +118,7 @@ export function CreditCardField({
         expiryRef.current?.focus()
       }
     },
-    [formCtx, name, brandInfo.lengths],
+    [formCtx, name, brandInfo.lengths]
   )
 
   // Валидация номера на blur (Baymard: 53% сайтов ошибаются тут)
@@ -165,7 +165,7 @@ export function CreditCardField({
         cvcRef.current?.focus()
       }
     },
-    [formCtx, name],
+    [formCtx, name]
   )
 
   // Валидация expiry на blur
@@ -195,7 +195,7 @@ export function CreditCardField({
         formCtx.form.setFieldValue(`${name}.cvc`, raw)
       }
     },
-    [formCtx, name, brandInfo.cvcLength],
+    [formCtx, name, brandInfo.cvcLength]
   )
 
   // Валидация CVC на blur
@@ -237,24 +237,16 @@ export function CreditCardField({
         borderColor={isInline ? 'border' : undefined}
         borderRadius={isInline ? 'md' : undefined}
         overflow={isInline ? 'hidden' : undefined}
-        _focusWithin={isInline
-          ? { borderColor: 'colorPalette.500', boxShadow: '0 0 0 1px var(--chakra-colors-colorPalette-500)' }
-          : undefined}
+        _focusWithin={
+          isInline
+            ? { borderColor: 'colorPalette.500', boxShadow: '0 0 0 1px var(--chakra-colors-colorPalette-500)' }
+            : undefined
+        }
       >
         {/* Иконка бренда + Номер карты */}
-        <Group
-          attached={!isInline}
-          flex={isInline ? '1' : undefined}
-          gap={0}
-        >
+        <Group attached={!isInline} flex={isInline ? '1' : undefined} gap={0}>
           {showBrandIcon && (
-            <Box
-              px={2}
-              display="flex"
-              alignItems="center"
-              borderRightWidth={isInline ? '1px' : 0}
-              borderColor="border"
-            >
+            <Box px={2} display="flex" alignItems="center" borderRightWidth={isInline ? '1px' : 0} borderColor="border">
               <CardBrandIcon brand={brandInfo.brand} size={28} />
             </Box>
           )}
@@ -273,7 +265,7 @@ export function CreditCardField({
               aria-label="Номер карты"
               fontSize="16px"
               border={isInline ? 'none' : undefined}
-              borderColor={!isInline ? statusBorder(numberStatus) ? undefined : 'border' : undefined}
+              borderColor={!isInline ? (statusBorder(numberStatus) ? undefined : 'border') : undefined}
               style={!isInline ? { border: statusBorder(numberStatus) } : undefined}
               _focus={isInline ? { boxShadow: 'none' } : undefined}
             />

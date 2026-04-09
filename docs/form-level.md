@@ -556,8 +556,116 @@ function CityField() {
 
 ---
 
+## Form.Captcha — Защита от ботов (v0.77.0+)
+
+CAPTCHA интеграция (Cloudflare Turnstile, reCAPTCHA, hCaptcha):
+
+```tsx
+<Form.Captcha provider="turnstile" siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+```
+
+Значение токена автоматически добавляется в form state. Серверная верификация через `verifyCaptchaToken()`.
+
+---
+
+## Form.Analytics.Panel — Dev-панель аналитики (v0.80.0+)
+
+Live-панель с метриками заполнения формы (только для development):
+
+```tsx
+import { useFormAnalytics, AnalyticsPanel } from '@lena/form-components/analytics'
+
+const analytics = useFormAnalytics({ formId: 'my-form', adapters: [umamiAdapter] })
+
+<AnalyticsPanel analytics={analytics} position="bottom-right" />
+```
+
+Подробнее: [analytics.md](./analytics.md)
+
+---
+
+## Form.History.Controls — Undo/Redo (v0.80.0+)
+
+Кнопки отмены/повтора для длинных форм (Ctrl+Z / Ctrl+Shift+Z):
+
+```tsx
+import { useFormHistory } from '@lena/form-components'
+
+const { undo, redo, canUndo, canRedo } = useFormHistory(form)
+
+<Form.History.Controls />
+```
+
+---
+
+## Form.Comparison — Diff-view (v0.80.0+)
+
+Сравнение двух версий данных формы (было → стало):
+
+```tsx
+<Form.Comparison
+  original={oldData}
+  current={newData}
+  schema={UserSchema}
+  onlyChanged // показать только изменённые поля
+/>
+```
+
+---
+
+## Form.ReadOnlyView — Режим просмотра (v0.80.0+)
+
+Отображение данных формы в режиме только чтение:
+
+```tsx
+<Form.ReadOnlyView data={user} schema={UserSchema} compact />
+```
+
+Автоматически выбирает правильное отображение для каждого типа поля (даты форматируются, boolean → чекбоксы, enum → labels).
+
+---
+
+## Form.Skeleton — Loading state (v0.80.0+)
+
+Автоматический skeleton из Zod-схемы:
+
+```tsx
+// Вариант 1: отдельный компонент
+<Form.Skeleton schema={UserSchema} showSubmit />
+
+// Вариант 2: внутри формы
+<Form schema={UserSchema} loading={true} initialValue={data} onSubmit={save}>
+  ...
+</Form>
+```
+
+---
+
+## Form.DependsOn — Каскадный рендеринг (v0.80.0+)
+
+Рендеринг разных наборов полей в зависимости от значения другого поля:
+
+```tsx
+<Form.DependsOn
+  field="type"
+  cases={{
+    person: <PersonFields />,
+    company: <CompanyFields />,
+  }}
+/>
+```
+
+Более декларативная альтернатива `Form.When` для паттерна "одно из многих".
+
+---
+
 ## Связанные документы
 
 - [README.md](../README.md) — обзор библиотеки
 - [fields.md](./fields.md) — Field компоненты
+- [analytics.md](./analytics.md) — Аналитика форм
 - [schema-generation.md](./schema-generation.md) — генерация из схемы
+
+---
+
+**Последнее обновление:** 2026-04-04

@@ -1,4 +1,20 @@
-# Form Analytics: как найти, где пользователь бросает форму
+# 67% пользователей бросают форму. Как найти, где именно
+
+> **Уровень сложности:** Простой
+
+**TL;DR:**
+
+- Один хук `useFormAnalytics` включает field-level трекинг: focus, blur, ошибки, corrections, abandon и completion rate
+- 5 готовых адаптеров (Umami, Яндекс Метрика, GA4, PostHog, кастомный) — данные на ваших серверах, не в чужом SaaS
+- Dev-only `AnalyticsPanel` показывает live-метрики прямо в углу экрана во время разработки
+
+**Кому полезно:**
+
+- Junior: понять какие события формы важно трекать и как подключить аналитику одним хуком
+- Middle: настроить воронку мультистеп-формы через адаптеры Umami/Метрика и найти проблемные поля
+- Senior: оценить архитектуру адаптеров, field-level corrections tracking и сравнение с SaaS-решениями ($200+/мес)
+
+---
 
 > Тринадцатая статья из цикла «@letar/forms — от боли к декларативным формам». Встроенная аналитика форм — field-level трекинг, drop-off, completion rate — без коммерческих SaaS.
 
@@ -197,13 +213,18 @@ const analytics = useFormAnalytics({
 
 ---
 
-## Попробовать
+## Ссылки
 
+- **Документация:** [forms.letar.best](https://forms.letar.best)
+- **Примеры:** [forms-example.letar.best](https://forms-example.letar.best)
+- **GitHub:** [github.com/letar/forms](https://github.com/letar/forms)
+- **npm MCP:** `npx @letar/form-mcp`
 - **Analytics:** [forms-example.letar.best/examples/analytics](https://forms-example.letar.best/examples/analytics)
-- **Исходный код:** [GitHub](https://github.com/kamiletar/letar-forms-example/blob/main/src/app/examples/analytics/page.tsx)
-
-В этой статье мы закрыли круг: от болей с формами (статья 1) до встроенной аналитики, которая показывает где именно пользователь страдает. Библиотека прошла путь от 10 компонентов до 50+ полей, offline-mode, i18n, MCP для AI — и теперь form analytics.
 
 ---
 
-_Это тринадцатая статья из цикла «@letar/forms — от боли к декларативным формам». [Предыдущая: Релиз](12-open-source.md)._
+_Это тринадцатая статья из цикла «@letar/forms — от боли к декларативным формам». [Предыдущая: MCP](11-mcp-ai.md) | [Следующая: Релиз](12-open-source.md)._
+
+---
+
+**Отслеживаете ли вы abandon rate форм?**

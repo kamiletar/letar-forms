@@ -37,9 +37,7 @@ export function FormFromTemplate<T extends Record<string, unknown>>({
   submitLabel = 'Отправить',
   debug = false,
 }: FormFromTemplateProps<T>): ReactElement {
-  const mergedInitialValue = initialValue
-    ? { ...template.defaultValues, ...initialValue }
-    : template.defaultValues
+  const mergedInitialValue = initialValue ? { ...template.defaultValues, ...initialValue } : template.defaultValues
 
   return (
     <Form.FromSchema

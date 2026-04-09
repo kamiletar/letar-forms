@@ -1,6 +1,38 @@
-# Zod `.meta()` — одна схема для валидации и UI
+# Zod .meta() — одна схема для валидации, UI и доступности
+
+> **Уровень сложности:** Средний
+
+**TL;DR:**
+
+- В классическом подходе одно поле формы описано в 2-3 местах: Zod-схема, JSX-пропсы, HTML-атрибуты. Рассинхронизация — вопрос времени.
+- Zod v4 `.meta()` позволяет хранить label, placeholder и helperText прямо в схеме валидации.
+- Результат: 80 строк JSX → 8. Одна схема = единственный источник правды.
+
+**Кому полезно:**
+
+- Junior: поймёте, зачем нужен DRY в формах и как работает Zod `.meta()`
+- Middle: увидите конкретное сравнение до/после с React Hook Form + Chakra UI
+- Senior: разберёте механизм unwrapping Zod-типов и автоматического извлечения constraints
+
+---
 
 > Вторая статья из цикла «@letar/forms — от боли к декларативным формам». Как мы объединили правила валидации и UI-метаданные в одной Zod-схеме и почему это убивает дублирование.
+
+<details>
+<summary>Что такое Zod v4 и чем отличается от v3</summary>
+
+**Zod** — библиотека валидации для TypeScript. Вы описываете схему данных — Zod проверяет входные данные и выводит TypeScript-типы автоматически.
+
+**Zod v4** (выпущен в 2025) добавил несколько ключевых фич:
+
+- **`.meta()`** — прикрепление произвольных метаданных к любому типу (то, о чём эта статья)
+- **Улучшенная производительность** — парсинг в 2-7x быстрее v3
+- **Новый JSON-совместимый формат ошибок**
+- **`z.interface()`** — для рекурсивных типов
+
+Миграция: `import { z } from 'zod/v4'` (v3 API доступен через `'zod/v3'`). Подробнее — [zod.dev](https://zod.dev).
+
+</details>
 
 ---
 
@@ -273,6 +305,35 @@ const ProductSchema = z.object({
 
 `fieldType` определяет, какой компонент рендерить. `fieldProps` передаёт ему кастомные пропсы. Вся конфигурация — в схеме.
 
+### Автоматический HTML autocomplete
+
+Есть ещё один тип метаданных, который большинство библиотек игнорирует — атрибут `autocomplete`. Мобильные браузеры и менеджеры паролей используют его для автозаполнения: имя, email, телефон, адрес, данные карты. По стандарту WCAG 1.3.5, `autocomplete` обязателен для accessibility.
+
+`@letar/forms` проставляет его **автоматически** — по имени поля:
+
+| Имя поля     | autocomplete       | Что подставит браузер |
+| ------------ | ------------------ | --------------------- |
+| `email`      | `email`            | Email из профиля      |
+| `firstName`  | `given-name`       | Имя                   |
+| `lastName`   | `family-name`      | Фамилия               |
+| `phone`      | `tel`              | Телефон               |
+| `password`   | `current-password` | Пароль из менеджера   |
+| `address`    | `street-address`   | Адрес                 |
+| `city`       | `address-level2`   | Город                 |
+| `zip`        | `postal-code`      | Почтовый индекс       |
+| `cardNumber` | `cc-number`        | Номер карты           |
+| `cardExpiry` | `cc-exp`           | Срок действия         |
+
+Внутри библиотеки — 40+ таких маппингов. Достаточно назвать поле `email` — и `autocomplete="email"` появится автоматически.
+
+Если автоматика не подходит, переопределение через `.meta()`:
+
+```tsx
+z.string().meta({ autocomplete: 'shipping street-address' })
+```
+
+Приоритет: явный проп на поле → `.meta({ autocomplete })` → автодетекция по имени.
+
 ---
 
 ## Вложенные объекты и массивы
@@ -433,13 +494,42 @@ const ProfileSchema = z.object({
 
 ## Попробовать
 
-- **Живой пример:** [forms-example.letar.best/examples/validation](https://forms-example.letar.best/examples/validation)
-- **Constraints:** [forms-example.letar.best/examples/constraints](https://forms-example.letar.best/examples/constraints)
-- **Исходный код:** [validation](https://github.com/kamiletar/letar-forms-example/blob/main/src/app/examples/validation/page.tsx) | [constraints](https://github.com/kamiletar/letar-forms-example/blob/main/src/app/examples/constraints/page.tsx)
-- **Клонировать:** `git clone https://github.com/kamiletar/letar-forms-example && cd letar-forms-example && npm install && npm run dev`
+<details>
+<summary>Установка</summary>
 
-В следующей статье разберём, почему мы выбрали паттерн Compound Components (`<Form.Field.String>`) вместо JSON-конфигов — и как устроена архитектура библиотеки изнутри.
+```bash
+bun add @letar/forms
+```
+
+```tsx
+import { z } from 'zod/v4'
+
+const Schema = z.object({
+  email: z.email().meta({ ui: { title: 'Email', placeholder: 'user@example.com' } }),
+  name: z.string().min(2).meta({ ui: { title: 'Имя' } }),
+})
+
+<Form schema={Schema} initialValue={{ email: '', name: '' }} onSubmit={save}>
+  <Form.Field.String name="email" />
+  <Form.Field.String name="name" />
+  <Form.Button.Submit>Сохранить</Form.Button.Submit>
+</Form>
+```
+
+</details>
+
+- [Документация](https://forms.letar.best)
+- [Живой пример: validation](https://forms-example.letar.best/examples/validation)
+- [Живой пример: constraints](https://forms-example.letar.best/examples/constraints)
+- [GitHub](https://github.com/kamiletar/letar-forms)
+- [MCP для AI](https://www.npmjs.com/package/@letar/form-mcp)
 
 ---
 
-_Это вторая статья из цикла «@letar/forms — от боли к декларативным формам». [Предыдущая: почему формы — боль](01-why-forms-hurt.md) | [Следующая: Compound Components](03-compound-components.md)._
+**Навигация по серии**
+← Предыдущая: [Формы в React: почему больно](01-why-forms-hurt.md)
+→ Следующая: [От первой формы до архитектуры: Compound Components](03-compound-components.md)
+
+---
+
+**Используете ли вы Zod v4 .meta() в своих проектах? Для валидации, генерации форм или чего-то ещё?**

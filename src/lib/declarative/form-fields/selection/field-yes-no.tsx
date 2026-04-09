@@ -57,7 +57,7 @@ export function FieldYesNo({
   variant = 'buttons',
 }: YesNoFieldProps): ReactElement {
   const { form } = useDeclarativeForm()
-  const parentGroup = useFormGroup()
+  useFormGroup()
   const {
     fullPath,
     label: resolvedLabel,
@@ -105,7 +105,11 @@ export function FieldYesNo({
                 role="radio"
                 aria-checked={value === true}
               >
-                {icons.yes && <Text fontSize="2xl" mb={1}>{icons.yes}</Text>}
+                {icons.yes && (
+                  <Text fontSize="2xl" mb={1}>
+                    {icons.yes}
+                  </Text>
+                )}
                 <Text fontWeight="medium" color={value === true ? 'green.600' : 'fg'}>
                   {yesLabel}
                 </Text>
@@ -129,7 +133,11 @@ export function FieldYesNo({
                 role="radio"
                 aria-checked={value === false}
               >
-                {icons.no && <Text fontSize="2xl" mb={1}>{icons.no}</Text>}
+                {icons.no && (
+                  <Text fontSize="2xl" mb={1}>
+                    {icons.no}
+                  </Text>
+                )}
                 <Text fontWeight="medium" color={value === false ? 'red.600' : 'fg'}>
                   {noLabel}
                 </Text>

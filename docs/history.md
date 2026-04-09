@@ -30,34 +30,34 @@ Ctrl+Z / Ctrl+Y работают автоматически.
 
 ```typescript
 const history = useFormHistory(form, {
-  maxHistory: 50,      // Макс. снапшотов (по умолчанию 50)
-  debounceMs: 500,     // Задержка перед записью (по умолчанию 500мс)
-  keyboard: true,      // Ctrl+Z / Ctrl+Y (по умолчанию true)
-  persist: false,      // sessionStorage (по умолчанию false)
+  maxHistory: 50, // Макс. снапшотов (по умолчанию 50)
+  debounceMs: 500, // Задержка перед записью (по умолчанию 500мс)
+  keyboard: true, // Ctrl+Z / Ctrl+Y (по умолчанию true)
+  persist: false, // sessionStorage (по умолчанию false)
   persistKey: 'form-history', // Ключ для sessionStorage
 })
 ```
 
 **Возвращает:**
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `undo` | `() => void` | Отменить последнее действие |
-| `redo` | `() => void` | Повторить отменённое |
-| `canUndo` | `boolean` | Есть что отменять |
-| `canRedo` | `boolean` | Есть что повторять |
-| `currentIndex` | `number` | Позиция в истории |
-| `historyLength` | `number` | Всего снапшотов |
-| `clear` | `() => void` | Очистить историю |
-| `history` | `HistoryEntry[]` | Полная история (для отладки) |
+| Поле            | Тип              | Описание                     |
+| --------------- | ---------------- | ---------------------------- |
+| `undo`          | `() => void`     | Отменить последнее действие  |
+| `redo`          | `() => void`     | Повторить отменённое         |
+| `canUndo`       | `boolean`        | Есть что отменять            |
+| `canRedo`       | `boolean`        | Есть что повторять           |
+| `currentIndex`  | `number`         | Позиция в истории            |
+| `historyLength` | `number`         | Всего снапшотов              |
+| `clear`         | `() => void`     | Очистить историю             |
+| `history`       | `HistoryEntry[]` | Полная история (для отладки) |
 
 ### HistoryControls
 
 ```tsx
 <HistoryControls
   history={historyApi}
-  showCounter    // Показать "3/7" счётчик
-  size="sm"      // Размер кнопок: xs | sm | md
+  showCounter // Показать "3/7" счётчик
+  size="sm" // Размер кнопок: xs | sm | md
 />
 ```
 
@@ -71,11 +71,11 @@ const history = useFormHistory(form, {
 
 ## Keyboard Shortcuts
 
-| Комбинация | Действие |
-|-----------|----------|
-| `Ctrl+Z` / `Cmd+Z` | Undo |
-| `Ctrl+Shift+Z` / `Cmd+Shift+Z` | Redo |
-| `Ctrl+Y` | Redo (альтернатива) |
+| Комбинация                     | Действие            |
+| ------------------------------ | ------------------- |
+| `Ctrl+Z` / `Cmd+Z`             | Undo                |
+| `Ctrl+Shift+Z` / `Cmd+Shift+Z` | Redo                |
+| `Ctrl+Y`                       | Redo (альтернатива) |
 
 Отключение: `keyboard: false`.
 

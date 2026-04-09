@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { deepEqual } from '../utils/deep-equal'
 
 /**
  * Option for selection field
@@ -38,8 +39,7 @@ export interface QueryHookResult<TData = unknown> {
 /**
  * Relation loading configuration
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface RelationConfig<TData = any, TArgs = any> {
+export interface RelationConfig<TData = unknown, TArgs = unknown> {
   /** Model name (must match model in relationMeta) */
   model: string
   /**
@@ -126,8 +126,7 @@ function RelationLoader<TData>({
     }
 
     const options: RelationOption[] = (data ?? []).map((item) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const record = item as Record<string, any>
+      const record = item as Record<string, unknown>
       return {
         value: String(record[valueField] ?? ''),
         label: String(record[labelField] ?? ''),
@@ -216,7 +215,7 @@ export function RelationFieldProvider({
           prevState &&
           prevState.isLoading === state.isLoading &&
           prevState.error === state.error &&
-          JSON.stringify(prevState.options) === JSON.stringify(state.options)
+          deepEqual(prevState.options, state.options)
         ) {
           return prev // No changes
         }

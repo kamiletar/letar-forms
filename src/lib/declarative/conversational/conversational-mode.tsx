@@ -85,7 +85,7 @@ export function ConversationalMode({
         state.next()
       }
     },
-    [state, onComplete],
+    [state, onComplete]
   )
 
   // Завершённое состояние
@@ -135,29 +135,22 @@ export function ConversationalMode({
 
       {/* Навигация */}
       <Flex justify="space-between" pt={2}>
-        <Button
-          variant="ghost"
-          onClick={state.prev}
-          disabled={state.isFirst}
-          size="sm"
-        >
+        <Button variant="ghost" onClick={state.prev} disabled={state.isFirst} size="sm">
           ← {prevLabel}
         </Button>
         <HStack gap={2}>
           <Text fontSize="xs" color="fg.muted">
             Enter ↵
           </Text>
-          {state.isLast
-            ? (
-              <Button colorPalette="blue" onClick={onComplete} size="sm">
-                {submitLabel}
-              </Button>
-            )
-            : (
-              <Button colorPalette="blue" onClick={state.next} size="sm">
-                {nextLabel} →
-              </Button>
-            )}
+          {state.isLast ? (
+            <Button colorPalette="blue" onClick={onComplete} size="sm">
+              {submitLabel}
+            </Button>
+          ) : (
+            <Button colorPalette="blue" onClick={state.next} size="sm">
+              {nextLabel} →
+            </Button>
+          )}
         </HStack>
       </Flex>
     </VStack>

@@ -1,4 +1,20 @@
-# Массивы и вложенные объекты: FormGroup + drag & drop
+# Вложенные формы в React: массивы, drag & drop и когда использовать таблицы
+
+> **Уровень сложности:** Сложный
+
+**TL;DR:**
+
+- `Form.Group` создаёт контекст для вложенных объектов с автоматическими путями (`customer.address.city`) на любой глубине
+- `Form.Group.List` управляет динамическими массивами (add/remove/sort) с drag & drop через один проп `sortable`
+- `TableEditor` — готовое решение для табличных данных с inline-редактированием, computed-колонками и footer-агрегациями
+
+**Кому полезно:**
+
+- Junior: понять, как работать с вложенными данными в формах без ручного маппинга индексов
+- Middle: освоить паттерн вложенных массивов (массив в массиве) и выбор между Group.List и TableEditor
+- Senior: оценить архитектуру автоматических путей и интеграцию с @dnd-kit для drag & drop
+
+---
 
 > Шестая статья из цикла «@letar/forms — от боли к декларативным формам». Как работать с вложенными объектами, динамическими массивами и drag & drop сортировкой в формах.
 
@@ -146,14 +162,14 @@ interface Order {
 {
   /* Вертикальный список (по умолчанию) */
 }
-<Form.Group.List name="steps" sortable direction="vertical">
+;<Form.Group.List name="steps" sortable direction="vertical">
   ...
 </Form.Group.List>
 
 {
   /* Горизонтальный (например, карточки) */
 }
-<Form.Group.List name="slides" sortable direction="horizontal">
+;<Form.Group.List name="slides" sortable direction="horizontal">
   ...
 </Form.Group.List>
 ```
@@ -223,7 +239,7 @@ const OrderSchema = z.object({
         product: z.string().min(1, 'Выберите товар'),
         quantity: z.number().min(1, 'Минимум 1'),
         price: z.number().min(0),
-      }),
+      })
     )
     .min(1, 'Добавьте хотя бы один товар') // Валидация длины массива
     .max(20, 'Максимум 20 позиций'),

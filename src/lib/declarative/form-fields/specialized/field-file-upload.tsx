@@ -132,14 +132,14 @@ function FileList({ showSize, clearable }: { showSize?: boolean; clearable?: boo
             </Icon>
           </FileUpload.ItemPreview>
 
-          {showSize ? (
-            <FileUpload.ItemContent>
-              <FileUpload.ItemName />
-              <FileUpload.ItemSizeText />
-            </FileUpload.ItemContent>
-          ) : (
-            <FileUpload.ItemName flex="1" />
-          )}
+          {showSize
+            ? (
+              <FileUpload.ItemContent>
+                <FileUpload.ItemName />
+                <FileUpload.ItemSizeText />
+              </FileUpload.ItemContent>
+            )
+            : <FileUpload.ItemName flex="1" />}
 
           {clearable && (
             <FileUpload.ItemDeleteTrigger asChild>
@@ -201,7 +201,12 @@ function FileList({ showSize, clearable }: { showSize?: boolean; clearable?: boo
  * />
  * ```
  */
-export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
+interface FileUploadFieldState {
+  securityError: string | null
+  setSecurityError: React.Dispatch<React.SetStateAction<string | null>>
+}
+
+export const FieldFileUpload = createField<FileUploadFieldProps, File[], FileUploadFieldState>({
   displayName: 'FieldFileUpload',
 
   useFieldState: (componentProps) => {
@@ -279,11 +284,9 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
                   {buttonText}
                 </Button>
               </FileUpload.Trigger>
-              {isImageUpload ? (
-                <FileImageList clearable={clearable} />
-              ) : (
-                <FileList showSize={showSize} clearable={clearable} />
-              )}
+              {isImageUpload
+                ? <FileImageList clearable={clearable} />
+                : <FileList showSize={showSize} clearable={clearable} />}
             </>
           )}
 
@@ -298,11 +301,9 @@ export const FieldFileUpload = createField<FileUploadFieldProps, File[]>({
                   {dropzoneDescription && <Text color="fg.muted">{dropzoneDescription}</Text>}
                 </FileUpload.DropzoneContent>
               </FileUpload.Dropzone>
-              {isImageUpload ? (
-                <FileImageList clearable={clearable} />
-              ) : (
-                <FileList showSize={showSize} clearable={clearable} />
-              )}
+              {isImageUpload
+                ? <FileImageList clearable={clearable} />
+                : <FileList showSize={showSize} clearable={clearable} />}
             </>
           )}
 

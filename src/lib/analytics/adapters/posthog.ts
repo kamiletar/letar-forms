@@ -5,7 +5,8 @@ export function createPostHogAdapter(): AnalyticsAdapter {
   return {
     name: 'posthog',
     track(event: FormAnalyticsEvent, formId?: string) {
-      const posthog = (globalThis as { posthog?: { capture: (name: string, props: Record<string, unknown>) => void } }).posthog
+      const posthog = (globalThis as { posthog?: { capture: (name: string, props: Record<string, unknown>) => void } })
+        .posthog
       if (!posthog) return
 
       const props: Record<string, unknown> = { form_id: formId, event_type: event.type }

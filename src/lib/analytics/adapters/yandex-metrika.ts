@@ -5,7 +5,9 @@ export function createYandexMetrikaAdapter(counterId: number): AnalyticsAdapter 
   return {
     name: 'yandex-metrika',
     track(event: FormAnalyticsEvent, formId?: string) {
-      const ym = (globalThis as { ym?: (id: number, action: string, goal: string, params?: Record<string, unknown>) => void }).ym
+      const ym = (
+        globalThis as { ym?: (id: number, action: string, goal: string, params?: Record<string, unknown>) => void }
+      ).ym
       if (!ym) return
 
       const goalPrefix = formId ? `form_${formId}` : 'form'

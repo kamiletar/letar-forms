@@ -15,6 +15,7 @@ export function HoneypotField(): React.ReactElement {
   return (
     <div
       aria-hidden="true"
+      tabIndex={-1}
       style={{
         position: 'absolute',
         left: '-9999px',
@@ -23,7 +24,6 @@ export function HoneypotField(): React.ReactElement {
         overflow: 'hidden',
         opacity: 0,
         pointerEvents: 'none',
-        tabIndex: -1,
       }}
     >
       <label htmlFor={nameRef.current}>

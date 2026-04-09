@@ -28,11 +28,21 @@ describe('Adapter track() throughput (без глобального объект
   const gtag = createGtagAdapter()
   const posthog = createPostHogAdapter()
 
-  bench('Umami focus event', () => { umami.track(FOCUS_EVENT, 'form-1') })
-  bench('Umami blur event', () => { umami.track(BLUR_EVENT, 'form-1') })
-  bench('Yandex Metrika abandon', () => { ym.track(ABANDON_EVENT, 'form-1') })
-  bench('GA4 error event', () => { gtag.track(ERROR_EVENT, 'form-1') })
-  bench('PostHog abandon', () => { posthog.track(ABANDON_EVENT, 'form-1') })
+  bench('Umami focus event', () => {
+    umami.track(FOCUS_EVENT, 'form-1')
+  })
+  bench('Umami blur event', () => {
+    umami.track(BLUR_EVENT, 'form-1')
+  })
+  bench('Yandex Metrika abandon', () => {
+    ym.track(ABANDON_EVENT, 'form-1')
+  })
+  bench('GA4 error event', () => {
+    gtag.track(ERROR_EVENT, 'form-1')
+  })
+  bench('PostHog abandon', () => {
+    posthog.track(ABANDON_EVENT, 'form-1')
+  })
 
   bench('все 4 адаптера на 1 event', () => {
     umami.track(FOCUS_EVENT, 'form-1')

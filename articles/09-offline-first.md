@@ -1,4 +1,20 @@
-# Offline-first формы: работаем без интернета
+# Offline-first формы: как не потерять данные при обрыве связи
+
+> **Уровень сложности:** Сложный
+
+**TL;DR:**
+
+- Один проп `offline` включает сохранение в IndexedDB при потере сети и автосинхронизацию с retry при восстановлении
+- Три независимых механизма: `persistence` (черновики в localStorage), `offline` (гарантия доставки через IndexedDB), `useFormAutosave` (серверный автосейв)
+- Edge-кейсы решены: конфликты синхронизации, FileUpload в offline, лимиты IndexedDB, мониторинг очереди
+
+**Кому полезно:**
+
+- Junior: понять разницу между persistence (черновики) и offline (гарантия доставки) и когда какой механизм использовать
+- Middle: освоить offline prop, SyncQueue, конфликт-стратегии и паттерн комбинирования persistence + offline
+- Senior: оценить архитектуру retry с backoff, FileUpload в offline-режиме и серверный автосейв для CMS-форм
+
+---
 
 > Девятая статья из цикла «@letar/forms — от боли к декларативным формам». Как формы сохраняют данные локально при потере связи и синхронизируются при восстановлении.
 
@@ -313,7 +329,6 @@ function EditProductForm({ productId }: { productId: string }) {
   return (
     <Form schema={ProductSchema} initialValue={product} onSubmit={save}>
       <AutosaveIndicator /> {/* «Сохранено» / «Сохраняется...» / «Ошибка» */}
-
       <Form.Field.String name="title" />
       <Form.Field.RichText name="description" />
       <Form.Field.Currency name="price" />
@@ -376,15 +391,19 @@ function EditProductForm({ productId }: { productId: string }) {
 
 ---
 
-## Попробовать
+## Ссылки
 
+- **Документация:** [forms.letar.best](https://forms.letar.best)
+- **Примеры:** [forms-example.letar.best](https://forms-example.letar.best)
+- **GitHub:** [github.com/letar/forms](https://github.com/letar/forms)
+- **npm MCP:** `npx @letar/form-mcp`
 - **Offline-формы:** [forms-example.letar.best/examples/offline](https://forms-example.letar.best/examples/offline)
 - **Persistence:** [forms-example.letar.best/examples/persistence](https://forms-example.letar.best/examples/persistence)
-- **Исходный код:** [offline](https://github.com/kamiletar/letar-forms-example/blob/main/src/app/examples/offline/page.tsx) | [persistence](https://github.com/kamiletar/letar-forms-example/blob/main/src/app/examples/persistence/page.tsx)
-- **Клонировать:** `git clone https://github.com/kamiletar/letar-forms-example && cd letar-forms-example && npm install && npm run dev`
-
-В следующей статье — i18n: как сделать формы многоязычными, перевести ошибки валидации и UI-метаданные.
 
 ---
 
 _Это девятая статья из цикла «@letar/forms — от боли к декларативным формам». [Предыдущая: ZenStack pipeline](08-zenstack-pipeline.md) | [Следующая: i18n](10-i18n.md)._
+
+---
+
+**Как вы решаете offline-сценарии?**
